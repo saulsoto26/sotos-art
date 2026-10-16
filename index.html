@@ -17,7 +17,6 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#14100C">
-<link rel="preload" as="image" href="obra-quebrantada.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400;1,6..96,500&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
@@ -46,22 +45,31 @@
 
 <main>
 <!-- 1. ATENCIÓN: una obra real nace del polvo -->
-<section class="hero" id="inicio">
-  <canvas class="dust" aria-hidden="true"></canvas>
+<section class="hero" id="inicio" aria-label="Bienvenida">
+  <canvas class="umbral" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="art-col">
-      <div class="piece"><img src="obra-quebrantada.jpg" alt="" fetchpriority="high"><button class="open" data-open aria-label="Ver «Quebrantada»"></button></div>
-      <p class="cap">«Quebrantada», Luciann Soto. <button class="linkbtn" data-open>Ver la obra</button></p>
+      <div class="umbral-stage" aria-hidden="true">
+        <svg class="umbral-fallback" viewBox="0 0 200 210" role="presentation">
+          <path class="v" d="M72 38 L128 38 L124 46 Q116 54 118 72 C150 82 172 110 166 140 C160 172 136 190 124 196 L76 196 C64 190 40 172 34 140 C28 110 50 82 82 72 Q84 54 76 46 Z"/>
+          <path class="v" d="M84 58 C40 50 36 96 58 94 M116 58 C160 50 164 96 142 94"/>
+          <path class="s" d="M96 72 L104 94 L92 114 L110 138 L98 160 L106 196 M42 122 L70 126 L92 114 M118 114 L140 110 L162 122"/>
+          <path class="b" d="M100 21c-3-9-11-14-15-11-4 4 2 11 9 12-6 1-9 6-6 9 4 3 9-2 12-10zm0 0c3-9 11-14 15-11 4 4-2 11-9 12 6 1 9 6 6 9-4 3-9-2-12-10z"/>
+        </svg>
+      </div>
+      <div class="umbral-word" aria-live="polite"></div>
     </div>
-    <div>
-      <h1><span>Hay historias que no se escriben.</span><span class="l2">Se pintan.</span></h1>
+    <div class="hero-copy">
+      <h1><span class="l1">Hay historias que no se escriben.</span><span class="l2">Se pintan.</span></h1>
       <p class="sub">Descubre el arte de Luciann Soto. Obras que inspiran, emocionan y transforman tus espacios.</p>
       <div class="ctas">
-        <a class="btn gold" href="#obras">Ver las obras y sus precios</a>
-        <a class="btn ghost" href="#recorrido">Vivir la experiencia artística</a>
+        <a class="btn gold" href="#obras" id="ctaColeccion">Descubrir la colección</a>
+        <a class="btn ghost" href="#recorrido">Explorar las emociones</a>
       </div>
     </div>
   </div>
+  <button class="umbral-hit" hidden aria-label="Tocar la mariposa"></button>
+  <p class="sr-only">Una vasija de luz se forma, se quiebra y se restaura con oro. De ella nace una mariposa. Puedes tocar la mariposa para descubrir una emoción.</p>
 </section>
 
 <!-- LA COLECCIÓN -->

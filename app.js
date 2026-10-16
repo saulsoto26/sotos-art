@@ -256,19 +256,279 @@ function openWork(slug, fromEl, tamano){
 /* =====================================================================
    PÁGINA PRINCIPAL
    ===================================================================== */
-function initHero(){
+/* ---------- Apertura: el umbral de las emociones ----------
+   El vacío → la forma (vasija) → la fractura → la luz (costuras de oro) → la vida (mariposa).
+   Formas originales y abstractas: no reproducen ninguna pintura. */
+const UMBRAL_SIMBOLOS = [
+  { palabra: "Esperanza", forma: "brote", colores: ["#B9D29A", "#E3EBC9", "#E0C48E", "#8DB27A", "#9FC48A"] },
+  { palabra: "Restauración", forma: "vasija", colores: ["#EEE6D6", "#E0C48E", "#E8D6B0", "#FFD98A", "#E8D6B0"] },
+  { palabra: "Fortaleza", forma: "raiz", colores: ["#D9B36F", "#EEE6D6", "#E0C48E", "#FFD98A", "#C9A46A"] },
+  { palabra: "Vida", forma: "flor", colores: ["#5FC3DD", "#A7E3F0", "#E0C48E", "#F2D3A0", "#7FD0E4"] }
+];
+const UMBRAL_FORMAS = {
+  vasija(c){
+    c.beginPath(); c.moveTo(72,28); c.lineTo(128,28); c.lineTo(124,36); c.quadraticCurveTo(116,44,118,62);
+    c.bezierCurveTo(150,72,172,100,166,130); c.bezierCurveTo(160,162,136,180,124,186); c.lineTo(76,186);
+    c.bezierCurveTo(64,180,40,162,34,130); c.bezierCurveTo(28,100,50,72,82,62); c.quadraticCurveTo(84,44,76,36); c.closePath(); c.fill();
+    c.lineWidth = 9; c.lineCap = "round"; c.beginPath(); c.moveTo(84,48); c.bezierCurveTo(40,40,36,86,58,84);
+    c.moveTo(116,48); c.bezierCurveTo(160,40,164,86,142,84); c.stroke();
+  },
+  mariposa(c){
+    c.save(); c.translate(100,100);
+    [-1,1].forEach(s => { c.beginPath(); c.ellipse(s*44,-26,50,32,s*-0.62,0,7); c.fill(); c.beginPath(); c.ellipse(s*30,34,32,21,s*0.8,0,7); c.fill(); });
+    c.beginPath(); c.ellipse(0,4,5,46,0,0,7); c.fill();
+    c.lineWidth = 4; c.beginPath(); c.moveTo(-2,-40); c.quadraticCurveTo(-10,-70,-22,-78); c.moveTo(2,-40); c.quadraticCurveTo(10,-70,22,-78); c.stroke();
+    c.globalCompositeOperation = "destination-out";
+    [[-58,-38,10],[58,-38,10],[-34,38,6],[34,38,6]].forEach(([x,y,r]) => { c.beginPath(); c.arc(x,y,r,0,7); c.fill(); });
+    c.restore();
+  },
+  brote(c){
+    c.lineWidth = 9; c.lineCap = "round"; c.beginPath(); c.moveTo(100,184); c.quadraticCurveTo(96,140,102,92); c.stroke();
+    c.beginPath(); c.ellipse(70,104,36,15,-0.55,0,7); c.fill(); c.beginPath(); c.ellipse(136,76,44,18,-2.55,0,7); c.fill();
+    c.beginPath(); c.ellipse(102,186,58,7,0,0,7); c.fill();
+  },
+  raiz(c){
+    c.lineCap = "round"; c.beginPath(); c.moveTo(92,40); c.lineTo(108,40); c.lineTo(112,120); c.lineTo(88,120); c.closePath(); c.fill();
+    c.lineWidth = 6; c.beginPath();
+    [[100,118,60,150,30,190],[100,118,84,160,66,192],[100,118,116,160,134,192],[100,118,140,150,170,190],[100,120,100,160,100,194]].forEach(([a,b,c1,d,e,f]) => { c.moveTo(a,b); c.quadraticCurveTo(c1,d,e,f); });
+    c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(100,60); c.quadraticCurveTo(70,40,58,18); c.moveTo(100,70); c.quadraticCurveTo(132,48,146,24); c.stroke();
+  },
+  flor(c){
+    c.save(); c.translate(100,86);
+    for (let i = 0; i < 6; i++){ c.save(); c.rotate(i*Math.PI/3); c.beginPath(); c.ellipse(0,-34,15,30,0,0,7); c.fill(); c.restore(); }
+    c.restore(); c.globalCompositeOperation = "destination-out"; c.beginPath(); c.arc(100,86,14,0,7); c.fill();
+    c.globalCompositeOperation = "source-over"; c.beginPath(); c.arc(100,86,9,0,7); c.fill();
+    c.lineWidth = 6; c.lineCap = "round"; c.beginPath(); c.moveTo(100,120); c.quadraticCurveTo(104,160,98,194); c.stroke();
+    c.beginPath(); c.ellipse(118,166,22,9,-0.5,0,7); c.fill();
+  }
+};
+function umbralSample(draw, step){
+  const c = document.createElement("canvas"); c.width = c.height = 200;
+  const x = c.getContext("2d"); x.fillStyle = x.strokeStyle = "#000"; draw(x);
+  const d = x.getImageData(0, 0, 200, 200).data, pts = [];
+  const A = (x, y) => (x < 0 || y < 0 || x > 199 || y > 199) ? 0 : d[((y | 0) * 200 + (x | 0)) * 4 + 3];
+  for (let y = 0; y < 200; y += step) for (let xx = 0; xx < 200; xx += step) if (A(xx, y) > 128)
+    pts.push([xx, y, A(xx - 3, y) < 128 || A(xx + 3, y) < 128 || A(xx, y - 3) < 128 || A(xx, y + 3) < 128]);
+  for (let j = pts.length - 1; j > 0; j--){ const r = Math.random() * (j + 1) | 0; [pts[j], pts[r]] = [pts[r], pts[j]]; }
+  return pts;
+}
+const hex3 = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+
+function initUmbral(){
   const hero = $("#inicio"); if (!hero) return;
-  const o = bySlug("quebrantada"), piece = $(".piece", hero), img = $("img", piece);
-  img.alt = o.alt; fitPiece(piece, o);
-  addEventListener("resize", () => fitPiece(piece, o));
-  $$("[data-open]", hero).forEach(b => b.addEventListener("click", () => openWork(o.slug, img)));
-  const show = () => piece.classList.add("on");
-  const go = () => {
-    if (reduce) return show();
-    const eng = new Puntillismo($("canvas", hero), hero, true);
-    requestAnimationFrame(() => eng.form(img, show));
-  };
-  img.complete ? go() : img.addEventListener("load", go, { once: true });
+  const cv = $("canvas.umbral", hero), stage = $(".umbral-stage", hero), word = $(".umbral-word", hero), hit = $(".umbral-hit", hero);
+  const lines = $$("h1 span", hero);
+  if (reduce) return;                                   // composición fija (SVG) + texto + botones
+  let ctx; try { ctx = cv.getContext("2d"); if (!ctx) return; } catch (e) { return; }
+  hero.classList.add("seq");
+  const t0 = performance.now();
+  setTimeout(() => lines[0] && lines[0].classList.add("on"), 1000);
+  setTimeout(() => lines[1] && lines[1].classList.add("on"), 4600);
+  setTimeout(() => lines.forEach(l => l.classList.add("on")), 9000);   // por si algo se retrasa
+
+  /* Formas */
+  let vas, mar, sym = {};
+  try {
+    const raw = umbralSample(UMBRAL_FORMAS.vasija, 2.2);
+    const seeds = [[86,52],[118,58],[56,112],[146,108],[100,118],[78,166],[124,164]];
+    const frags = seeds.map(() => ({ sx: 0, sy: 0, n: 0 }));
+    vas = raw.map(([x, y, edge]) => {
+      let d1 = 1e9, d2 = 1e9, k = 0;
+      seeds.forEach(([a, b], i) => { const d = Math.hypot(x - a, y - b); if (d < d1){ d2 = d1; d1 = d; k = i; } else if (d < d2) d2 = d; });
+      frags[k].sx += x; frags[k].sy += y; frags[k].n++;
+      return { rx: (x - 100) / 200, ry: (y - 107) / 200, f: k, seam: d2 - d1 < 2.4, edge };
+    });
+    frags.forEach((f, i) => { f.cx = (f.sx / f.n - 100) / 200; f.cy = (f.sy / f.n - 107) / 200;
+      const L = Math.hypot(f.cx, f.cy) || 1; f.dx = f.cx / L; f.dy = f.cy / L; f.rot = (i % 2 ? 1 : -1) * 0.16; });
+    vas.frags = frags;
+    mar = umbralSample(UMBRAL_FORMAS.mariposa, 2.6).map(([x, y]) => [(x - 100) / 200, (y - 100) / 200]);
+    ["brote", "raiz", "flor"].forEach(k => sym[k] = umbralSample(UMBRAL_FORMAS[k], 2.4).map(([x, y]) => [(x - 100) / 200, (y - 107) / 200]));
+  } catch (e) { return; }
+
+  /* Partículas */
+  const DPR = Math.min(2, devicePixelRatio || 1);
+  let W = 0, H = 0;
+  const wideNow = () => innerWidth >= 900;
+  const N = Math.round((wideNow() ? 2600 : 1500) * (lite ? .65 : 1));
+  const nA = Math.round(N * .18), nF = N - nA;
+  const seamPts = vas.filter(p => p.seam), bodyPts = vas.filter(p => !p.seam && !p.edge), edgePts = vas.filter(p => !p.seam && p.edge);
+  const nS = Math.min(seamPts.length, Math.round(nF * .12)), nB = Math.round(nF * .42);
+  const F = n => new Float32Array(n);
+  const X = F(N), Y = F(N), VX = F(N), VY = F(N), AL = F(N), TA = F(N), SZ = F(N), SD = F(N), RX = F(N), RY = F(N), SX = F(N), SY = F(N), BX = F(N), BY = F(N), ST = F(N);
+  const MODE = new Uint8Array(N), GR = new Uint8Array(N), FRG = new Uint8Array(N), SEAM = new Uint8Array(N), BUT = new Uint8Array(N);
+  /* grupos: 0 y 1 cuerpo, 2 y 5 cuerpo que será mariposa, 3 costuras, 4 motas */
+  const G = 6, col = Array.from({ length: G }, () => [224, 196, 142]), tcol = col.map(c => c.slice());
+  const pal = (arr) => { for (let g = 0; g < 4; g++) tcol[g] = hex3(arr[g]); tcol[5] = hex3(arr[4] || arr[2]); };
+  pal(["#EEE6D6", "#E0C48E", "#E8D6B0", "#FFD98A", "#E8D6B0"]); tcol[4] = hex3("#E0C48E");
+  for (let g = 0; g < G; g++) col[g] = tcol[g].slice();
+
+  function size(){
+    const r = hero.getBoundingClientRect(); W = r.width; H = r.height;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const hr = r, sr = stage.getBoundingClientRect();
+    V.cx = sr.left - hr.left + sr.width / 2; V.cy = sr.top - hr.top + sr.height / 2; V.s = Math.min(sr.width, sr.height) * .98;
+    /* La mariposa se posa sobre la boca de la vasija restaurada (queda a la vista y no tapa el texto) */
+    const rs = Math.max(56, Math.min(110, V.s * .26));
+    REST.cx = V.cx; REST.cy = V.cy - V.s * .43; REST.s = rs;
+    if (phase === "rest" && !symbolOn){ Bf.tcx = REST.cx; Bf.tcy = REST.cy; Bf.ts = REST.s; }
+    Sy.cx = V.cx; Sy.cy = V.cy - V.s * .04; Sy.s = V.s * .82;
+    placeHit();
+  }
+  const V = { cx: 0, cy: 0, s: 0 }, REST = { cx: 0, cy: 0, s: 0 }, Bf = { cx: 0, cy: 0, s: 0, tcx: 0, tcy: 0, ts: 0 }, Sy = { cx: 0, cy: 0, s: 0 };
+  let phase = "void", fr = 0, frT = 0, seamA = 0, seamT = 0, glow = 0, symbolOn = -1, symbolIdx = -1, last = performance.now(), running = false, vis = true;
+  const ripples = []; let pointer = null;
+
+  size();
+  for (let i = 0; i < N; i++){
+    X[i] = Math.random() * W; Y[i] = Math.random() * H; SD[i] = Math.random(); AL[i] = 0; TA[i] = .12 + SD[i] * .3;
+    SZ[i] = 1.1 + Math.random() * 1.3; MODE[i] = 0; GR[i] = 4;
+  }
+  /* asignación fija de la vasija y la mariposa */
+  for (let k = 0; k < nF; k++){
+    const i = nA + k;
+    if (k < nS){ const p = seamPts[k % seamPts.length]; RX[i] = p.rx; RY[i] = p.ry; FRG[i] = p.f; SEAM[i] = 1; }
+    else { const p = (k % 5 < 2 && edgePts.length) ? edgePts[k % edgePts.length] : bodyPts[k % bodyPts.length]; RX[i] = p.rx; RY[i] = p.ry; FRG[i] = p.f; }
+    if (k >= nS && k < nS + nB){ BUT[i] = 1; const q = mar[(k - nS) % mar.length]; BX[i] = q[0]; BY[i] = q[1]; }
+  }
+
+  /* Escenas */
+  function forma(){
+    phase = "forma";
+    for (let i = nA; i < N; i++){ MODE[i] = 1; ST[i] = performance.now() + Math.random() * 700 + (RY[i] + .5) * 400;
+      GR[i] = SEAM[i] ? 3 : BUT[i] ? (i % 2 ? 2 : 5) : (i % 2 ? 0 : 1); SZ[i] = SEAM[i] ? 2.2 : 1.5 + Math.random() * 1.1; }
+    seamT = .12;
+  }
+  const grieta = () => { seamT = 1; phase = "grieta"; };
+  const fractura = () => { frT = 1; seamT = 0; phase = "fractura"; };
+  const restaura = () => { frT = 0; phase = "luz"; };
+  const oro = () => { seamT = 1; glow = 1; for (let i = nA; i < N; i++) if (SEAM[i]) SZ[i] = 2.8; };
+  function vida(){
+    phase = "vida";
+    pal(["#EEE6D6", "#E0C48E", "#5FC3DD", "#FFD98A", "#A7E3F0"]);
+    Bf.cx = Bf.tcx = V.cx; Bf.cy = Bf.tcy = V.cy - V.s * .36; Bf.s = Bf.ts = V.s * .1;
+    Bf.ts = V.s * .46; Bf.tcy = V.cy - V.s * .08;
+    for (let i = nA; i < N; i++){
+      if (BUT[i]){ MODE[i] = 2; SZ[i] = 1.4 + Math.random() * .9; }
+      else if (SEAM[i]){ SZ[i] = 1.8; }   /* las costuras de oro permanecen, tenues: lo restaurado queda */
+      else { MODE[i] = 0; TA[i] = SD[i] < .22 ? .32 : .05; VX[i] += (Math.random() - .5) * 2.4; VY[i] -= Math.random() * 1.6; }
+    }
+  }
+  function vuelo(){ phase = "vuelo"; seamT = .3; Bf.tcx = REST.cx; Bf.tcy = REST.cy; Bf.ts = REST.s; }
+  function reposo(){ phase = "rest"; last = performance.now(); placeHit(); hit.hidden = false;
+    if (symbolIdx < 0){ word.innerHTML = '<span class="hint">Toca la mariposa</span>'; word.classList.add("on"); } }
+  const timeline = [[1000, forma], [2300, grieta], [2700, fractura], [3600, restaura], [4300, oro], [5200, vida], [6600, vuelo], [8000, reposo]];
+
+  /* Símbolos al tocar la mariposa */
+  function showSymbol(){
+    symbolIdx = (symbolIdx + 1) % UMBRAL_SIMBOLOS.length; const S = UMBRAL_SIMBOLOS[symbolIdx]; symbolOn = symbolIdx;
+    pal(S.colores);
+    if (S.forma === "vasija"){
+      for (let i = nA; i < N; i++){ MODE[i] = 1; ST[i] = 0; GR[i] = SEAM[i] ? 3 : (i % 2 ? 0 : 1); }
+      fr = frT = 0; seamT = 1; glow = .8; Vsave = { ...V }; V.cx = Sy.cx; V.cy = Sy.cy; V.s = Sy.s;
+    } else {
+      const pts = sym[S.forma]; seamT = 0;
+      for (let i = nA, k = 0; i < N; i++, k++){ MODE[i] = 3; const q = pts[k % pts.length]; SX[i] = q[0]; SY[i] = q[1]; GR[i] = k % 3 === 0 ? 2 : k % 3 === 1 ? 0 : 1; }
+    }
+    word.innerHTML = `<b>${S.palabra}</b><a href="#obras">Encuéntrala en la colección</a>`; word.classList.add("on");
+    hit.setAttribute("aria-label", `${S.palabra}. Tocar para volver a la mariposa`);
+    track("umbral_simbolo", S.palabra); placeHit();
+  }
+  let Vsave = null;
+  function backToButterfly(){
+    symbolOn = -1; if (Vsave){ Object.assign(V, Vsave); Vsave = null; } size();
+    pal(["#EEE6D6", "#E0C48E", "#5FC3DD", "#FFD98A", "#A7E3F0"]); seamT = .3; fr = frT = 0;
+    Bf.tcx = REST.cx; Bf.tcy = REST.cy; Bf.ts = REST.s; Bf.cx = Sy.cx; Bf.cy = Sy.cy; Bf.s = Sy.s * .6;
+    for (let i = nA; i < N; i++){
+      if (BUT[i]){ MODE[i] = 2; GR[i] = i % 2 ? 2 : 5; }
+      else if (SEAM[i]){ MODE[i] = 1; GR[i] = 3; }
+      else { MODE[i] = 0; TA[i] = SD[i] < .22 ? .32 : .05; }
+    }
+    word.classList.remove("on"); hit.setAttribute("aria-label", "Tocar la mariposa"); placeHit();
+  }
+  function placeHit(){
+    if (symbolOn >= 0){ hit.style.left = Sy.cx + "px"; hit.style.top = Sy.cy + "px"; hit.style.width = hit.style.height = Sy.s * .7 + "px"; hit.style.margin = -Sy.s * .35 + "px 0 0 " + -Sy.s * .35 + "px"; }
+    else { hit.style.left = REST.cx + "px"; hit.style.top = REST.cy + "px"; hit.style.width = hit.style.height = ""; hit.style.margin = ""; }
+  }
+  hit.addEventListener("click", e => { e.stopPropagation(); last = performance.now(); symbolOn >= 0 ? backToButterfly() : showSymbol(); kick(); });
+
+  /* Interacción: la luz del dedo atrae; tocar el fondo deja una onda */
+  const pos = e => { const r = hero.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  hero.addEventListener("pointermove", e => { pointer = pos(e); last = performance.now(); kick(); });
+  hero.addEventListener("pointerleave", () => pointer = null);
+  hero.addEventListener("pointerup", e => { if (e.pointerType !== "mouse") setTimeout(() => pointer = null, 400); });
+  hero.addEventListener("click", e => {
+    if (e.target.closest("a,button")) return;
+    const p = pos(e); ripples.push({ x: p.x, y: p.y, t: performance.now() }); last = performance.now();
+    for (let i = 0; i < N; i++){ const dx = X[i] - p.x, dy = Y[i] - p.y, d = Math.hypot(dx, dy); if (d < 120 && d > 0){ const f = (120 - d) / 120 * 3; VX[i] += dx / d * f; VY[i] += dy / d * f; } }
+    kick();
+  });
+
+  /* Bucle */
+  function kick(){ if (!running && vis && !document.hidden){ running = true; requestAnimationFrame(frame); } }
+  function frame(now){
+    if (!vis || document.hidden){ running = false; return; }
+    const el = now - t0;
+    while (timeline.length && el >= timeline[0][0]) timeline.shift()[1]();
+    fr += (frT - fr) * .07; seamA += (seamT - seamA) * .09; glow *= .965;
+    for (let g = 0; g < G; g++) for (let k = 0; k < 3; k++) col[g][k] += (tcol[g][k] - col[g][k]) * .05;
+    Bf.cx += (Bf.tcx - Bf.cx) * .035; Bf.cy += (Bf.tcy - Bf.cy) * .035; Bf.s += (Bf.ts - Bf.s) * .05;
+    const flying = Math.hypot(Bf.tcx - Bf.cx, Bf.tcy - Bf.cy) > 6;
+    const flap = flying ? .45 + .55 * Math.abs(Math.cos(now / 170)) : .78 + .22 * Math.cos(now / 650);
+    const bob = flying ? Math.sin(now / 260) * 10 : 0;
+    const frags = vas.frags;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+    if (glow > .02){
+      const gr = ctx.createRadialGradient(V.cx, V.cy, 0, V.cx, V.cy, V.s * .75);
+      gr.addColorStop(0, `rgba(255,217,138,${.32 * glow})`); gr.addColorStop(1, "rgba(255,217,138,0)");
+      ctx.fillStyle = gr; ctx.fillRect(V.cx - V.s, V.cy - V.s, V.s * 2, V.s * 2);
+    }
+    let settled = true;
+    for (let g = 0; g < G; g++){
+      const c = col[g]; ctx.fillStyle = `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+      for (let i = 0; i < N; i++){
+        if (GR[i] !== g) continue;
+        const m = MODE[i];
+        let tx, ty, active = m !== 0 && now >= ST[i];
+        if (active){
+          if (m === 1){
+            let px = RX[i], py = RY[i];
+            if (fr > .002 && !SEAM[i]){ const f = frags[FRG[i]], a = f.rot * fr, ca = Math.cos(a), sa = Math.sin(a), dx = px - f.cx, dy = py - f.cy;
+              px = f.cx + dx * ca - dy * sa + f.dx * fr * .2; py = f.cy + dx * sa + dy * ca + f.dy * fr * .2; }
+            tx = V.cx + px * V.s; ty = V.cy + py * V.s; TA[i] = SEAM[i] ? seamA : 1;
+          } else if (m === 2){ tx = Bf.cx + BX[i] * Bf.s * flap; ty = Bf.cy + BY[i] * Bf.s + bob; TA[i] = 1; }
+          else { tx = Sy.cx + SX[i] * Sy.s; ty = Sy.cy + SY[i] * Sy.s; TA[i] = 1; }
+          VX[i] += (tx - X[i]) * .05; VY[i] += (ty - Y[i]) * .05; VX[i] *= .82; VY[i] *= .82;
+          if (Math.abs(tx - X[i]) + Math.abs(ty - Y[i]) > 1.2) settled = false;
+        } else {
+          VX[i] = VX[i] * .975 + Math.cos(SD[i] * 40 + now / 1900) * .012; VY[i] = VY[i] * .975 + Math.sin(SD[i] * 30 + now / 2300) * .012 - .004;
+          if (Math.abs(VX[i]) + Math.abs(VY[i]) > .25) settled = false;
+        }
+        if (pointer){ const dx = pointer.x - X[i], dy = pointer.y - Y[i], d2 = dx * dx + dy * dy;
+          if (d2 < 12000){ const f = (1 - d2 / 12000) * (m === 0 ? .03 : .008); VX[i] += dx * f * .1; VY[i] += dy * f * .1; if (m === 0) AL[i] = Math.min(.8, AL[i] + .02); settled = false; } }
+        X[i] += VX[i]; Y[i] += VY[i];
+        if (m === 0){ if (X[i] < -5) X[i] = W + 5; else if (X[i] > W + 5) X[i] = -5; if (Y[i] < -5) Y[i] = H + 5; else if (Y[i] > H + 5) Y[i] = -5; }
+        AL[i] += (TA[i] - AL[i]) * .06;
+        const a = AL[i] * (m === 0 ? .7 + .3 * Math.sin(SD[i] * 20 + now / 900) : 1);
+        if (a < .02) continue;
+        ctx.globalAlpha = a; const s = SZ[i]; ctx.fillRect(X[i] - s / 2, Y[i] - s / 2, s, s);
+      }
+    }
+    ctx.globalAlpha = 1;
+    for (let r = ripples.length - 1; r >= 0; r--){ const R = ripples[r], k = (now - R.t) / 800;
+      if (k >= 1){ ripples.splice(r, 1); continue; }
+      ctx.strokeStyle = `rgba(224,196,142,${.45 * (1 - k)})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(R.x, R.y, 8 + k * 70, 0, 7); ctx.stroke(); settled = false; }
+    ctx.globalCompositeOperation = "source-over";
+    if (!hero.classList.contains("live")) hero.classList.add("live");
+    /* En reposo, sin interacción durante 15 s: se detiene por completo */
+    if (phase === "rest" && now - last > 15000 && !flying){ running = false; return; }
+    requestAnimationFrame(frame);
+  }
+  new IntersectionObserver(([e]) => { vis = e.isIntersecting; if (vis) kick(); }).observe(hero);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) kick(); });
+  let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { size(); kick(); }, 150); });
+  kick();
 }
 
 function initRecorrido(){
@@ -604,7 +864,7 @@ function renderFooter(){
   renderFooter();
   const page = document.body.dataset.obra;
   if (page){ const o = bySlug(page), m = $("#obraPage"); if (o && m){ renderFicha(o, m, { page: true }); track("ver_obra", o.slug); } return; }
-  initHero(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderArtista(); initPincelada(); renderConfianza();
+  initUmbral(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderArtista(); initPincelada(); renderConfianza();
   const sheet = $("#sheet");
   sheet.addEventListener("close", () => { history.replaceState(null, "", location.pathname + location.search); document.title = "Soto’s Art | Galería de Luciann Soto"; });
   const params = new URLSearchParams(location.search), p = params.get("pared");
