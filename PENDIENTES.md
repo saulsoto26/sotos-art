@@ -16,14 +16,14 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Acabado (mate, brillo, con o sin bastidor).
 - [ ] Precio final en USD por variante.
 - [ ] Disponibilidad.
-- [ ] Descripción breve de cada obra, escrita o aprobada por Luciann.
+- [ ] Descripción breve de cada obra, escrita o aprobada por Luciann (en `textos-es.js` → `obras`).
 
 ### Pagos
 - [ ] Cuenta de ATH Móvil Business y su enlace o método de cobro.
 - [ ] Procesador de tarjetas (por ejemplo, Stripe Payment Links o PayPal Business) con un enlace por variante.
 - [ ] Prueba de una compra real de bajo monto, de principio a fin, antes del lanzamiento.
 
-### Envío y políticas
+### Envío y políticas (textos en `textos-es.js` → `contenido`)
 - [ ] Destinos de envío y costo.
 - [ ] Tiempo de preparación y de entrega.
 - [ ] Opción de recogido, si existe.
@@ -45,10 +45,14 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Testimonios reales, solo con permiso escrito.
 - [ ] Fotos de obras colgadas en hogares reales, con permiso.
 
+## Galería bilingüe (fase 1)
+- [ ] Revisión y aprobación de Luciann de cada texto en inglés, en especial su biografía y sus propias palabras.
+- [ ] Aprobar o descartar los subtítulos interpretativos en inglés de cada obra (los títulos se conservan en español).
+
 ## Prioridad 3: perfeccionamiento
 - [ ] Configurar la medición sin cookies (GoatCounter o Plausible) en `CONFIG.analitica`.
 - [ ] Dominio propio (opcional).
-- [ ] Al lanzar: ejecutar `python3 generar-paginas.py --lanzar` para retirar el noindex.
+- [ ] Al lanzar: cambiar `publicarEnBuscadores` a `true` en `catalogo.js` para retirar el noindex.
 
 ## Mensaje sobre su situación personal
 No aparece en el sitio. Solo se preparará un texto breve y respetuoso si Luciann lo autoriza expresamente.

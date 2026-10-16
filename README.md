@@ -1,50 +1,62 @@
 # Soto’s Art | Galería de Luciann Soto
 
-Sitio estático (HTML, CSS y JavaScript, sin servidor) listo para GitHub Pages o Netlify.
+Sitio estático (HTML, CSS y JavaScript, sin servidor). GitHub lo construye y publica solo cada vez que subes un archivo.
 
-## Archivos
+## Archivos que editas
+| Archivo | Qué contiene |
+|---|---|
+| `catalogo.js` | Datos que no dependen del idioma: obras, tamaños, precios en USD, enlaces de pago, contacto, idiomas activos y si el sitio aparece en buscadores |
+| `textos-es.js` | Todos los textos en español: portada, botones, fichas, lecturas curatoriales, biografía, envío, políticas y preguntas frecuentes |
+| `textos-en.js` | Los mismos textos en inglés, con **las mismas claves**. Hoy es un borrador pendiente de la revisión de Luciann |
+
+## Archivos que no hace falta tocar
 | Archivo | Para qué sirve |
 |---|---|
-| `index.html` | Página principal |
-| `obra-*.html` | Una página por obra, con su vista previa para WhatsApp y Facebook |
-| `catalogo.js` | **El único archivo que hay que editar**: precios, tamaños, pagos, políticas y textos |
-| `app.js` | Lógica de la galería (no requiere edición) |
-| `styles.css` | Estilos |
-| `obra-*.jpg` | Fotos de las obras |
-| `og*.jpg` | Imágenes de vista previa para redes (1200 × 630) |
-| `artista.jpg`, `taller-*.jpg` | Fotos de Luciann y de su proceso |
-| `generar-paginas.py` | Regenera las páginas de obra, el sitemap y la indexación |
-| `sitemap.xml`, `robots.txt` | Para buscadores |
-| `prototipo-v1.html` | Respaldo de la versión anterior |
+| `app.js`, `styles.css` | Lógica y estilos de la galería |
+| `plantilla-inicio.html`, `plantilla-obra.html` | Moldes de la portada y de las páginas de obra |
+| `construir.py` | Crea el sitio publicable: carpetas por idioma, páginas de obra, sitemap y redirecciones |
+| `.github/workflows/publicar.yml` | Ejecuta `construir.py` y publica en GitHub Pages en cada subida |
+| `obra-*.jpg`, `artista.jpg`, `taller-*.jpg` | Imágenes |
+| `og*.jpg`, `og-en*.jpg` | Vistas previas al compartir, en español y en inglés |
+| `prototipo-v1.html` | Respaldo de la primera versión |
 | `PENDIENTES.md` | Lo que falta para vender |
 
-Todos los archivos van en la raíz del repositorio, sin carpetas, para poder subirlos desde el teléfono.
+Los archivos `index.html`, `obra-*.html`, `sitemap.xml`, `robots.txt` y `generar-paginas.py` que queden en el repositorio ya no se usan; GitHub genera los suyos. Puedes borrarlos cuando quieras.
 
-## Publicar o actualizar en GitHub Pages (desde el celular)
-1. En github.com, abre el repositorio `sotos-art`.
-2. Toca **Add file → Upload files** y selecciona todos los archivos. Los que tengan el mismo nombre se reemplazan.
-3. Toca **Commit changes**. En uno o dos minutos se actualiza https://saulsoto26.github.io/sotos-art/
+## Direcciones del sitio
+- `https://saulsoto26.github.io/sotos-art/` lleva al idioma elegido por el visitante (o a español).
+- `…/es/` es la portada en español; `…/es/obras/quebrantada/` es la página de cada obra.
+- `…/en/` y `…/en/artworks/quebrantada/` son las mismas páginas en inglés.
+- Los enlaces antiguos (`…/obra-quebrantada.html`) siguen funcionando y llevan a la nueva dirección.
+
+## Idiomas
+- El selector (globo + código, sin banderas) está en el encabezado y dentro de cada ficha. Lleva a la misma página en el otro idioma, conserva la obra abierta o la sección donde estaba el visitante y recuerda su elección.
+- Si el navegador está en otro idioma activo, se sugiere una sola vez con una barra discreta; nunca se cambia solo.
+- Los títulos de las obras se conservan en español. Un subtítulo interpretativo se publica solo si se escribe en `subtitulo`; las propuestas están en `subtituloPropuesto`.
+- **Revisión de Luciann:** `…/revision-traducciones.html` muestra cada texto en español e inglés lado a lado. No está enlazada ni aparece en buscadores.
+- Sus propias palabras (la cita y sus declaraciones) no se muestran en inglés hasta que en `textos-en.js` se cambie `palabrasArtista: false` a `true`.
+- Para agregar otro idioma: copiar `textos-en.js` como `textos-pt.js`, traducir y añadir `"pt"` a `idiomas` en `catalogo.js`.
+
+## Actualizar el sitio (desde el celular)
+1. En github.com abre el repositorio `sotos-art`.
+2. **Add file → Upload files**, elige los archivos y toca **Commit changes**. Los que tienen el mismo nombre se reemplazan.
+3. En la pestaña **Actions** verás “Publicar galería” en curso. En uno o dos minutos el sitio queda actualizado. Si aparece una ✗ roja, ábrela: el mensaje dice qué archivo tiene el error.
 
 ## Cambiar precios, tamaños o enlaces de pago
-Edita `catalogo.js` (en GitHub: abre el archivo, toca el lápiz, edita y confirma con Commit). No hace falta regenerar páginas.
-
-Ejemplo de una variante dentro de `variantes:[ ]` de una obra:
+En `catalogo.js`, dentro de `variantes:[ ]` de cada obra:
 ```js
 { tamano:"16 × 20 pulg", ancho:16, alto:20, unidad:"in",
   material:"lienzo", tipo:"giclée", acabado:"mate",
   precio:120, disponible:true,
   enlaces:{ stripe:"https://buy.stripe.com/…", athMovil:"", paypal:"" } }
 ```
-Con eso aparecen solos: el precio “desde” en la colección, el selector de tamaño, el botón de pago, el tamaño real en “Pruébala en tu pared” y los detalles de compra.
+Con eso aparecen solos el precio “desde”, el selector de tamaño, el botón de pago, el tamaño real en “Pruébala en tu pared” y los detalles de compra, en todos los idiomas.
+
+## Cambiar un texto
+Busca el texto en `textos-es.js` (o `textos-en.js`), cámbialo entre las comillas y súbelo. No cambies lo que está a la izquierda de los dos puntos (la clave) ni lo que va entre llaves, como `{titulo}` o `{precio}`: el sitio lo reemplaza solo.
 
 ## Cambiar fotos
 Sube la nueva foto con **el mismo nombre** (por ejemplo `obra-quebrantada.jpg`). Si cambian sus proporciones, actualiza `w` y `h` de esa obra en `catalogo.js`. Cuando las fotos sean definitivas, cambia `provisional:true` a `false`.
 
-## Lanzamiento (quitar el noindex)
-Desde una computadora: `python3 generar-paginas.py --lanzar` y sube `index.html`, las `obra-*.html` y `sitemap.xml`.
-
-## Qué es real y qué no
-- No hay checkout propio: los pagos se hacen en enlaces oficiales (ATH Móvil, Stripe o PayPal).
-- Un clic en “Pagar” **no** es una venta. Las ventas se confirman en el panel del procesador de pagos.
-- Los textos curatoriales están identificados como tales y no se atribuyen a Luciann.
-- Las fotos de “Pruébala en tu pared” no salen del dispositivo del visitante.
+## Lanzamiento
+En `catalogo.js` cambia `publicarEnBuscadores: false` a `true`. Eso retira el “noindex” de todas las páginas.

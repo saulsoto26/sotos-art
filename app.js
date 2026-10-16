@@ -1,19 +1,56 @@
-/* Soto’s Art — lógica de la galería. Lee todo de catalogo.js; no requiere edición. */
+/* Soto’s Art — lógica de la galería.
+   Lee los datos de catalogo.js y los textos de textos-<idioma>.js; no requiere edición.
+   tr("clave") devuelve el texto de la interfaz en el idioma de la página. */
 "use strict";
+
+/* ---------- Idioma, textos y rutas ---------- */
+const TX = window.TEXTOS || {};
+const IDIOMA = document.documentElement.lang || "es";
+const RAIZ = document.documentElement.dataset.raiz || "";      // de esta página a la raíz del sitio
+const INICIO = document.documentElement.dataset.inicio || "";  // de esta página a la portada del idioma
+function tr(k, v){
+  let s = (TX.ui || {})[k];
+  if (s == null){ console.warn("Falta el texto:", k); s = ""; }
+  return v ? s.replace(/\{(\w+)\}/g, (m, n) => n in v ? v[n] : m) : s;
+}
+(function aplicarTextos(){
+  const C = TX.contenido || {};
+  Object.assign(CONFIG, { lema: C.lema || "", declaracion: C.declaracion || "",
+    envio: { ...C.envio }, politicas: { ...C.politicas }, testimonios: C.testimonios || [], fotosProducto: C.fotosProducto || [] });
+  CONFIG.par.nota = (C.par || {}).nota || "";
+  Object.assign(CONFIG.pincelada, C.pincelada);
+  CONFIG.exploracion.forEach((x, i) => Object.assign(x, (C.exploracion || [])[i]));
+  OBRAS.forEach(o => Object.assign(o, { alt: "", descripcion: "", declaracion: "", subtitulo: "" }, (TX.obras || {})[o.slug]));
+  /* Los archivos viven en la raíz del sitio: se ajusta su ruta desde esta página */
+  const ruta = f => f && !/^(https?:|data:|\/)/.test(f) && /\.\w{2,4}$/.test(f) ? RAIZ + f : f;
+  OBRAS.forEach(o => { o.imagen = ruta(o.imagen); o.video = ruta(o.video); });
+  const P = CONFIG.pincelada; P.proceso = ruta(P.proceso); P.terminada = ruta(P.terminada);
+  CONFIG.exploracion.forEach(x => x.imagen = ruta(x.imagen));
+  CONFIG.fotosProducto.forEach(x => x.imagen = ruta(x.imagen));
+  CONFIG.declaracionAudio = ruta(CONFIG.declaracionAudio); CONFIG.videoArtista = ruta(CONFIG.videoArtista);
+})();
+const cita = x => tr("cita.abre") + x + tr("cita.cierra");                 // «Título» o “Title”
+const val = x => (TX.valores || {})[x] || x;                               // “lienzo” → “canvas”
+const vozArtista = () => !TX.aprobacion || TX.aprobacion.palabrasArtista !== false; // sus palabras solo si están aprobadas en este idioma
+if (!vozArtista()){ CONFIG.declaracion = ""; OBRAS.forEach(o => o.declaracion = ""); }
+const RECORRIDO = EXPERIENCIA.recorrido.map(slug => [slug, TX.recorrido[slug].titulo, TX.recorrido[slug].linea]);
+const QUE_VES = { obras: EXPERIENCIA.queVes, emociones: TX.queVes };
+const DOS_OBRAS = TX.dosObras;
 
 /* ---------- Utilidades ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
-const money = n => new Intl.NumberFormat("es-PR", { style:"currency", currency:"USD" }).format(n);
+const money = n => new Intl.NumberFormat(tr("formato.region"), { style:"currency", currency:"USD" }).format(n);
 const bySlug = s => OBRAS.find(o => o.slug === s);
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const lite = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
 const telHref = () => "tel:+1" + CONFIG.telefono.replace(/\D/g, "");
 const waLink = msg => CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}` : "";
-const obraURL = o => (CONFIG.sitioURL || "") + "obra-" + o.slug + ".html";
+const obraHref = slug => INICIO + tr("ruta.obras") + "/" + slug + "/";
+const obraURL = o => (CONFIG.sitioURL || "") + IDIOMA + "/" + tr("ruta.obras") + "/" + o.slug + "/";
 const prop = o => (o.w && o.h) ? o.w / o.h : .8;
-const listJoin = a => a.length > 1 ? a.slice(0, -1).join(", ") + " y " + a.at(-1) : (a[0] || "");
+const listJoin = a => a.length > 1 ? a.slice(0, -1).join(", ") + " " + tr("lista.y") + " " + a.at(-1) : (a[0] || "");
 const minPrice = o => { const p = o.variantes.map(v => v.precio).filter(Boolean); return p.length ? Math.min(...p) : 0; };
 function toast(m){ const t = $("#toast"); if (!t) return; t.textContent = m; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 2200); }
 
@@ -141,62 +178,64 @@ class Puntillismo {
 }
 
 /* ---------- Ficha de obra (ventana o página propia) ---------- */
-function variantLabel(v){ return v.tamano || (v.ancho && v.alto ? `${v.ancho} × ${v.alto} ${v.unidad === "cm" ? "cm" : "pulg"}` : ""); }
+function variantLabel(v){ return v.ancho && v.alto ? `${v.ancho} × ${v.alto} ${v.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : (v.tamano || ""); }
 function receiveText(v){
-  if (!v) return "Material, tamaño y acabado de la reproducción por confirmar.";
-  const bits = [v.tipo && "reproducción " + v.tipo, v.material && "en " + v.material, variantLabel(v) && "de " + variantLabel(v), v.acabado && "acabado " + v.acabado].filter(Boolean);
-  return bits.length ? "Recibirás una " + bits.join(", ") + "." : "Detalles de la reproducción por confirmar.";
+  if (!v) return tr("recibe.pendiente");
+  const bits = [v.tipo && tr("recibe.tipo", { x: val(v.tipo) }), v.material && tr("recibe.material", { x: val(v.material) }), variantLabel(v) && tr("recibe.tamano", { x: variantLabel(v) }), v.acabado && tr("recibe.acabado", { x: val(v.acabado) })].filter(Boolean);
+  return bits.length ? tr("recibe.frase", { lista: bits.join(", ") }) : tr("recibe.detallesPendientes");
 }
 function renderFicha(o, mount, opts = {}){
   const vs = o.variantes, sizes = [...new Set(vs.map(variantLabel))], finishes = [...new Set(vs.map(v => v.acabado).filter(Boolean))];
-  const falta = [!o.descripcion && "descripción", !vs.length && "tamaños", !vs.length && "precio"].filter(Boolean);
+  const falta = [!o.descripcion && tr("falta.descripcion"), !vs.length && tr("falta.tamanos"), !vs.length && tr("falta.precio")].filter(Boolean);
   const onWall = !!$("#wall");
   mount.innerHTML = `<div class="sheet-in">
-    <figure class="sheet-fig">${opts.page ? "" : '<button class="close" aria-label="Cerrar" data-close>×</button>'}
+    <figure class="sheet-fig">${opts.page ? "" : `<button class="close" aria-label="${tr("cerrar")}" data-close>×</button>`}
       <img src="${esc(o.imagen)}" alt="${esc(o.alt)}" style="--p:${prop(o)}"></figure>
     <div class="sheet-body">
       <span class="sku">${esc(o.sku)}</span>
       ${opts.page ? `<h1 id="sheetTitle">${esc(o.titulo)}</h1>` : `<h2 id="sheetTitle">${esc(o.titulo)}</h2>`}
+      ${o.subtitulo ? `<p class="subt">${esc(o.subtitulo)}</p>` : ""}
       ${o.descripcion ? `<p class="lead">${esc(o.descripcion)}</p>` : ""}
       ${o.declaracion ? `<blockquote class="voice">${esc(o.declaracion)}<cite>Luciann Soto</cite></blockquote>` : ""}
-      ${o.video ? mediaHTML(o.video, "Luciann habla de " + o.titulo) : ""}
+      ${o.video ? mediaHTML(o.video, tr("media.obra", { titulo: o.titulo })) : ""}
       <p class="price" id="price"></p>
       <p class="receive" id="receive"></p>
-      ${o.provisional ? '<p class="small">Imagen provisional de la obra. La fotografía final se publicará con mayor calidad.</p>' : ""}
+      ${o.provisional ? `<p class="small">${tr("ficha.provisional")}</p>` : ""}
       ${vs.length ? `<div class="opts">
-        <label>Tamaño<select id="selT">${sizes.map(t => `<option ${t === opts.tamano ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
-        ${finishes.length > 1 ? `<label>Acabado<select id="selA">${finishes.map(t => `<option>${esc(t)}</option>`).join("")}</select></label>` : ""}
+        <label>${tr("ficha.tamano")}<select id="selT">${sizes.map(t => `<option ${t === opts.tamano ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
+        ${finishes.length > 1 ? `<label>${tr("ficha.acabado")}<select id="selA">${finishes.map(t => `<option value="${esc(t)}">${esc(val(t))}</option>`).join("")}</select></label>` : ""}
       </div>` : ""}
-      <div class="actions"><button class="btn dark" data-review>Ordenar</button>
-        ${onWall ? '<button class="btn line" data-wall>Pruébala en tu pared</button>' : `<a class="btn line" href="index.html?pared=${o.slug}#espacio">Pruébala en tu pared</a>`}
+      <div class="actions"><button class="btn dark" data-review>${tr("ficha.ordenar")}</button>
+        ${onWall ? `<button class="btn line" data-wall>${tr("ficha.pared")}</button>` : `<a class="btn line" href="${INICIO}?pared=${o.slug}#espacio">${tr("ficha.pared")}</a>`}
 </div>
       <div id="details"></div>
       <div id="review"></div>
-      <div class="sharebox"><p>¿Te recordó a alguien especial?</p><button class="btn line" data-share>Comparte esta historia</button></div>
-      ${falta.length ? `<p class="small pendline">Por confirmar: ${listJoin(falta)}.</p>` : ""}
-      ${opts.page ? '<p><a class="btn line" href="index.html#obras">Ver toda la colección</a></p>' : ""}
+      <div class="sharebox"><p>${tr("compartir.pregunta")}</p><button class="btn line" data-share>${tr("compartir.boton")}</button></div>
+      ${!opts.page && ALTERNOS.length ? `<p class="small ficha-idioma">${ALTERNOS.map(a => `<a href="${esc(a.url)}" hreflang="${a.idioma}" lang="${a.idioma}" data-cambio-idioma>${esc(a.ver)}</a>`).join(" · ")}</p>` : ""}
+      ${falta.length ? `<p class="small pendline">${tr("falta.frase", { lista: listJoin(falta) })}</p>` : ""}
+      ${opts.page ? `<p><a class="btn line" href="${INICIO}#obras">${tr("ficha.verColeccion")}</a></p>` : ""}
     </div></div>`;
   const current = () => { const t = $("#selT", mount)?.value, a = $("#selA", mount)?.value;
     return vs.find(v => variantLabel(v) === t && (!a || v.acabado === a)) || vs.find(v => variantLabel(v) === t) || null; };
   const paint = () => { const v = current();
-    $("#price", mount).innerHTML = v && v.precio ? money(v.precio) : "<span>Reproducción de alta calidad</span><small>Precio por confirmar</small>";
-    $("#receive", mount).textContent = receiveText(v) + (v && v.disponible === false ? " No disponible en este momento." : "");
-    const env = CONFIG.envio, pol = CONFIG.politicas, pc = "Por confirmar";
-    const metodos = [CONFIG.metodosPago.athMovil && "ATH Móvil Business", CONFIG.metodosPago.stripe && "tarjeta", CONFIG.metodosPago.paypal && "PayPal"].filter(Boolean);
+    $("#price", mount).innerHTML = v && v.precio ? money(v.precio) : `<span>${tr("ficha.altaCalidad")}</span><small>${tr("precio.pendiente")}</small>`;
+    $("#receive", mount).textContent = receiveText(v) + (v && v.disponible === false ? " " + tr("ficha.noDisponible") : "");
+    const env = CONFIG.envio, pol = CONFIG.politicas, pc = tr("pendiente");
+    const metodos = [CONFIG.metodosPago.athMovil && "ATH Móvil Business", CONFIG.metodosPago.stripe && tr("pago.tarjeta"), CONFIG.metodosPago.paypal && "PayPal"].filter(Boolean);
     const rows = [
-      ["Obra", `«${esc(o.titulo)}», ${esc(o.sku)}`],
-      ["Qué recibes", "Reproducción de la pintura original" + (o.original ? ` (original: ${esc(o.original)})` : "")],
-      ["Tamaño", v ? esc(variantLabel(v)) : pc],
-      ["Material y acabado", v && (v.material || v.acabado) ? esc([v.tipo, v.material, v.acabado].filter(Boolean).join(", ")) : pc],
-      ["Precio", v && v.precio ? money(v.precio) + " USD" : pc],
-      ["Envío", env.costo ? esc(env.costo) : pc],
-      ["Preparación", env.preparacion ? esc(env.preparacion) : pc],
-      ["Entrega estimada", env.entrega ? esc(env.entrega) : pc],
-      ["Cancelación y devolución", pol.devoluciones || pol.cancelaciones ? '<a href="index.html#comprar">Ver políticas</a>' : pc],
-      ["Pago", metodos.length ? "En línea con " + listJoin(metodos) + ", o directamente con la artista" : "Directamente con la artista; el pago en línea aún no está activo"],
-      ["Artista", `${esc(CONFIG.nombreLegal)}, <a href="${telHref()}">${esc(CONFIG.telefono)}</a>`]
+      [tr("ficha.obra"), `${cita(esc(o.titulo))}, ${esc(o.sku)}`],
+      [tr("ficha.queRecibes"), tr("ficha.reproduccion") + (o.original ? " " + tr("ficha.original", { x: esc(o.original) }) : "")],
+      [tr("ficha.tamano"), v ? esc(variantLabel(v)) : pc],
+      [tr("ficha.materialAcabado"), v && (v.material || v.acabado) ? esc([v.tipo, v.material, v.acabado].filter(Boolean).map(val).join(", ")) : pc],
+      [tr("ficha.precio"), v && v.precio ? money(v.precio) + " USD" : pc],
+      [tr("ficha.envio"), env.costo ? esc(env.costo) : pc],
+      [tr("ficha.preparacion"), env.preparacion ? esc(env.preparacion) : pc],
+      [tr("ficha.entrega"), env.entrega ? esc(env.entrega) : pc],
+      [tr("ficha.cancelacion"), pol.devoluciones || pol.cancelaciones ? `<a href="${INICIO}#comprar">${tr("ficha.verPoliticas")}</a>` : pc],
+      [tr("ficha.pago"), metodos.length ? tr("ficha.pagoEnLinea", { lista: listJoin(metodos) }) : tr("ficha.pagoDirecto")],
+      [tr("ficha.artista"), `${esc(CONFIG.nombreLegal)}, <a href="${telHref()}">${esc(CONFIG.telefono)}</a>`]
     ];
-    $("#details", mount).innerHTML = `<details class="soft"><summary>Detalles de compra</summary><dl class="spec">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></details>`;
+    $("#details", mount).innerHTML = `<details class="soft"><summary>${tr("ficha.detalles")}</summary><dl class="spec">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></details>`;
     $("#review", mount).innerHTML = ""; };
   paint(); $$("select", mount).forEach(s => s.addEventListener("change", paint));
   mount.onclick = e => {
@@ -208,31 +247,31 @@ function renderFicha(o, mount, opts = {}){
 }
 function review(o, v, mount){
   const sel = v || {}, links = sel.enlaces || {};
-  const pay = [["athMovil", "Pagar con ATH Móvil"], ["stripe", "Pagar con tarjeta"], ["paypal", "Pagar con PayPal"]]
+  const pay = [["athMovil", tr("pago.conAth")], ["stripe", tr("pago.conTarjeta")], ["paypal", tr("pago.conPaypal")]]
     .filter(([k]) => links[k] && sel.disponible !== false)
     .map(([k, n]) => `<a class="btn gold" href="${esc(links[k])}" target="_blank" rel="noopener" data-pago="${k}" data-obra="${o.slug}">${n}</a>`).join("");
   const label = variantLabel(sel);
-  const msg = `Hola, Luciann. Me interesa una reproducción de «${o.titulo}» (${o.sku})` + (label ? `, tamaño ${label}` : "") + (sel.acabado ? `, acabado ${sel.acabado}` : "") + ". ¿Me puedes dar información para ordenarla?";
-  const env = CONFIG.envio, envio = [env.costo, env.destinos && "a " + env.destinos, env.entrega && "entrega en " + env.entrega].filter(Boolean).join(", ");
-  $("#review", mount).innerHTML = `<div class="review fade-in"><h3>Tu orden</h3>
+  const msg = tr("wa.obra", { titulo: o.titulo, sku: o.sku, detalle: (label ? tr("wa.tamano", { x: label }) : "") + (sel.acabado ? tr("wa.acabado", { x: val(sel.acabado) }) : "") });
+  const env = CONFIG.envio, envio = [env.costo, env.destinos && tr("orden.destino", { x: env.destinos }), env.entrega && tr("orden.entregaEn", { x: env.entrega })].filter(Boolean).join(", ");
+  $("#review", mount).innerHTML = `<div class="review fade-in"><h3>${tr("orden.titulo")}</h3>
     <dl class="spec">
-      <dt>Obra</dt><dd>«${esc(o.titulo)}»${label ? ", " + esc(label) : ""}${sel.acabado ? ", " + esc(sel.acabado) : ""}</dd>
-      <dt>Precio</dt><dd>${sel.precio ? money(sel.precio) : "Por confirmar"}</dd>
-      <dt>Envío</dt><dd>${envio ? esc(envio) : "Por confirmar con la artista"}</dd>
-      ${env.recogido ? `<dt>Recogido</dt><dd>${esc(env.recogido)}</dd>` : ""}
+      <dt>${tr("ficha.obra")}</dt><dd>${cita(esc(o.titulo))}${label ? ", " + esc(label) : ""}${sel.acabado ? ", " + esc(val(sel.acabado)) : ""}</dd>
+      <dt>${tr("ficha.precio")}</dt><dd>${sel.precio ? money(sel.precio) : tr("pendiente")}</dd>
+      <dt>${tr("ficha.envio")}</dt><dd>${envio ? esc(envio) : tr("pendienteArtista")}</dd>
+      ${env.recogido ? `<dt>${tr("orden.recogido")}</dt><dd>${esc(env.recogido)}</dd>` : ""}
     </dl>
     <div class="actions">${pay}
-      ${CONFIG.whatsapp ? `<a class="btn ${pay ? "line" : "gold"}" href="${waLink(msg)}" target="_blank" rel="noopener" data-obra="${o.slug}">Ordenar por WhatsApp</a>` : ""}
-      <a class="btn line" href="${telHref()}" data-obra="${o.slug}">Llamar</a></div>
-    <p class="small">Vende ${esc(CONFIG.nombreLegal)}, ${esc(CONFIG.marca)}. ${pay ? "El pago se procesa en la plataforma oficial; este sitio no recibe datos de tarjetas." : "El pago en línea aún no está activo: Luciann coordina contigo el pago y la entrega."}
-      ${CONFIG.politicas.confirmacion ? esc(CONFIG.politicas.confirmacion) + " " : ""}<a href="index.html#comprar">Políticas</a></p></div>`;
+      ${CONFIG.whatsapp ? `<a class="btn ${pay ? "line" : "gold"}" href="${waLink(msg)}" target="_blank" rel="noopener" data-obra="${o.slug}">${tr("orden.whatsapp")}</a>` : ""}
+      <a class="btn line" href="${telHref()}" data-obra="${o.slug}">${tr("llamar")}</a></div>
+    <p class="small">${tr("orden.vende", { nombre: esc(CONFIG.nombreLegal), marca: esc(CONFIG.marca) })} ${pay ? tr("orden.pagoOficial") : tr("orden.pagoInactivo")}
+      ${CONFIG.politicas.confirmacion ? esc(CONFIG.politicas.confirmacion) + " " : ""}<a href="${INICIO}#comprar">${tr("orden.politicas")}</a></p></div>`;
   $("#review", mount).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
 }
 function share(o){
-  const url = obraURL(o), data = { title: o.titulo + " | Soto’s Art", text: "Mira «" + o.titulo + "» de Luciann Soto", url };
+  const url = obraURL(o), data = { title: o.titulo + " | Soto’s Art", text: tr("compartir.texto", { titulo: o.titulo }), url };
   track("compartir", o.slug);
   if (navigator.share) navigator.share(data).catch(() => {});
-  else (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast("Enlace copiado"), () => toast("No se pudo copiar. Mantén presionado para copiar."));
+  else (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast(tr("compartir.copiado")), () => toast(tr("compartir.error")));
 }
 function mediaHTML(src, title){
   if (/\.(mp4|webm|mov)$/i.test(src)) return `<video class="video" controls preload="none" playsinline src="${esc(src)}" title="${esc(title)}"></video>`;
@@ -260,10 +299,10 @@ function openWork(slug, fromEl, tamano){
    El vacío → la forma (vasija) → la fractura → la luz (costuras de oro) → la vida (mariposa).
    Formas originales y abstractas: no reproducen ninguna pintura. */
 const UMBRAL_SIMBOLOS = [
-  { palabra: "Esperanza", forma: "brote", colores: ["#B9D29A", "#E3EBC9", "#E0C48E", "#8DB27A", "#9FC48A"] },
-  { palabra: "Restauración", forma: "vasija", colores: ["#EEE6D6", "#E0C48E", "#E8D6B0", "#FFD98A", "#E8D6B0"] },
-  { palabra: "Fortaleza", forma: "raiz", colores: ["#D9B36F", "#EEE6D6", "#E0C48E", "#FFD98A", "#C9A46A"] },
-  { palabra: "Vida", forma: "flor", colores: ["#5FC3DD", "#A7E3F0", "#E0C48E", "#F2D3A0", "#7FD0E4"] }
+  { id: "esperanza", palabra: tr("umbral.esperanza"), forma: "brote", colores: ["#B9D29A", "#E3EBC9", "#E0C48E", "#8DB27A", "#9FC48A"] },
+  { id: "restauracion", palabra: tr("umbral.restauracion"), forma: "vasija", colores: ["#EEE6D6", "#E0C48E", "#E8D6B0", "#FFD98A", "#E8D6B0"] },
+  { id: "fortaleza", palabra: tr("umbral.fortaleza"), forma: "raiz", colores: ["#D9B36F", "#EEE6D6", "#E0C48E", "#FFD98A", "#C9A46A"] },
+  { id: "vida", palabra: tr("umbral.vida"), forma: "flor", colores: ["#5FC3DD", "#A7E3F0", "#E0C48E", "#F2D3A0", "#7FD0E4"] }
 ];
 const UMBRAL_FORMAS = {
   vasija(c){
@@ -318,7 +357,7 @@ function initUmbral(){
   const hero = $("#inicio"); if (!hero) return;
   const cv = $("canvas.umbral", hero), stage = $(".umbral-stage", hero), word = $(".umbral-word", hero), hit = $(".umbral-hit", hero);
   const lines = $$("h1 span", hero);
-  if (reduce) return;                                   // composición fija (SVG) + texto + botones
+  if (reduce || CAMBIO_IDIOMA) return;                  // composición fija (SVG) + texto + botones
   let ctx; try { ctx = cv.getContext("2d"); if (!ctx) return; } catch (e) { return; }
   hero.classList.add("seq");
   const t0 = performance.now();
@@ -415,7 +454,7 @@ function initUmbral(){
   }
   function vuelo(){ phase = "vuelo"; seamT = .3; Bf.tcx = REST.cx; Bf.tcy = REST.cy; Bf.ts = REST.s; }
   function reposo(){ phase = "rest"; last = performance.now(); placeHit(); hit.hidden = false;
-    if (symbolIdx < 0){ word.innerHTML = '<span class="hint">Toca la mariposa</span>'; word.classList.add("on"); } }
+    if (symbolIdx < 0){ word.innerHTML = `<span class="hint">${tr("umbral.toca")}</span>`; word.classList.add("on"); } }
   const timeline = [[1000, forma], [2300, grieta], [2700, fractura], [3600, restaura], [4300, oro], [5200, vida], [6600, vuelo], [8000, reposo]];
 
   /* Símbolos al tocar la mariposa */
@@ -429,9 +468,9 @@ function initUmbral(){
       const pts = sym[S.forma]; seamT = 0;
       for (let i = nA, k = 0; i < N; i++, k++){ MODE[i] = 3; const q = pts[k % pts.length]; SX[i] = q[0]; SY[i] = q[1]; GR[i] = k % 3 === 0 ? 2 : k % 3 === 1 ? 0 : 1; }
     }
-    word.innerHTML = `<b>${S.palabra}</b><a href="#obras">Encuéntrala en la colección</a>`; word.classList.add("on");
-    hit.setAttribute("aria-label", `${S.palabra}. Tocar para volver a la mariposa`);
-    track("umbral_simbolo", S.palabra); placeHit();
+    word.innerHTML = `<b>${S.palabra}</b><a href="#obras">${tr("umbral.encuentrala")}</a>`; word.classList.add("on");
+    hit.setAttribute("aria-label", tr("umbral.volver", { palabra: S.palabra }));
+    track("umbral_simbolo", S.id); placeHit();
   }
   let Vsave = null;
   function backToButterfly(){
@@ -443,7 +482,7 @@ function initUmbral(){
       else if (SEAM[i]){ MODE[i] = 1; GR[i] = 3; }
       else { MODE[i] = 0; TA[i] = SD[i] < .22 ? .32 : .05; }
     }
-    word.classList.remove("on"); hit.setAttribute("aria-label", "Tocar la mariposa"); placeHit();
+    word.classList.remove("on"); hit.setAttribute("aria-label", tr("umbral.tocar")); placeHit();
   }
   function placeHit(){
     if (symbolOn >= 0){ hit.style.left = Sy.cx + "px"; hit.style.top = Sy.cy + "px"; hit.style.width = hit.style.height = Sy.s * .7 + "px"; hit.style.margin = -Sy.s * .35 + "px 0 0 " + -Sy.s * .35 + "px"; }
@@ -535,7 +574,7 @@ function initRecorrido(){
   const sec = $("#recorrido"); if (!sec) return;
   const piece = $(".piece", sec), img = $("img", piece), ROM = ["I", "II", "III", "IV", "V", "VI"];
   let cur = -1, eng = null, tok = 0, started = false;
-  $(".rec-dots", sec).innerHTML = RECORRIDO.map((r, i) => `<button aria-label="Capítulo ${ROM[i]}: ${esc(bySlug(r[0]).titulo)}"></button>`).join("");
+  $(".rec-dots", sec).innerHTML = RECORRIDO.map((r, i) => `<button aria-label="${tr("rec.capitulo", { n: ROM[i], titulo: esc(bySlug(r[0]).titulo) })}"></button>`).join("");
   const dots = $$(".rec-dots button", sec);
   const tone = im => { try {
       const c = document.createElement("canvas"); c.width = c.height = 12; const x = c.getContext("2d"); x.drawImage(im, 0, 0, 12, 12);
@@ -552,8 +591,8 @@ function initRecorrido(){
     track("recorrido_capitulo", String(i + 1));
     setTimeout(() => {
       if (t !== tok) return;
-      $(".rec-num", sec).innerHTML = `<b>${ROM[i]}</b>de VI`; $("h3", sec).textContent = phrase; $(".rec-line", sec).textContent = line;
-      $(".rec-title", sec).textContent = "«" + o.titulo + "»";
+      $(".rec-num", sec).innerHTML = `<b>${ROM[i]}</b>${tr("rec.de", { total: ROM[RECORRIDO.length - 1] })}`; $("h3", sec).textContent = phrase; $(".rec-line", sec).textContent = line;
+      $(".rec-title", sec).textContent = cita(o.titulo);
       dots.forEach((d, k) => { d.setAttribute("aria-current", k === i); d.classList.toggle("seen", k < i); });
       $("[data-prev]", sec).disabled = i === 0;
       const last = i === RECORRIDO.length - 1;
@@ -588,8 +627,8 @@ function initRecorrido(){
 function renderSalon(){
   const card = o => {
     const p = minPrice(o);
-    return `<a class="work" href="obra-${o.slug}.html" data-slug="${o.slug}"><div class="frame"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy" decoding="async"></div>
-      <h3>${esc(o.titulo)}</h3><span class="meta">${p ? "Reproducciones desde " + money(p) : "Precio por confirmar"}</span></a>`;
+    return `<a class="work" href="${obraHref(o.slug)}" data-slug="${o.slug}"><div class="frame"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy" decoding="async"></div>
+      <h3>${esc(o.titulo)}</h3><span class="meta">${p ? tr("precio.desde", { precio: money(p) }) : tr("precio.pendiente")}</span></a>`;
   };
   $("#salon").innerHTML = OBRAS.map(card).join("");
   ["#salon"].forEach(id => $(id).addEventListener("click", e => {
@@ -601,48 +640,48 @@ function renderSalon(){
 function initDosObras(){
   const root = $("#dos-obras"); if (!root) return;
   const Q = bySlug("quebrantada"), R = bySlug("restaurada");
-  const fig = (o, cls = "") => `<figure class="${cls}"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy"><figcaption>«${esc(o.titulo)}»</figcaption></figure>`;
+  const fig = (o, cls = "") => `<figure class="${cls}"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy"><figcaption>${cita(esc(o.titulo))}</figcaption></figure>`;
   const seam = `<svg class="seam" viewBox="0 0 14 200" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M7 0 L4 28 L10 52 L5 84 L9 118 L4 148 L9 176 L7 200"/></svg>`;
   const stage = $(".two-stage", root), panel = $(".two-panel", root);
   function step1(){
     stage.className = "two-stage"; stage.innerHTML = fig(Q);
-    panel.innerHTML = `<h3>¿Qué sentimiento despierta esta imagen en ti?</h3>
-      <div class="choices" role="group" aria-label="Sentimiento">${Object.keys(DOS_OBRAS.sentimientos).map(k => `<button class="choice" aria-pressed="false">${k}</button>`).join("")}</div>
+    panel.innerHTML = `<h3>${tr("dos.pregunta1")}</h3>
+      <div class="choices" role="group" aria-label="${tr("dos.sentimiento")}">${Object.entries(DOS_OBRAS.sentimientos).map(([k, x]) => `<button class="choice" data-k="${k}" aria-pressed="false">${x.etiqueta}</button>`).join("")}</div>
       <div id="r1" aria-live="polite"></div>`;
     $(".choices", panel).onclick = e => {
       const b = e.target.closest(".choice"); if (!b) return;
-      $$(".choice", panel).forEach(c => c.setAttribute("aria-pressed", c === b)); track("dos_obras_sentimiento", b.textContent);
-      $("#r1", panel).innerHTML = `<div class="fade-in"><p class="reflect">${DOS_OBRAS.sentimientos[b.textContent]}</p>
-        <p class="note">Lectura curatorial, no palabras de la artista.</p>
-        <div class="ctas"><button class="btn gold" data-step2>Revelar la segunda obra</button></div></div>`;
+      $$(".choice", panel).forEach(c => c.setAttribute("aria-pressed", c === b)); track("dos_obras_sentimiento", b.dataset.k);
+      $("#r1", panel).innerHTML = `<div class="fade-in"><p class="reflect">${DOS_OBRAS.sentimientos[b.dataset.k].texto}</p>
+        <p class="note">${tr("nota.curatorial")}</p>
+        <div class="ctas"><button class="btn gold" data-step2>${tr("dos.revelar")}</button></div></div>`;
       $("[data-step2]", panel).onclick = step2;
     };
   }
   function step2(){
     stage.className = "two-stage both"; stage.innerHTML = fig(Q) + seam + fig(R, "reveal");
-    panel.innerHTML = `<h3>¿Cuál de estas dos obras conecta más con tu historia?</h3>
-      <div class="choices" role="group" aria-label="Obra">
-        <button class="choice" data-c="quebrantada" aria-pressed="false">Quebrantada</button>
-        <button class="choice" data-c="restaurada" aria-pressed="false">Restaurada</button>
-        <button class="choice" data-c="las-dos" aria-pressed="false">Las dos</button></div>
+    panel.innerHTML = `<h3>${tr("dos.pregunta2")}</h3>
+      <div class="choices" role="group" aria-label="${tr("ficha.obra")}">
+        <button class="choice" data-c="quebrantada" aria-pressed="false">${esc(Q.titulo)}</button>
+        <button class="choice" data-c="restaurada" aria-pressed="false">${esc(R.titulo)}</button>
+        <button class="choice" data-c="las-dos" aria-pressed="false">${tr("dos.lasDos")}</button></div>
       <div id="r2" aria-live="polite"></div>`;
     stage.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     $(".choices", panel).onclick = e => {
       const b = e.target.closest(".choice"); if (!b) return;
       $$(".choice", panel).forEach(c => c.setAttribute("aria-pressed", c === b)); track("dos_obras_eleccion", b.dataset.c);
-      const par = CONFIG.par, pairMsg = "Hola, Luciann. Me interesan las reproducciones de «Quebrantada» y «Restaurada» juntas. ¿Me puedes dar información?";
+      const par = CONFIG.par, pairMsg = tr("wa.par");
       const pairBtn = par.disponible && par.precio
-        ? (par.enlacePago ? `<a class="btn gold" href="${esc(par.enlacePago)}" target="_blank" rel="noopener" data-pago="par">Ordenar las dos, ${money(par.precio)}</a>` : `<a class="btn gold" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">Ordenar las dos, ${money(par.precio)}</a>`)
-        : (CONFIG.whatsapp ? `<a class="btn ghost" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">Preguntar por las dos juntas</a>` : "");
+        ? (par.enlacePago ? `<a class="btn gold" href="${esc(par.enlacePago)}" target="_blank" rel="noopener" data-pago="par">${tr("dos.ordenarPar", { precio: money(par.precio) })}</a>` : `<a class="btn gold" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">${tr("dos.ordenarPar", { precio: money(par.precio) })}</a>`)
+        : (CONFIG.whatsapp ? `<a class="btn ghost" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">${tr("dos.preguntarPar")}</a>` : "");
       $("#r2", panel).innerHTML = `<div class="fade-in"><p class="reflect">${DOS_OBRAS.eleccion[b.dataset.c]}</p>
-        <p class="note">Lectura curatorial, no palabras de la artista.</p>
+        <p class="note">${tr("nota.curatorial")}</p>
         <div class="ctas">
-          <button class="btn gold" data-o="quebrantada">Ver «Quebrantada»</button>
-          <button class="btn gold" data-o="restaurada">Ver «Restaurada»</button>
-          <button class="btn ghost" data-pair-wall>Verlas juntas en mi pared</button>
+          <button class="btn gold" data-o="quebrantada">${tr("dos.ver", { titulo: esc(Q.titulo) })}</button>
+          <button class="btn gold" data-o="restaurada">${tr("dos.ver", { titulo: esc(R.titulo) })}</button>
+          <button class="btn ghost" data-pair-wall>${tr("dos.parPared")}</button>
           ${pairBtn}</div>
-        ${par.disponible && par.precio ? (par.nota ? `<p class="note">${esc(par.nota)}</p>` : "") : '<p class="note">La compra de las dos en conjunto está por confirmar con la artista.</p>'}
-        <button class="linkbtn" data-restart>Empezar de nuevo</button></div>`;
+        ${par.disponible && par.precio ? (par.nota ? `<p class="note">${esc(par.nota)}</p>` : "") : `<p class="note">${tr("dos.parPendiente")}</p>`}
+        <button class="linkbtn" data-restart>${tr("dos.reiniciar")}</button></div>`;
       $("#r2", panel).onclick = ev => {
         const o = ev.target.closest("[data-o]"); if (o) return openWork(o.dataset.o);
         if (ev.target.closest("[data-pair-wall]")) return Pared.pair();
@@ -655,12 +694,12 @@ function initDosObras(){
 
 function renderArtista(){
   const voz = $("#voz"); if (!voz) return; const parts = [];
-  if (CONFIG.declaracion) parts.push(`<blockquote class="quote">${esc(CONFIG.declaracion)}<cite>Declaración de Luciann Soto</cite></blockquote>`);
-  if (CONFIG.declaracionAudio) parts.push(mediaHTML(CONFIG.declaracionAudio, "Declaración de Luciann Soto"));
-  if (CONFIG.videoArtista) parts.push(mediaHTML(CONFIG.videoArtista, "Luciann Soto habla de su obra"));
+  if (CONFIG.declaracion) parts.push(`<blockquote class="quote">${esc(CONFIG.declaracion)}<cite>${tr("artista.declaracion")}</cite></blockquote>`);
+  if (CONFIG.declaracionAudio) parts.push(mediaHTML(CONFIG.declaracionAudio, tr("artista.declaracion")));
+  if (CONFIG.videoArtista) parts.push(mediaHTML(CONFIG.videoArtista, tr("media.artista")));
   voz.innerHTML = parts.join(""); voz.hidden = !parts.length;
   const t = CONFIG.testimonios.filter(x => x.permiso && x.texto && x.nombre);
-  $("#testimonios").innerHTML = t.length ? `<h3 class="more-title">Lo que dicen quienes tienen su obra</h3>` + t.map(x => `<div class="testi"><p>${esc(x.texto)}</p><span class="small">${esc(x.nombre)}</span></div>`).join("") : "";
+  $("#testimonios").innerHTML = t.length ? `<h3 class="more-title">${tr("artista.testimonios")}</h3>` + t.map(x => `<div class="testi"><p>${esc(x.texto)}</p><span class="small">${esc(x.nombre)}</span></div>`).join("") : "";
 }
 
 function initQueVes(){
@@ -670,18 +709,18 @@ function initQueVes(){
   function paint(){
     const o = bySlug(QUE_VES.obras[i]);
     art.innerHTML = `<img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy">
-      <p class="small">Una obra de la colección. <button class="linkbtn" data-other>Probar con otra obra</button></p>`;
-    choices.innerHTML = Object.keys(QUE_VES.emociones).map(k => `<button class="choice" aria-pressed="false">${k}</button>`).join("");
+      <p class="small">${tr("queVes.unaObra")} <button class="linkbtn" data-other>${tr("queVes.otra")}</button></p>`;
+    choices.innerHTML = Object.entries(QUE_VES.emociones).map(([k, x]) => `<button class="choice" data-k="${k}" aria-pressed="false">${x.etiqueta}</button>`).join("");
     out.innerHTML = "";
   }
   art.addEventListener("click", e => { if (e.target.closest("[data-other]")){ i = (i + 1) % QUE_VES.obras.length; paint(); } });
   choices.addEventListener("click", e => {
     const b = e.target.closest(".choice"); if (!b) return; const o = bySlug(QUE_VES.obras[i]);
-    $$(".choice", choices).forEach(c => c.setAttribute("aria-pressed", c === b)); track("que_ves", b.textContent);
-    out.innerHTML = `<div class="fade-in"><p class="reflect">${QUE_VES.emociones[b.textContent]}</p>
-      <p class="note">Lectura curatorial, no palabras de la artista. Lo que tú sientes es igual de válido.</p>
-      <p class="kicker">Tal vez esta obra tiene algo que decirte.</p>
-      <div class="ctas"><button class="btn gold" data-o="${o.slug}">Conocer «${esc(o.titulo)}»</button></div></div>`;
+    $$(".choice", choices).forEach(c => c.setAttribute("aria-pressed", c === b)); track("que_ves", b.dataset.k);
+    out.innerHTML = `<div class="fade-in"><p class="reflect">${QUE_VES.emociones[b.dataset.k].texto}</p>
+      <p class="note">${tr("queVes.nota")}</p>
+      <p class="kicker">${tr("queVes.invitacion")}</p>
+      <div class="ctas"><button class="btn gold" data-o="${o.slug}">${tr("queVes.conocer", { titulo: esc(o.titulo) })}</button></div></div>`;
   });
   out.addEventListener("click", e => { const b = e.target.closest("[data-o]"); if (b) openWork(b.dataset.o, $("img", art)); });
   paint();
@@ -694,11 +733,11 @@ function initPincelada(){
   let showingFinal = false;
   function paint(){
     img.src = showingFinal ? P.terminada : P.proceso; img.alt = showingFinal ? P.terminadaAlt : P.procesoAlt;
-    $("#brushCap").textContent = showingFinal ? `«${P.titulo}», terminada.` : `«${P.titulo}», en proceso. Su mano, el pincel y el color que todavía está fresco.`;
+    $("#brushCap").textContent = showingFinal ? tr("pincelada.terminada", { titulo: P.titulo }) : tr("pincelada.proceso", { titulo: P.titulo });
     const zoomed = frame.classList.contains("zoom");
-    $("#brushCtas").innerHTML = (!showingFinal ? `<button class="btn gold" data-zoom aria-pressed="${zoomed}">${zoomed ? "Alejarse" : "Acercarse a la pincelada"}</button>` : "")
-      + (P.terminada ? `<button class="btn ghost" data-final>${showingFinal ? "Volver al proceso" : "Ver la obra terminada"}</button>` : "");
-    $("#brushNote").textContent = P.provisional ? "Imagen provisional tomada de una publicación; pendiente el archivo original." : "";
+    $("#brushCtas").innerHTML = (!showingFinal ? `<button class="btn gold" data-zoom aria-pressed="${zoomed}">${zoomed ? tr("pincelada.alejarse") : tr("pincelada.acercarse")}</button>` : "")
+      + (P.terminada ? `<button class="btn ghost" data-final>${showingFinal ? tr("pincelada.volver") : tr("pincelada.verTerminada")}</button>` : "");
+    $("#brushNote").textContent = P.provisional ? tr("pincelada.provisional") : "";
   }
   $("#brushCtas").addEventListener("click", e => {
     if (e.target.closest("[data-zoom]")){ frame.classList.toggle("zoom"); track("pincelada_acercar"); paint(); }
@@ -709,15 +748,15 @@ function initPincelada(){
   });
   paint();
   $("#explore").innerHTML = CONFIG.exploracion.map(x => `<figure><img src="${esc(x.imagen)}" alt="${esc(x.alt)}" loading="lazy">
-    <figcaption><b>${esc(x.titulo)}</b>${esc(x.tecnica)}${x.provisional ? " Imagen provisional." : ""}</figcaption></figure>`).join("");
+    <figcaption><b>${esc(x.titulo)}</b>${esc(x.tecnica)}${x.provisional ? " " + tr("explora.provisional") : ""}</figcaption></figure>`).join("");
 }
 
 /* ---------- Pruébala en tu pared ---------- */
 const Pared = (() => {
-  const wall = $("#wall"); if (!wall) return { show(){}, pair(){} };
+  const wall = $("#wall"); if (!wall) return { show(){}, pair(){}, actual(){ return ""; } };
   const photo = $("#wallPhoto"), SC = { a:{ x:.3, y:.78 }, b:{ x:.7, y:.78 }, unit:"in" };
   const toCm = (n, u) => u === "in" ? n * 2.54 : n, fromCm = (n, u) => u === "in" ? n / 2.54 : n;
-  const fmt = n => (Math.round(n * 10) / 10).toString().replace(".", ",");
+  const fmt = n => (Math.round(n * 10) / 10).toString().replace(".", tr("formato.decimal"));
   let items = [], act = 0, url = null;
   const A = () => items[act];
   function make(slug, x, y){
@@ -732,7 +771,7 @@ const Pared = (() => {
     items.push(it); setSlug(it, slug); return it;
   }
   function setSlug(it, slug, label){
-    const o = bySlug(slug); it.slug = slug; it.el.src = o.imagen; it.el.alt = "Simulación de " + o.titulo + " en la pared";
+    const o = bySlug(slug); it.slug = slug; it.el.src = o.imagen; it.el.alt = tr("pared.simulacion", { titulo: o.titulo });
     const vs = o.variantes.filter(v => v.ancho && v.alto), v = vs.find(x => variantLabel(x) === label) || vs[0];
     if (v){ it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); } else { it.cm = 0; it.cmH = 0; it.label = ""; }
   }
@@ -749,7 +788,7 @@ const Pared = (() => {
       Object.assign(it.el.style, { width: w + "px", left: it.x * 100 + "%", top: it.y * 100 + "%" });
       it.el.classList.toggle("active", items.length > 1 && i === act);
       it.tag.hidden = !k;
-      if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? "pulg" : "cm"}`;
+      if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? tr("unidad.pulg") : "cm"}`;
         it.tag.style.left = it.x * 100 + "%"; it.tag.style.top = `calc(${it.y * 100}% + ${w / prop(o) / 2 + 8}px)`; }
     });
     $(".wall-size").hidden = !!k;
@@ -757,7 +796,7 @@ const Pared = (() => {
     if (!photo.hidden && hasSize) $("#wallMeasure").removeAttribute("hidden"); else $("#wallMeasure").setAttribute("hidden", "");
     $("#scalePanel .scale-row").hidden = !hasSize; $("#scalePanel > p.small").hidden = !hasSize;
     if (A()) $("#wallSize").value = A().pct;
-    $("#scaleMsg").textContent = photo.hidden || !(A() && A().label) ? "" : (k ? "Listo: la obra se muestra a tamaño aproximado real. Puedes moverla." : "Escribe la medida del objeto para activar el tamaño real.");
+    $("#scaleMsg").textContent = photo.hidden || !(A() && A().label) ? "" : (k ? tr("pared.listo") : tr("pared.escribeMedida"));
     const W2 = wall.clientWidth, H2 = wall.clientHeight, s = (el, p) => { el.setAttribute("cx", p.x * W2); el.setAttribute("cy", p.y * H2); };
     s($("#mA"), SC.a); s($("#mB"), SC.b);
     const l = $("#mLine"); l.setAttribute("x1", SC.a.x * W2); l.setAttribute("y1", SC.a.y * H2); l.setAttribute("x2", SC.b.x * W2); l.setAttribute("y2", SC.b.y * H2);
@@ -766,12 +805,12 @@ const Pared = (() => {
     const it = A(); if (!it) return; const o = bySlug(it.slug), vs = o.variantes.filter(v => v.ancho && v.alto);
     const row = $("#sizeRow");
     if (vs.length){
-      row.innerHTML = `<span class="small">Tamaño de «${esc(o.titulo)}»</span>` + vs.map((v, i) => `<button class="chip" data-v="${i}" aria-pressed="${variantLabel(v) === it.label}">${esc(variantLabel(v))}</button>`).join("");
+      row.innerHTML = `<span class="small">${tr("pared.tamanoDe", { titulo: esc(o.titulo) })}</span>` + vs.map((v, i) => `<button class="chip" data-v="${i}" aria-pressed="${variantLabel(v) === it.label}">${esc(variantLabel(v))}</button>`).join("");
       row.onclick = e => { const b = e.target.closest("[data-v]"); if (!b) return; const v = vs[+b.dataset.v]; it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); sizes(); place(); };
       const v = vs.find(x => variantLabel(x) === it.label);
-      row.insertAdjacentHTML("beforeend", v ? `<span class="small" style="flex-basis:100%">${v.precio ? "Precio de este tamaño: " + money(v.precio) : "Precio por confirmar"}</span>` : "");
+      row.insertAdjacentHTML("beforeend", v ? `<span class="small" style="flex-basis:100%">${v.precio ? tr("pared.precioTamano", { precio: money(v.precio) }) : tr("precio.pendiente")}</span>` : "");
     } else {
-      row.innerHTML = `<span class="small">Los tamaños de «${esc(o.titulo)}» aún no están confirmados. Cuando la artista los defina, aquí podrás elegirlos y ver la obra a escala real. Mientras tanto, ajusta el tamaño a mano.</span>`;
+      row.innerHTML = `<span class="small">${tr("pared.sinTamanos", { titulo: esc(o.titulo) })}</span>`;
       row.onclick = null;
     }
   }
@@ -824,49 +863,106 @@ const Pared = (() => {
   const goTo = () => $("#espacio").scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
   return {
     show(slug, label){ reset([[slug, .5, .4, label]]); goTo(); },
+    actual(){ return A() ? A().slug : ""; },
     pair(){ reset([["quebrantada", .3, .4], ["restaurada", .7, .4]]); items.forEach(it => it.pct = 26); place(); goTo(); }
   };
 })();
 
 function renderConfianza(){
   const box = $("#seller"); if (!box) return;
-  box.innerHTML = `<div><p class="big">Compras directamente a la artista.</p>
-    <dl><dt>Artista</dt><dd>${esc(CONFIG.nombreLegal)}</dd><dt>Marca</dt><dd>${esc(CONFIG.marca)}</dd>
-      ${CONFIG.ubicacion ? `<dt>Ubicación</dt><dd>${esc(CONFIG.ubicacion)}</dd>` : ""}
-      <dt>Teléfono</dt><dd><a href="${telHref()}">${esc(CONFIG.telefono)}</a></dd>
-      <dt>Correo</dt><dd><a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a></dd>
+  box.innerHTML = `<div><p class="big">${tr("confianza.titulo")}</p>
+    <dl><dt>${tr("ficha.artista")}</dt><dd>${esc(CONFIG.nombreLegal)}</dd><dt>${tr("confianza.marca")}</dt><dd>${esc(CONFIG.marca)}</dd>
+      ${CONFIG.ubicacion ? `<dt>${tr("confianza.ubicacion")}</dt><dd>${esc(CONFIG.ubicacion)}</dd>` : ""}
+      <dt>${tr("confianza.telefono")}</dt><dd><a href="${telHref()}">${esc(CONFIG.telefono)}</a></dd>
+      <dt>${tr("confianza.correo")}</dt><dd><a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a></dd>
       <dt>Instagram</dt><dd><a href="https://www.instagram.com/${esc(CONFIG.instagram)}/" target="_blank" rel="noopener">@${esc(CONFIG.instagram)}</a></dd></dl></div>
-    <div class="ctas">${CONFIG.whatsapp ? `<a class="btn gold" href="${waLink("Hola, Luciann. Me interesa una reproducción de Soto’s Art.")}" target="_blank" rel="noopener">Escribir por WhatsApp</a>` : ""}
-      <a class="btn ghost" href="${telHref()}">Llamar</a></div>`;
-  const P = [["athMovil", "ATH Móvil Business"], ["stripe", "Tarjeta (Stripe Checkout)"], ["paypal", "PayPal Business"]];
-  $("#paygrid").innerHTML = P.map(([k, n]) => `<div class="pay"><b>${n}</b><small>${CONFIG.metodosPago[k] ? "Disponible mediante enlace oficial" : "Aún no activado"}</small></div>`).join("");
-  const pol = CONFIG.politicas, env = CONFIG.envio, pc = "Por confirmar con la artista.";
+    <div class="ctas">${CONFIG.whatsapp ? `<a class="btn gold" href="${waLink(tr("wa.general"))}" target="_blank" rel="noopener">${tr("confianza.whatsapp")}</a>` : ""}
+      <a class="btn ghost" href="${telHref()}">${tr("llamar")}</a></div>`;
+  const P = [["athMovil", "ATH Móvil Business"], ["stripe", tr("pago.stripe")], ["paypal", "PayPal Business"]];
+  $("#paygrid").innerHTML = P.map(([k, n]) => `<div class="pay"><b>${n}</b><small>${CONFIG.metodosPago[k] ? tr("pago.disponible") : tr("pago.inactivo")}</small></div>`).join("");
+  const pol = CONFIG.politicas, env = CONFIG.envio, pc = tr("pendienteArtista") + ".";
   const item = (t, b) => `<details><summary>${t}</summary><p>${b}</p></details>`;
-  $("#policies").innerHTML = item("Envío y entrega", [env.destinos && "Destinos: " + esc(env.destinos), env.costo && "Costo: " + esc(env.costo), env.preparacion && "Preparación: " + esc(env.preparacion), env.entrega && "Entrega: " + esc(env.entrega), env.recogido && "Recogido: " + esc(env.recogido)].filter(Boolean).join("<br>") || pc)
-    + item("Daños durante el envío", pol.danos ? esc(pol.danos) : pc)
-    + item("Cancelaciones y devoluciones", [pol.cancelaciones, pol.devoluciones].filter(Boolean).map(esc).join("<br>") || pc)
-    + item("Confirmación de tu orden", pol.confirmacion ? esc(pol.confirmacion) : "Si pagas en línea, la plataforma de pago te envía la confirmación. Si ordenas por WhatsApp o teléfono, Luciann confirma contigo el pedido directamente.")
-    + item("Privacidad", pol.privacidad ? esc(pol.privacidad) : "Este sitio no pide crear cuenta ni guarda datos de pago. Las fotos que uses en “Pruébala en tu pared” no salen de tu dispositivo.");
-  $("#faq").innerHTML = item("¿Compro la pintura original?", "No. Se ofrecen reproducciones de alta calidad de las pinturas originales. Si te interesa una obra original, pregúntale directamente a Luciann.")
-    + item("¿Incluye marco?", pol.marco ? esc(pol.marco) : "Por confirmar. Las simulaciones muestran la obra sin marco.")
-    + item("¿Los colores son idénticos a la pintura?", "Las reproducciones buscan fidelidad de color, pero pueden variar según tu pantalla y el proceso de impresión.")
-    + item("¿Sirve como regalo?", "Sí, las obras se pueden regalar. Las opciones de envolver o enviar a otra persona están por confirmar.")
-    + item("¿Necesito crear una cuenta?", "No. Puedes explorar y ordenar sin registrarte.");
+  $("#policies").innerHTML = item(tr("pol.envio"), [env.destinos && tr("pol.destinos") + " " + esc(env.destinos), env.costo && tr("pol.costo") + " " + esc(env.costo), env.preparacion && tr("pol.preparacion") + " " + esc(env.preparacion), env.entrega && tr("pol.entrega") + " " + esc(env.entrega), env.recogido && tr("pol.recogido") + " " + esc(env.recogido)].filter(Boolean).join("<br>") || pc)
+    + item(tr("pol.danos"), pol.danos ? esc(pol.danos) : pc)
+    + item(tr("pol.devoluciones"), [pol.cancelaciones, pol.devoluciones].filter(Boolean).map(esc).join("<br>") || pc)
+    + item(tr("pol.confirmacion"), pol.confirmacion ? esc(pol.confirmacion) : tr("pol.confirmacionTexto"))
+    + item(tr("pol.privacidad"), pol.privacidad ? esc(pol.privacidad) : tr("pol.privacidadTexto"));
+  $("#faq").innerHTML = item(tr("faq.original"), tr("faq.originalR"))
+    + item(tr("faq.marco"), pol.marco ? esc(pol.marco) : tr("faq.marcoR"))
+    + item(tr("faq.colores"), tr("faq.coloresR"))
+    + item(tr("faq.regalo"), tr("faq.regaloR"))
+    + item(tr("faq.cuenta"), tr("faq.cuentaR"));
 }
 function renderFooter(){
   const f = $("#footContact"); if (!f) return;
-  f.innerHTML = `<em class="lema">${esc(CONFIG.lema)}</em><br>Teléfono: <a href="${telHref()}">${esc(CONFIG.telefono)}</a><br>Correo: <a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a><br>Instagram: <a href="https://www.instagram.com/${esc(CONFIG.instagram)}/" target="_blank" rel="noopener">@${esc(CONFIG.instagram)}</a>${CONFIG.facebook ? ` &nbsp; <a href="${esc(CONFIG.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}`;
+  f.innerHTML = `<em class="lema">${esc(CONFIG.lema)}</em><br>${tr("pie.telefono")} <a href="${telHref()}">${esc(CONFIG.telefono)}</a><br>${tr("pie.correo")} <a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a><br>Instagram: <a href="https://www.instagram.com/${esc(CONFIG.instagram)}/" target="_blank" rel="noopener">@${esc(CONFIG.instagram)}</a>${CONFIG.facebook ? ` &nbsp; <a href="${esc(CONFIG.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}`;
   $("#yr").textContent = new Date().getFullYear();
+}
+
+/* ---------- Idioma: selector, preferencia y sugerencia ---------- */
+const CLAVE_IDIOMA = "sa-idioma", CLAVE_SUGERENCIA = "sa-sugerencia-idioma";
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const leerClave = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const CAMBIO_IDIOMA = (() => { try { const v = sessionStorage.getItem("sa-cambio-idioma"); sessionStorage.removeItem("sa-cambio-idioma"); return !!v; } catch (e) { return false; } })();
+const ALTERNOS = (() => { try { return JSON.parse($("#idiomas").textContent); } catch (e) { return []; } })();
+
+/* Lo que el visitante está viendo, para llevarlo al otro idioma sin perderlo */
+function estadoActual(){
+  if (document.body.dataset.obra) return "";
+  const s = $("#sheet"), m = location.hash.match(/^#\/obra\/[\w-]+/);
+  if (s && s.open && m) return m[0];
+  const secs = ["obras", "recorrido", "que-ves", "dos-obras", "artista", "pincelada", "espacio", "comprar"].map(id => $("#" + id)).filter(Boolean);
+  let cur = null; secs.forEach(el => { if (el.getBoundingClientRect().top < innerHeight * .4) cur = el; });
+  if (!cur || scrollY < innerHeight * .5) return "";
+  if (cur.id === "espacio" && Pared.actual()) return "?pared=" + Pared.actual() + "#espacio";
+  return "#" + cur.id;
+}
+function initIdioma(){
+  const box = $("[data-idioma]");
+  if (box){
+    const sum = $("summary", box);
+    const cerrar = () => { box.open = false; };
+    box.addEventListener("toggle", () => sum.setAttribute("aria-expanded", box.open));
+    box.addEventListener("keydown", e => {
+      const links = $$("a", box), i = links.indexOf(document.activeElement);
+      if (e.key === "Escape" && box.open){ cerrar(); sum.focus(); }
+      if ((e.key === "ArrowDown" || e.key === "ArrowUp") && box.open){ e.preventDefault(); const n = links.length; links[(i + (e.key === "ArrowDown" ? 1 : -1) + n) % n].focus(); }
+    });
+    document.addEventListener("click", e => { if (box.open && !box.contains(e.target)) cerrar(); });
+  }
+  /* Cualquier enlace a otro idioma guarda la elección y lleva consigo lo que se está viendo */
+  document.addEventListener("click", e => {
+    const a = e.target.closest("a[data-cambio-idioma]"); if (!a) return;
+    const l = a.getAttribute("hreflang"); guardar(CLAVE_IDIOMA, l);
+    if (l === IDIOMA){ e.preventDefault(); if (box) box.open = false; return; }
+    try { sessionStorage.setItem("sa-cambio-idioma", "1"); } catch (er) {}
+    track("cambio_idioma", l);
+    const extra = estadoActual(); if (extra){ e.preventDefault(); location.href = a.href.split(/[?#]/)[0] + extra; }
+  });
+  /* Sugerir el idioma del navegador una sola vez, sin cambiar nada por sí sola */
+  if (leerClave(CLAVE_IDIOMA) || leerClave(CLAVE_SUGERENCIA) || !ALTERNOS.length) return;
+  const pref = (navigator.languages || [navigator.language || ""]).map(x => String(x).slice(0, 2).toLowerCase())
+    .find(x => x === IDIOMA || ALTERNOS.some(a => a.idioma === x));
+  const alt = pref && pref !== IDIOMA && ALTERNOS.find(a => a.idioma === pref);
+  if (!alt) return;
+  const bar = document.createElement("div"); bar.className = "idioma-sugerencia"; bar.setAttribute("role", "region"); bar.setAttribute("aria-label", alt.etiqueta);
+  bar.innerHTML = `<p lang="${alt.idioma}">${esc(alt.pregunta)}</p>
+    <div><a class="btn gold" href="${esc(alt.url)}" lang="${alt.idioma}" hreflang="${alt.idioma}" data-cambio-idioma>${esc(alt.nombre)}</a>
+    <button class="btn line" type="button">${esc(tr("idioma.seguir"))}</button></div>`;
+  document.body.appendChild(bar);
+  requestAnimationFrame(() => bar.classList.add("on"));
+  guardar(CLAVE_SUGERENCIA, "1");
+  $("button", bar).addEventListener("click", () => { guardar(CLAVE_IDIOMA, IDIOMA); bar.remove(); });
 }
 
 /* ---------- Arranque ---------- */
 (function boot(){
-  renderFooter();
+  renderFooter(); initIdioma();
   const page = document.body.dataset.obra;
   if (page){ const o = bySlug(page), m = $("#obraPage"); if (o && m){ renderFicha(o, m, { page: true }); track("ver_obra", o.slug); } return; }
   initUmbral(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderArtista(); initPincelada(); renderConfianza();
   const sheet = $("#sheet");
-  sheet.addEventListener("close", () => { history.replaceState(null, "", location.pathname + location.search); document.title = "Soto’s Art | Galería de Luciann Soto"; });
+  sheet.addEventListener("close", () => { history.replaceState(null, "", location.pathname + location.search); document.title = TX.meta.titulo; });
   const params = new URLSearchParams(location.search), p = params.get("pared");
   if (p && bySlug(p)) setTimeout(() => Pared.show(p), 300);
   const m = location.hash.match(/^#\/obra\/([\w-]+)/); if (m && bySlug(m[1])) openWork(m[1]);

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+{{HTML}}
+<head>
+{{HEAD}}
+</head>
+<body>
+<a class="skip" href="#obras">{{t:skip}}</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="{{t:marca.inicio}}">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path fill="#5FC3DD" d="M20 21c-3-9-11-14-15-11-4 4 2 11 9 12-6 1-9 6-6 9 4 3 9-2 12-10zm0 0c3-9 11-14 15-11 4 4-2 11-9 12 6 1 9 6 6 9-4 3-9-2-12-10z"/><path stroke="#2B6F80" stroke-width="1.6" d="M20 13v17"/></svg>
+      Soto’s Art <i>Blessing Art</i>
+    </a>
+    <nav class="main" aria-label="{{t:nav.etiqueta}}">
+      <a href="#obras" class="col">{{t:nav.coleccion}}</a>
+      <a href="#recorrido" class="opt">{{t:nav.experiencia}}</a>
+      <a href="#artista">{{t:nav.artista}}</a>
+      <a href="#comprar">{{t:nav.comprar}}</a>
+    </nav>
+    {{SELECTOR}}
+  </div>
+</header>
+
+<main>
+<!-- 1. ATENCIÓN: una obra real nace del polvo -->
+<section class="hero" id="inicio" aria-label="{{t:hero.etiqueta}}">
+  <canvas class="umbral" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="art-col">
+      <div class="umbral-stage" aria-hidden="true">
+        <svg class="umbral-fallback" viewBox="0 0 200 210" role="presentation">
+          <path class="v" d="M72 38 L128 38 L124 46 Q116 54 118 72 C150 82 172 110 166 140 C160 172 136 190 124 196 L76 196 C64 190 40 172 34 140 C28 110 50 82 82 72 Q84 54 76 46 Z"/>
+          <path class="v" d="M84 58 C40 50 36 96 58 94 M116 58 C160 50 164 96 142 94"/>
+          <path class="s" d="M96 72 L104 94 L92 114 L110 138 L98 160 L106 196 M42 122 L70 126 L92 114 M118 114 L140 110 L162 122"/>
+          <path class="b" d="M100 21c-3-9-11-14-15-11-4 4 2 11 9 12-6 1-9 6-6 9 4 3 9-2 12-10zm0 0c3-9 11-14 15-11 4 4-2 11-9 12 6 1 9 6 6 9-4 3-9-2-12-10z"/>
+        </svg>
+      </div>
+      <div class="umbral-word" aria-live="polite"></div>
+    </div>
+    <div class="hero-copy">
+      <h1><span class="l1">{{t:hero.l1}}</span><span class="l2">{{t:hero.l2}}</span></h1>
+      <p class="sub">{{t:hero.sub}}</p>
+      <div class="ctas">
+        <a class="btn gold" href="#obras" id="ctaColeccion">{{t:hero.cta1}}</a>
+        <a class="btn ghost" href="#recorrido">{{t:hero.cta2}}</a>
+      </div>
+    </div>
+  </div>
+  <button class="umbral-hit" hidden aria-label="{{t:hero.tocar}}"></button>
+  <p class="sr-only">{{t:hero.descripcion}}</p>
+</section>
+
+<!-- LA COLECCIÓN -->
+<section class="block" id="obras">
+  <div class="wrap">
+    <h2 class="sec-title">{{t:coleccion.titulo}}</h2>
+    <p class="sec-lead">{{t:coleccion.lead}}</p>
+    <div class="salon" id="salon"></div>
+  </div>
+</section>
+
+<!-- LA EXPERIENCIA: recorrido cinematográfico (opcional) -->
+<section class="rec" id="recorrido" aria-label="{{t:rec.etiqueta}}" tabindex="-1">
+  <canvas class="dust" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="rec-top"><p class="rec-kicker">{{t:rec.kicker}}</p><a class="rec-skip" href="#obras">{{t:skip}}</a></div>
+    <div class="rec-text" aria-live="polite">
+      <div class="rec-num"></div>
+      <h3></h3>
+      <p class="rec-line"></p>
+      <p class="rec-title"></p>
+    </div>
+    <div class="piece"><img alt=""><button class="open" aria-label="{{t:rec.verObra}}"></button></div>
+    <div class="rec-bottom">
+      <div class="rec-nav">
+        <button class="btn ghost" data-prev aria-label="{{t:rec.anterior}}">‹</button>
+        <div class="rec-dots"></div>
+        <button class="btn gold" data-next>{{t:rec.siguiente}}</button>
+        <a class="btn gold" data-end href="#obras" hidden>{{t:rec.verColeccion}}</a>
+      </div>
+      <p class="rec-note">{{t:rec.nota}}</p>
+    </div>
+  </div>
+</section>
+
+<!-- LA EXPERIENCIA: ¿Qué ves tú? -->
+<section class="block feel" id="que-ves">
+  <div class="wrap">
+    <div class="feel-art"></div>
+    <div>
+      <p class="kicker">{{t:queVes.kicker}}</p>
+      <h2 class="feel-q" id="feelQ">{{t:queVes.pregunta}}</h2>
+      <div class="choices left" role="group" aria-labelledby="feelQ"></div>
+      <div class="feel-out" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<!-- LA EXPERIENCIA: Dos obras, una historia -->
+<section class="block two" id="dos-obras">
+  <div class="wrap">
+    <p class="kicker">{{t:dos.kicker}}</p>
+    <h2 class="sec-title">{{t:dos.titulo}}</h2>
+    <p class="sec-lead">{{t:dos.lead}}</p>
+    <div class="two-stage"></div>
+    <div class="two-panel"></div>
+  </div>
+</section>
+
+<!-- CONOCE A LUCIANN -->
+<section class="block artist" id="artista">
+  <div class="wrap">
+    <figure class="portrait"><img src="{{R}}artista.jpg" alt="{{t:artista.fotoAlt}}" width="820" height="973" loading="lazy"><figcaption>{{t:artista.fotoPie}}</figcaption></figure>
+    <div>
+      <p class="kicker">{{t:artista.kicker}}</p>
+      <h2 class="sec-title">{{t:artista.titulo}}</h2>
+      <p class="axis">{{t:artista.eje}}</p>
+      <p>{{t:artista.p1}}</p>
+      <p>{{t:artista.p2}}</p>
+      <p>{{t:artista.p3}}</p>
+      <!--voz-artista--><blockquote class="quote">{{t:artista.cita}}<cite>Luciann Soto, Soto’s Art – Blessing Art</cite></blockquote><!--/voz-artista-->
+      <div id="voz" hidden></div>
+      <details class="soft trayectoria"><summary>{{t:artista.trayectoria}}</summary>
+        <ol class="timeline">
+          <li><b>2014</b><span>{{t:artista.hito1}}</span></li>
+          <li><b>2015</b><span>{{t:artista.hito2}}</span></li>
+          <li><b>2018</b><span>{{t:artista.hito3}}</span></li>
+          <li><b>2019</b><span>{{t:artista.hito4}}</span></li>
+          <li><b>2022</b><span>{{t:artista.hito5}}</span></li>
+          <li><b>2023</b><span>{{t:artista.hito6}}</span></li>
+        </ol>
+      </details>
+      <div id="testimonios"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DETRÁS DE CADA PINCELADA -->
+<section class="block brush" id="pincelada">
+  <div class="wrap">
+    <h2 class="sec-title">{{t:pincelada.titulo}}</h2>
+    <p class="sec-lead">{{t:pincelada.lead}}</p>
+    <div class="brush-stage">
+      <div class="brush-frame" id="brushFrame"><img id="brushImg" alt=""></div>
+      <div class="brush-text">
+        <p class="brush-cap" id="brushCap"></p>
+        <div class="ctas" id="brushCtas"></div>
+        <p class="small" id="brushNote"></p>
+      </div>
+    </div>
+    <h3 class="more-title">{{t:explora.titulo}}</h3>
+    <p class="sec-lead">{{t:explora.lead}}</p>
+    <div class="explore" id="explore"></div>
+  </div>
+</section>
+
+<!-- IMAGINA EL ARTE EN TU ESPACIO -->
+<section class="block rooms" id="espacio">
+  <div class="wrap">
+    <h2 class="sec-title">{{t:pared.titulo}}</h2>
+    <p class="sec-lead">{{t:pared.lead}}</p>
+    <div class="pick" id="roomPick" aria-label="{{t:pared.elige}}"></div>
+    <div class="wall" id="wall">
+      <img class="wall-photo" id="wallPhoto" alt="{{t:pared.tuFoto}}" hidden>
+      <div class="wall-empty" id="wallEmpty"></div>
+      <svg class="wall-measure" id="wallMeasure" hidden aria-hidden="true"><line id="mLine"/><circle id="mA" r="13"/><circle id="mB" r="13"/></svg>
+    </div>
+    <div class="wall-tools">
+      <label class="btn gold" for="wallFile">{{t:pared.subir}}</label>
+      <input type="file" id="wallFile" accept="image/*" capture="environment" class="sr-only">
+      <button class="btn line" id="wallAdd">{{t:pared.agregar}}</button>
+      <button class="btn line" id="wallRemove" hidden>{{t:pared.quitar}}</button>
+      <label class="wall-size">{{t:pared.tamano}}<input type="range" id="wallSize" min="10" max="85" value="30"></label>
+      <button class="btn line" id="wallReset" hidden>{{t:pared.reset}}</button>
+    </div>
+    <div class="scale" id="scalePanel" hidden>
+      <h3>{{t:pared.realTitulo}}</h3>
+      <p class="small">{{t:pared.realInstr}}</p>
+      <div class="scale-row">
+        <label>{{t:pared.mide}}<input type="number" id="refLen" inputmode="decimal" min="1" placeholder="84"></label>
+        <div class="unit" role="group" aria-label="{{t:pared.unidad}}"><button data-u="in" aria-pressed="true">{{ui:unidad.pulg}}</button><button data-u="cm" aria-pressed="false">cm</button></div>
+      </div>
+      <div class="scale-row" id="sizeRow"></div>
+      <p class="small" id="scaleMsg"></p>
+    </div>
+    <p class="disclaim">{{t:pared.aviso}}</p>
+    <button class="btn dark" id="roomBuy">{{t:pared.ordenar}}</button>
+  </div>
+</section>
+
+<!-- LLEVA EL ARTE A TU HOGAR -->
+<section class="block" id="comprar">
+  <div class="wrap">
+    <h2 class="sec-title">{{t:comprar.titulo}}</h2>
+    <p class="sec-lead">{{t:comprar.lead}}</p>
+    <ol class="steps">
+      <li><strong>{{t:comprar.paso1}}</strong><span>{{t:comprar.paso1b}}</span></li>
+      <li><strong>{{t:comprar.paso2}}</strong><span>{{t:comprar.paso2b}}</span></li>
+      <li><strong>{{t:comprar.paso3}}</strong><span>{{t:comprar.paso3b}}</span></li>
+      <li><strong>{{t:comprar.paso4}}</strong><span>{{t:comprar.paso4b}}</span></li>
+    </ol>
+    <div class="seller" id="seller"></div>
+    <div class="paygrid" id="paygrid"></div>
+    <div class="cols">
+      <div><h3>{{t:comprar.politicas}}</h3><div id="policies"></div></div>
+      <div><h3>{{t:comprar.faq}}</h3><div id="faq"></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#inicio">Soto’s Art <i>Blessing Art</i></a>
+    <p id="footContact"></p>
+    <p>© <span id="yr"></span> Luciann Soto. {{t:pie.derechos}}</p>
+  </div>
+</footer>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheetTitle"></dialog>
+<div class="toast" id="toast" role="status"></div>
+<script src="{{R}}catalogo.js"></script>
+<script src="{{R}}textos-{{LANG}}.js"></script>
+<script src="{{R}}app.js"></script>
+</body>
+</html>

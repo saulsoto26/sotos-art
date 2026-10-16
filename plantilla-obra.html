@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+{{HTML}}
+<head>
+{{HEAD}}
+</head>
+<body data-obra="{{SLUG}}">
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="{{I}}" aria-label="{{m:marcaGaleria}}">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path fill="#5FC3DD" d="M20 21c-3-9-11-14-15-11-4 4 2 11 9 12-6 1-9 6-6 9 4 3 9-2 12-10zm0 0c3-9 11-14 15-11 4 4-2 11-9 12 6 1 9 6 6 9-4 3-9-2-12-10z"/><path stroke="#2B6F80" stroke-width="1.6" d="M20 13v17"/></svg>
+      Soto’s Art <i>Blessing Art</i>
+    </a>
+    <nav class="main" aria-label="{{t:nav.etiqueta}}"><a href="{{I}}#obras" class="col">{{t:nav.coleccion}}</a><a href="{{I}}#artista">{{t:nav.artista}}</a><a href="{{I}}#comprar">{{t:nav.comprar}}</a></nav>
+    {{SELECTOR}}
+  </div>
+</header>
+<main class="page" id="obraPage"><noscript><p class="wrap">{{NOSCRIPT}}</p></noscript></main>
+<footer><div class="wrap"><a class="brand" href="{{I}}">Soto’s Art <i>Blessing Art</i></a><p id="footContact"></p><p>© <span id="yr"></span> Luciann Soto. {{t:pie.derechos}}</p></div></footer>
+<div class="toast" id="toast" role="status"></div>
+<script src="{{R}}catalogo.js"></script>
+<script src="{{R}}textos-{{LANG}}.js"></script>
+<script src="{{R}}app.js"></script>
+</body>
+</html>

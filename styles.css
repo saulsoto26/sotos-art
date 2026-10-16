@@ -342,3 +342,34 @@ dl.spec dd{margin:0}
   *{animation-duration:.001ms!important;animation-delay:0s!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
   .seam path{stroke-dashoffset:0}
 }
+
+/* Selector de idioma (globo + código del idioma; sin banderas) */
+nav.main{min-width:0}
+.idioma{position:relative;flex:none}
+.idioma summary{list-style:none;display:inline-flex;align-items:center;gap:.35rem;min-height:40px;padding:.35rem .6rem;border:1px solid rgba(238,230,214,.28);border-radius:999px;cursor:pointer;font-size:.8rem;letter-spacing:.08em;color:#D9CDB8;user-select:none}
+.idioma summary::-webkit-details-marker{display:none}
+.idioma summary::after{content:none}
+.idioma summary:hover,.idioma[open] summary{color:#fff;border-color:rgba(238,230,214,.6)}
+.idioma summary svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5}
+.idioma-menu{position:absolute;right:0;top:calc(100% + .45rem);margin:0;padding:.35rem;list-style:none;min-width:10rem;background:var(--night);border:1px solid rgba(238,230,214,.18);border-radius:4px;box-shadow:0 18px 40px -18px rgba(0,0,0,.7)}
+.idioma-menu a{display:flex;justify-content:space-between;align-items:center;padding:.6rem .75rem;text-decoration:none;color:#D9CDB8;font-size:.95rem;border-radius:2px}
+.idioma-menu a:hover,.idioma-menu a:focus-visible{background:rgba(238,230,214,.08);color:#fff}
+.idioma-menu a[aria-current]{color:var(--gold-soft)}
+.idioma-menu a[aria-current]::after{content:"✓";font-size:.85rem}
+@media (max-width:560px){header.top .wrap{gap:.7rem}.idioma summary{padding:.3rem .5rem}}
+/* En teléfonos estrechos, el enlace “Colección” cede su lugar al selector (la colección está justo después de la portada) */
+@media (max-width:430px){nav.main a.col{display:none}}
+
+/* Sugerencia de idioma: discreta, una sola vez */
+.idioma-sugerencia{position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:min(560px,calc(100% - 1.5rem));z-index:90;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem 1rem;padding:.85rem 1rem;background:var(--night);color:var(--ivory);border:1px solid rgba(224,196,142,.35);border-radius:4px;box-shadow:0 20px 50px -20px rgba(0,0,0,.8);opacity:0;transition:opacity .35s,transform .35s}
+.idioma-sugerencia.on{opacity:1;transform:translate(-50%,0)}
+.idioma-sugerencia p{margin:0;font-family:var(--display);font-style:italic;font-size:1.1rem}
+.idioma-sugerencia div{display:flex;gap:.5rem}
+.idioma-sugerencia .btn{min-height:40px;padding:.5rem 1rem}
+.idioma-sugerencia .btn.line{color:var(--ivory);border-color:rgba(238,230,214,.4)}
+@media (prefers-reduced-motion: reduce){.idioma-sugerencia{transition:none}}
+
+/* Subtítulo interpretativo de una obra (cuando está aprobado) */
+.sheet-body .subt{margin:-.6rem 0 1rem;font-family:var(--display);font-style:italic;color:var(--text-2);font-size:1.1rem}
+.ficha-idioma a{color:var(--accent-text)}
+@media (max-width:380px){header.top .wrap{gap:.5rem}nav.main{gap:.75rem}nav.main a{font-size:.86rem}.brand{font-size:1.15rem}.idioma summary{padding:.28rem .42rem;gap:.25rem}}
