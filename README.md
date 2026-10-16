@@ -37,6 +37,13 @@ Los archivos `index.html`, `obra-*.html`, `sitemap.xml`, `robots.txt` y `generar
 - Sus propias palabras (la cita y sus declaraciones) no se muestran en inglés hasta que en `textos-en.js` se cambie `palabrasArtista: false` a `true`.
 - Para agregar otro idioma: copiar `textos-en.js` como `textos-pt.js`, traducir y añadir `"pt"` a `idiomas` en `catalogo.js`.
 
+## Modo museo / Museum View
+- Se entra desde “Entrar al Modo museo”, en la colección, o desde el botón “Modo museo” de cada ficha. Cada obra tiene su enlace: `…/es/#/museo/quebrantada`.
+- El orden de la sala está en `catalogo.js` → `EXPERIENCIA.museo`.
+- La cartela muestra el título, el año, la técnica y las medidas del original, la lectura curatorial (separada de las palabras de Luciann) y los botones “Ver tamaños y precio” y “Ver en mi espacio”.
+- Con `anio` y `medidas` del original en `catalogo.js`, y la `tecnica` en cada `textos-xx.js`, la sala deja de decir “por confirmar”. Cuando todas las obras tienen medidas, se muestran a escala entre sí.
+- El marco es opcional y la sala aclara que es solo de presentación.
+
 ## Actualizar el sitio (desde el celular)
 1. En github.com abre el repositorio `sotos-art`.
 2. **Add file → Upload files**, elige los archivos y toca **Commit changes**. Los que tienen el mismo nombre se reemplazan.

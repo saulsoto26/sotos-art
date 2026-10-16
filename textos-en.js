@@ -258,13 +258,35 @@ window.TEXTOS = {
     "faq.cuentaR": "No. You can explore and order without signing up.",
     "pie.telefono": "Phone:",
     "pie.correo": "Email:",
-    "idioma.ver": "View in English"
+    "idioma.ver": "View in English",
+    "museo.nombre": "Museum View",
+    "museo.entrar": "Enter Museum View",
+    "museo.entrarNota": "See the collection as an exhibition, one painting at a time.",
+    "museo.cerrar": "Leave Museum View",
+    "museo.anterior": "Previous painting",
+    "museo.siguiente": "Next painting",
+    "museo.contador": "Painting {n} of {total}",
+    "museo.tecnica": "Medium",
+    "museo.medidas": "Original dimensions",
+    "museo.tecnicaPendiente": "Medium to be confirmed",
+    "museo.medidasPendientes": "Original dimensions to be confirmed",
+    "museo.escala": "approximate scale",
+    "museo.lectura": "Curatorial reading",
+    "museo.palabras": "In Luciann’s words",
+    "museo.verPrecio": "See sizes and price",
+    "museo.verEspacio": "See it in my space",
+    "museo.marcoNota": "The frame is for display only: it is not included with the reproduction unless the chosen size states it.",
+    "museo.acercar": "Tap to examine the details",
+    "museo.alejar": "Tap to see the whole painting",
+    "museo.ayuda": "Swipe or use the arrow keys to walk through the room. Tap the painting to look closer.",
+    "museo.sueno": "An imagined room for Luciann’s dream: a future family gallery-studio.",
+    "museo.marco": "Frame"
   },
 
   /* Por obra (la clave es el slug). El título NO va aquí: se conserva en español en catalogo.js.
    subtitulo: subtítulo interpretativo que se publica (vacío = no se muestra)
    subtituloPropuesto: propuesta en espera de aprobación de Luciann (no se publica)
-   alt: descripción de la imagen para lectores de pantalla
+   alt: descripción de la imagen para lectores de pantalla · tecnica: del original (p. ej. Acrílico sobre lienzo)
    descripcion: texto curatorial · declaracion: palabras de Luciann (no mezclar con lo curatorial) */
   obras: {
     "quebrantada": {
@@ -272,42 +294,48 @@ window.TEXTOS = {
       "subtituloPropuesto": "A vessel broken open to the light",
       "alt": "A woman’s face shaped like a cracked clay vessel, eyes closed, over blue water beneath rays of light.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     },
     "restaurada": {
       "subtitulo": "",
       "subtituloPropuesto": "What was broken, made whole",
       "alt": "The serene face of a woman shaped like a clay vessel, resting on a pedestal.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     },
     "madre-naturaleza": {
       "subtitulo": "",
       "subtituloPropuesto": "Mother Nature",
       "alt": "A waterfall in a green forest falling into a pool, with a red flower in the foreground.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     },
     "sigo-en-victoria": {
       "subtitulo": "",
       "subtituloPropuesto": "Still standing in victory",
       "alt": "A person seen from behind in a wheelchair, arms raised, on a pink hill covered in flowers.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     },
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
       "subtituloPropuesto": "In the Potter’s hands",
       "alt": "Hands holding and shaping a clay face, beside a figure dressed in blue.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     },
     "salmo-23": {
       "subtitulo": "",
       "subtituloPropuesto": "Psalm 23",
       "alt": "A woman dressed in white dancing with a yellow cloak along a path toward the light.",
       "descripcion": "",
-      "declaracion": ""
+      "declaracion": "",
+      "tecnica": ""
     }
   },
 

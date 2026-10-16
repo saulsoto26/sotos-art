@@ -59,6 +59,8 @@ const CONFIG = {
 
 /* ---------------------------------------------------------------------
    OBRAS
+   anio: año de la pintura original · medidas: del ORIGINAL (no de la reproducción);
+   con medidas, el Modo museo muestra las obras a escala entre sí.
    variantes: una por cada combinación vendible. Ejemplo de formato
    (NO es un dato real):
    { tamano:"16 × 20 pulg", ancho:16, alto:20, unidad:"in",
@@ -68,17 +70,17 @@ const CONFIG = {
    --------------------------------------------------------------------- */
 const OBRAS = [
   { sku:"SA-001", slug:"quebrantada", titulo:"Quebrantada", imagen:"obra-quebrantada.jpg", w:211, h:256,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true },
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true },
   { sku:"SA-002", slug:"restaurada", titulo:"Restaurada", imagen:"obra-restaurada.jpg", w:202, h:256,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true },
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true },
   { sku:"SA-003", slug:"madre-naturaleza", titulo:"Madre Naturaleza", imagen:"obra-madre-naturaleza.jpg", w:1053, h:1400,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true },
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true },
   { sku:"SA-004", slug:"sigo-en-victoria", titulo:"Sigo en Victoria", imagen:"obra-sigo-en-victoria.jpg", w:204, h:256,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true },
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true },
   { sku:"SA-005", slug:"en-las-manos-del-alfarero", titulo:"En las manos del Alfarero", imagen:"obra-en-las-manos-del-alfarero.jpg", w:263, h:178,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true },
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true },
   { sku:"SA-006", slug:"salmo-23", titulo:"Salmo 23", imagen:"obra-salmo-23.jpg", w:304, h:182,
-    video:"", original:"", disponibilidad:"", variantes:[], provisional:true }
+    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:true }
 ];
 
 /* ---------------------------------------------------------------------
@@ -86,6 +88,7 @@ const OBRAS = [
    Sus textos están en textos-es.js.
    --------------------------------------------------------------------- */
 const EXPERIENCIA = {
+  museo: ["quebrantada", "restaurada", "en-las-manos-del-alfarero", "salmo-23", "sigo-en-victoria", "madre-naturaleza"],   // orden de la sala
   recorrido: ["quebrantada", "restaurada", "en-las-manos-del-alfarero", "salmo-23", "sigo-en-victoria", "madre-naturaleza"],
   queVes: ["sigo-en-victoria", "salmo-23", "en-las-manos-del-alfarero", "madre-naturaleza"]
 };

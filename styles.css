@@ -373,3 +373,60 @@ nav.main{min-width:0}
 .sheet-body .subt{margin:-.6rem 0 1rem;font-family:var(--display);font-style:italic;color:var(--text-2);font-size:1.1rem}
 .ficha-idioma a{color:var(--accent-text)}
 @media (max-width:380px){header.top .wrap{gap:.5rem}nav.main{gap:.75rem}nav.main a{font-size:.86rem}.brand{font-size:1.15rem}.idioma summary{padding:.28rem .42rem;gap:.25rem}}
+
+/* ===================== Modo museo / Museum View =====================
+   Sala digital ligera: pared cálida, luz cenital suave, una obra por pared. */
+html.museo-abierto{overflow:hidden}
+.museo-entrada{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1rem;margin:-.4rem 0 2rem}
+.museo-entrada .btn::before{content:"";width:14px;height:14px;border:1.5px solid currentColor;box-shadow:inset 0 0 0 2px var(--surface),inset 0 0 0 6px currentColor;opacity:.8}
+dialog.museo{width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:#15110D;color:var(--ivory)}
+dialog.museo::backdrop{background:#15110D}
+.museo-in{height:100%;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.museo-top{display:flex;align-items:center;gap:.8rem;padding:.55rem 1rem;flex:none}
+.museo-x{width:44px;height:44px;border-radius:50%;border:1px solid rgba(238,230,214,.3);background:transparent;font-size:1.6rem;line-height:1;cursor:pointer}
+.museo-nombre{margin:0;font-family:var(--display);font-style:italic;font-size:1.15rem;color:var(--gold-soft)}
+.museo-cuenta{margin:0 0 0 auto;font-size:.82rem;letter-spacing:.12em;color:#BDB09E}
+.museo-idioma{font-size:.78rem;letter-spacing:.1em;color:#D9CDB8;text-decoration:none;border:1px solid rgba(238,230,214,.28);border-radius:999px;padding:.35rem .6rem}
+.museo-sala{flex:1;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain}
+.museo-pared{position:relative;flex:none;height:min(62vh,640px);min-height:340px;display:grid;place-items:center;overflow:hidden;
+  background:
+    radial-gradient(ellipse 46% 58% at 50% 16%,rgba(255,240,212,.55),rgba(255,240,212,0) 72%),
+    linear-gradient(to bottom,#CFC5B4 0,#D8CFBF 55%,#C7BCAA 86%,#5A4A3C 86.3%,#43362B 100%);
+  transition:opacity .32s}
+.museo-pared::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 50% 40%,transparent 55%,rgba(30,22,15,.28))}
+.museo-pared.cambio{opacity:.15}
+.museo-obra{margin:0;position:relative;top:-4%;transition:padding .3s,background .3s,box-shadow .3s}
+.museo-lienzo{position:relative;overflow:hidden;cursor:zoom-in;touch-action:pan-y;box-shadow:0 26px 40px -22px rgba(40,26,14,.75),0 4px 10px rgba(40,26,14,.25)}
+.museo-lienzo img{width:100%;height:100%;object-fit:contain;transform-origin:var(--ox,50%) var(--oy,50%);transition:transform .35s cubic-bezier(.2,.7,.2,1);user-select:none;-webkit-user-drag:none}
+.museo-obra.zoom .museo-lienzo{cursor:zoom-out;touch-action:none}
+.museo-obra.zoom .museo-lienzo img{transform:scale(2.4)}
+.museo-obra.marco{padding:clamp(14px,3.2vw,30px);background:#FBF8F1;box-shadow:0 0 0 clamp(6px,1.1vw,11px) #241C16,0 30px 46px -24px rgba(40,26,14,.8)}
+.museo-obra.marco .museo-lienzo{box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.museo-flecha{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;background:rgba(21,17,13,.55);color:#fff;font-size:1.7rem;line-height:1;cursor:pointer;z-index:2}
+.museo-flecha.prev{left:.6rem}.museo-flecha.next{right:.6rem}
+.museo-cartela{background:var(--surface);color:var(--text);padding:1.4rem 1.25rem 1.6rem;flex:1}
+.museo-n{margin:0;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-2)}
+.museo-titulo{font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(1.9rem,6vw,2.5rem);line-height:1.05;margin:.3rem 0 .2rem}
+.museo-subt{margin:0 0 .4rem;font-family:var(--display);font-style:italic;color:var(--text-2);font-size:1.08rem}
+.museo-datos{margin:.6rem 0 1rem;font-size:.92rem;color:var(--text-2)}
+.museo-datos dd{margin:0}
+.museo-lectura{border-top:1px solid var(--line);padding-top:.9rem}
+.museo-etq{margin:0 0 .3rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
+.museo-frase{font-family:var(--display);font-style:italic;font-size:1.25rem;margin:0 0 .2rem}
+.museo-lectura p:last-child{margin-top:0}
+.museo-voz{margin:1rem 0;padding-left:1rem;border-left:2px solid var(--gold);font-family:var(--display);font-style:italic;font-size:1.1rem}
+.museo-acciones{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.2rem 0 .8rem}
+.museo-marco p{margin:.3rem 0 0}
+.museo-ayuda{margin-top:1rem}
+.museo-sueno{flex:none;margin:0;padding:.55rem 1rem .7rem;text-align:center;font-family:var(--display);font-style:italic;font-size:.92rem;color:#BDB09E}
+@media (min-width:900px){
+  .museo-sala{flex-direction:row;overflow:hidden}
+  .museo-pared{flex:1;height:auto}
+  .museo-cartela{flex:none;width:min(390px,32vw);overflow-y:auto;padding:2.4rem 2rem}
+  .museo-flecha.prev{left:1.4rem}.museo-flecha.next{right:1.4rem}
+}
+@media (prefers-reduced-motion: reduce){.museo-pared,.museo-lienzo img,.museo-obra{transition:none}}
+.museo-marco-btn{position:absolute;left:.8rem;bottom:calc(14% + .7rem);z-index:2;display:inline-flex;align-items:center;gap:.45rem;min-height:38px;padding:.35rem .8rem;border-radius:999px;border:1px solid rgba(238,230,214,.35);background:rgba(21,17,13,.6);color:#EEE6D6;font-size:.82rem;cursor:pointer}
+.museo-marco-btn::before{content:"";width:12px;height:12px;border:1.5px solid currentColor}
+.museo-marco-btn[aria-pressed="true"]{background:#EEE6D6;color:#15110D}
+@media (min-width:900px){.museo-marco-btn{left:1.4rem}}

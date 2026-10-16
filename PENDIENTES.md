@@ -45,6 +45,11 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Testimonios reales, solo con permiso escrito.
 - [ ] Fotos de obras colgadas en hogares reales, con permiso.
 
+## Modo museo (fase 2)
+- [ ] Año, técnica (por ejemplo, acrílico sobre lienzo) y medidas de cada pintura original.
+- [ ] Fotos en alta resolución: en la sala, al acercarse a los detalles, las imágenes actuales se ven borrosas.
+- [ ] Aprobación de Luciann de la frase sobre su futura galería-estudio familiar.
+
 ## Galería bilingüe (fase 1)
 - [ ] Revisión y aprobación de Luciann de cada texto en inglés, en especial su biografía y sus propias palabras.
 - [ ] Aprobar o descartar los subtítulos interpretativos en inglés de cada obra (los títulos se conservan en español).

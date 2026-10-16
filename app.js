@@ -207,6 +207,7 @@ function renderFicha(o, mount, opts = {}){
       </div>` : ""}
       <div class="actions"><button class="btn dark" data-review>${tr("ficha.ordenar")}</button>
         ${onWall ? `<button class="btn line" data-wall>${tr("ficha.pared")}</button>` : `<a class="btn line" href="${INICIO}?pared=${o.slug}#espacio">${tr("ficha.pared")}</a>`}
+        ${$("#museo") ? `<button class="btn line" data-museo-obra>${tr("museo.nombre")}</button>` : ""}
 </div>
       <div id="details"></div>
       <div id="review"></div>
@@ -243,6 +244,7 @@ function renderFicha(o, mount, opts = {}){
     if (e.target.closest("[data-share]")) return share(o);
     if (e.target.closest("[data-review]")){ track("clic_ordenar", o.slug); return review(o, current(), mount); }
     if (e.target.closest("[data-wall]")){ mount.close && mount.close(); return Pared.show(o.slug, variantLabel(current() || {})); }
+    if (e.target.closest("[data-museo-obra]")){ mount.close && mount.close(); return Museo.abrir(o.slug); }
   };
 }
 function review(o, v, mount){
@@ -909,6 +911,8 @@ const ALTERNOS = (() => { try { return JSON.parse($("#idiomas").textContent); } 
 /* Lo que el visitante está viendo, para llevarlo al otro idioma sin perderlo */
 function estadoActual(){
   if (document.body.dataset.obra) return "";
+  const mu = $("#museo"), mm = location.hash.match(/^#\/museo\/[\w-]+/);
+  if (mu && mu.open && mm) return mm[0];
   const s = $("#sheet"), m = location.hash.match(/^#\/obra\/[\w-]+/);
   if (s && s.open && m) return m[0];
   const secs = ["obras", "recorrido", "que-ves", "dos-obras", "artista", "pincelada", "espacio", "comprar"].map(id => $("#" + id)).filter(Boolean);
@@ -955,6 +959,120 @@ function initIdioma(){
   $("button", bar).addEventListener("click", () => { guardar(CLAVE_IDIOMA, IDIOMA); bar.remove(); });
 }
 
+/* ---------- Modo museo: una sala digital para contemplar la colección ----------
+   Ligera: sin 3D, una obra por pared, solo se cargan la actual y sus vecinas. */
+const Museo = (() => {
+  const dlg = $("#museo"); if (!dlg) return { abrir(){}, abierto(){ return false; } };
+  const orden = (EXPERIENCIA.museo || OBRAS.map(o => o.slug)).filter(bySlug);
+  const conMedidas = orden.every(s => { const m = bySlug(s).medidas; return m && m.ancho && m.alto; });
+  const cm = m => (m.unidad === "cm" ? 1 : 2.54);
+  let i = 0, marco = false, zoom = false, previo = null;
+  dlg.innerHTML = `<div class="museo-in">
+    <header class="museo-top">
+      <button class="museo-x" data-cerrar aria-label="${esc(tr("museo.cerrar"))}">×</button>
+      <p class="museo-nombre">${esc(tr("museo.nombre"))}</p>
+      <p class="museo-cuenta" aria-hidden="true"></p>
+      ${ALTERNOS.map(a => `<a class="museo-idioma" href="${esc(a.url)}" hreflang="${a.idioma}" lang="${a.idioma}" data-cambio-idioma>${a.idioma.toUpperCase()}</a>`).join("")}
+    </header>
+    <div class="museo-sala">
+      <div class="museo-pared">
+        <figure class="museo-obra"><div class="museo-lienzo"><img alt="" draggable="false"></div></figure>
+        <button class="museo-flecha prev" data-paso="-1" aria-label="${esc(tr("museo.anterior"))}">‹</button>
+        <button class="museo-flecha next" data-paso="1" aria-label="${esc(tr("museo.siguiente"))}">›</button>
+        <button class="museo-marco-btn" data-marco aria-pressed="false">${esc(tr("museo.marco"))}</button>
+      </div>
+      <aside class="museo-cartela" aria-live="polite"></aside>
+    </div>
+    <p class="museo-sueno">${esc(tr("museo.sueno"))}</p>
+  </div>`;
+  const pared = $(".museo-pared", dlg), obra = $(".museo-obra", dlg), lienzo = $(".museo-lienzo", dlg), img = $("img", dlg), cartela = $(".museo-cartela", dlg);
+  function medir(){
+    const o = bySlug(orden[i]), W = pared.clientWidth, H = pared.clientHeight;
+    const maxW = W * (innerWidth >= 900 ? .62 : .74), maxH = H * .7, m = o.medidas;
+    let w, h;
+    if (conMedidas){
+      /* escala común: la obra más grande de la sala ocupa el espacio disponible */
+      const k = Math.min(...orden.map(s => { const x = bySlug(s).medidas, c = cm(x); return Math.min(maxW / (x.ancho * c), maxH / (x.alto * c)); }));
+      w = m.ancho * cm(m) * k; h = m.alto * cm(m) * k;
+    } else { const p = prop(o); w = Math.min(maxW, maxH * p); h = w / p; }
+    lienzo.style.width = Math.round(w) + "px"; lienzo.style.height = Math.round(h) + "px";
+  }
+  function cartelaHTML(o){
+    const m = o.medidas, rec = (TX.recorrido || {})[o.slug];
+    const medidas = m && m.ancho && m.alto ? `${m.ancho} × ${m.alto} ${m.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : tr("museo.medidasPendientes");
+    return `<p class="museo-n">${tr("museo.contador", { n: i + 1, total: orden.length })}</p>
+      <h2 class="museo-titulo">${esc(o.titulo)}</h2>
+      ${o.subtitulo ? `<p class="museo-subt">${esc(o.subtitulo)}</p>` : ""}
+      <dl class="museo-datos"><dt class="sr-only">${tr("ficha.artista")}</dt><dd>Luciann Soto${o.anio ? ", " + esc(o.anio) : ""}</dd>
+        <dt class="sr-only">${tr("museo.tecnica")}</dt><dd>${o.tecnica ? esc(o.tecnica) : tr("museo.tecnicaPendiente")}</dd>
+        <dt class="sr-only">${tr("museo.medidas")}</dt><dd>${esc(medidas)}${conMedidas ? "" : ` · ${tr("museo.escala")}`}</dd></dl>
+      ${rec || o.descripcion ? `<div class="museo-lectura"><p class="museo-etq">${tr("museo.lectura")}</p>
+        ${rec ? `<p class="museo-frase">${esc(rec.titulo)}</p><p>${esc(rec.linea)}</p>` : ""}${o.descripcion ? `<p>${esc(o.descripcion)}</p>` : ""}</div>` : ""}
+      ${o.declaracion ? `<blockquote class="museo-voz"><p class="museo-etq">${tr("museo.palabras")}</p>${esc(o.declaracion)}</blockquote>` : ""}
+      ${o.provisional ? `<p class="small">${tr("explora.provisional")}</p>` : ""}
+      <div class="museo-acciones"><button class="btn gold" data-ir="ficha">${tr("museo.verPrecio")}</button><button class="btn line" data-ir="pared">${tr("museo.verEspacio")}</button></div>
+      ${marco ? `<p class="small museo-marco">${tr("museo.marcoNota")}</p>` : ""}
+      <p class="small museo-ayuda">${tr("museo.ayuda")}</p>`;
+  }
+  function pintar(nuevo){
+    const o = bySlug(orden[i]);
+    const poner = () => {
+      img.src = o.imagen; img.alt = o.alt; zoom = false; obra.classList.remove("zoom"); lienzo.style.setProperty("--ox", "50%"); lienzo.style.setProperty("--oy", "50%");
+      img.title = tr("museo.acercar"); obra.classList.toggle("marco", marco);
+      $(".museo-cuenta", dlg).textContent = `${i + 1} / ${orden.length}`; cartela.innerHTML = cartelaHTML(o); medir();
+      if (nuevo) { $(".museo-sala", dlg).scrollTop = 0; cartela.scrollTop = 0; }
+      [orden[(i + 1) % orden.length], orden[(i - 1 + orden.length) % orden.length]].forEach(s => { const x = new Image(); x.src = bySlug(s).imagen; });
+      const h = "#/museo/" + o.slug; if (location.hash !== h) history.replaceState(null, "", h);
+      document.title = o.titulo + " · " + tr("museo.nombre") + " | Soto’s Art";
+      requestAnimationFrame(() => pared.classList.remove("cambio"));
+    };
+    if (!nuevo || reduce){ poner(); return; }
+    pared.classList.add("cambio"); setTimeout(poner, 320);
+  }
+  const ir = d => { i = (i + d + orden.length) % orden.length; track("museo_obra", orden[i]); pintar(true); };
+  function abrir(slug){
+    previo = document.activeElement; i = Math.max(0, orden.indexOf(slug)); if (i < 0) i = 0;
+    document.documentElement.classList.add("museo-abierto");
+    if (!dlg.open) dlg.showModal(); pintar(false); track("museo_abrir", orden[i]);
+    $("[data-cerrar]", dlg).focus();
+  }
+  dlg.addEventListener("close", () => {
+    document.documentElement.classList.remove("museo-abierto");
+    if (/^#\/museo\//.test(location.hash)){ history.replaceState(null, "", location.pathname + location.search); document.title = TX.meta.titulo; }
+    if (previo && previo.focus && !$("#sheet").open) previo.focus();
+  });
+  dlg.addEventListener("click", e => {
+    if (e.target.closest("[data-cerrar]")) return dlg.close();
+    const p = e.target.closest("[data-paso]"); if (p) return ir(+p.dataset.paso);
+    const mb = e.target.closest("[data-marco]");
+    if (mb){ marco = !marco; mb.setAttribute("aria-pressed", marco); obra.classList.toggle("marco", marco); cartela.innerHTML = cartelaHTML(bySlug(orden[i])); track("museo_marco", marco ? "si" : "no"); return medir(); }
+    const d = e.target.closest("[data-ir]"); if (d){ const s = orden[i]; dlg.close(); return d.dataset.ir === "ficha" ? openWork(s) : Pared.show(s); }
+  });
+  /* Examinar detalles: tocar acerca en ese punto; arrastrar recorre; tocar otra vez aleja */
+  let sx = null, sy = null, movido = false;
+  lienzo.addEventListener("pointerdown", e => { sx = e.clientX; sy = e.clientY; movido = false; lienzo.setPointerCapture(e.pointerId); });
+  lienzo.addEventListener("pointermove", e => {
+    if (sx === null) return; if (Math.hypot(e.clientX - sx, e.clientY - sy) > 8) movido = true;
+    if (zoom){ const r = lienzo.getBoundingClientRect(); lienzo.style.setProperty("--ox", Math.max(0, Math.min(100, (e.clientX - r.left) / r.width * 100)) + "%"); lienzo.style.setProperty("--oy", Math.max(0, Math.min(100, (e.clientY - r.top) / r.height * 100)) + "%"); }
+  });
+  lienzo.addEventListener("pointerup", e => {
+    const dx = e.clientX - sx; sx = null;
+    if (!zoom && movido && Math.abs(dx) > 40) return ir(dx < 0 ? 1 : -1);
+    if (movido && zoom) return;
+    const r = lienzo.getBoundingClientRect(); zoom = !zoom; obra.classList.toggle("zoom", zoom);
+    lienzo.style.setProperty("--ox", (e.clientX - r.left) / r.width * 100 + "%"); lienzo.style.setProperty("--oy", (e.clientY - r.top) / r.height * 100 + "%");
+    img.title = tr(zoom ? "museo.alejar" : "museo.acercar"); if (zoom) track("museo_detalle", orden[i]);
+  });
+  lienzo.tabIndex = 0; lienzo.setAttribute("role", "button");
+  lienzo.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); zoom = !zoom; obra.classList.toggle("zoom", zoom); } });
+  const etiqueta = () => lienzo.setAttribute("aria-label", tr("museo.acercar"));
+  etiqueta();
+  dlg.addEventListener("keydown", e => { if (e.target.closest("input,select,textarea")) return; if (e.key === "ArrowRight") ir(1); if (e.key === "ArrowLeft") ir(-1); });
+  addEventListener("resize", () => dlg.open && medir());
+  $$("[data-museo]").forEach(b => b.addEventListener("click", () => abrir(orden[0])));
+  return { abrir, abierto: () => dlg.open };
+})();
+
 /* ---------- Arranque ---------- */
 (function boot(){
   renderFooter(); initIdioma();
@@ -962,8 +1080,14 @@ function initIdioma(){
   if (page){ const o = bySlug(page), m = $("#obraPage"); if (o && m){ renderFicha(o, m, { page: true }); track("ver_obra", o.slug); } return; }
   initUmbral(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderArtista(); initPincelada(); renderConfianza();
   const sheet = $("#sheet");
-  sheet.addEventListener("close", () => { history.replaceState(null, "", location.pathname + location.search); document.title = TX.meta.titulo; });
+  sheet.addEventListener("close", () => { if (/^#\/obra\//.test(location.hash)){ history.replaceState(null, "", location.pathname + location.search); document.title = TX.meta.titulo; } });
+  /* Enlaces internos a una obra o a la sala (#/obra/…, #/museo/…) también funcionan sin recargar */
+  addEventListener("hashchange", () => {
+    const a = location.hash.match(/^#\/(obra|museo)\/([\w-]+)/); if (!a || !bySlug(a[2])) return;
+    if (a[1] === "museo"){ if (sheet.open) sheet.close(); Museo.abrir(a[2]); } else { if (Museo.abierto()) $("#museo").close(); openWork(a[2]); }
+  });
   const params = new URLSearchParams(location.search), p = params.get("pared");
   if (p && bySlug(p)) setTimeout(() => Pared.show(p), 300);
   const m = location.hash.match(/^#\/obra\/([\w-]+)/); if (m && bySlug(m[1])) openWork(m[1]);
+  const mu = location.hash.match(/^#\/museo\/([\w-]+)/); if (mu && bySlug(mu[1])) Museo.abrir(mu[1]);
 })();

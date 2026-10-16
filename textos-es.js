@@ -257,13 +257,35 @@ window.TEXTOS = {
     "idioma.etiqueta": "Idioma",
     "idioma.pregunta": "¿Ver esta galería en español?",
     "idioma.seguir": "Seguir en español",
-    "idioma.ver": "Ver en español"
+    "idioma.ver": "Ver en español",
+    "museo.nombre": "Modo museo",
+    "museo.entrar": "Entrar al Modo museo",
+    "museo.entrarNota": "Contempla la colección como una exposición, obra por obra.",
+    "museo.cerrar": "Salir del Modo museo",
+    "museo.anterior": "Obra anterior",
+    "museo.siguiente": "Obra siguiente",
+    "museo.contador": "Obra {n} de {total}",
+    "museo.tecnica": "Técnica",
+    "museo.medidas": "Medidas del original",
+    "museo.tecnicaPendiente": "Técnica por confirmar",
+    "museo.medidasPendientes": "Medidas del original por confirmar",
+    "museo.escala": "escala aproximada",
+    "museo.lectura": "Lectura curatorial",
+    "museo.palabras": "En palabras de Luciann",
+    "museo.verPrecio": "Ver tamaños y precio",
+    "museo.verEspacio": "Ver en mi espacio",
+    "museo.marcoNota": "El marco es solo un elemento de presentación: no se incluye con la reproducción, salvo que el tamaño elegido lo indique.",
+    "museo.acercar": "Tocar para examinar los detalles",
+    "museo.alejar": "Tocar para ver la obra completa",
+    "museo.ayuda": "Desliza o usa las flechas para recorrer la sala. Toca la obra para acercarte.",
+    "museo.sueno": "Una sala imaginada para el sueño de Luciann: una futura galería-estudio familiar.",
+    "museo.marco": "Marco"
   },
 
   /* Por obra (la clave es el slug). El título NO va aquí: se conserva en español en catalogo.js.
    subtitulo: subtítulo interpretativo que se publica (vacío = no se muestra)
    subtituloPropuesto: propuesta en espera de aprobación de Luciann (no se publica)
-   alt: descripción de la imagen para lectores de pantalla
+   alt: descripción de la imagen para lectores de pantalla · tecnica: del original (p. ej. Acrílico sobre lienzo)
    descripcion: texto curatorial · declaracion: palabras de Luciann (no mezclar con lo curatorial) */
   obras: {
     "quebrantada": {
@@ -271,42 +293,48 @@ window.TEXTOS = {
       "alt": "Rostro de mujer en forma de vasija de barro agrietada, con los ojos cerrados, sobre agua azul bajo rayos de luz.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     },
     "restaurada": {
       "subtitulo": "",
       "alt": "Rostro sereno de mujer en forma de vasija de barro, sobre un pedestal.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     },
     "madre-naturaleza": {
       "subtitulo": "",
       "alt": "Cascada en un bosque verde que cae sobre un estanque, con una flor roja en primer plano.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     },
     "sigo-en-victoria": {
       "subtitulo": "",
       "alt": "Persona de espaldas en silla de ruedas, con los brazos en alto, sobre una colina rosada con flores.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     },
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
       "alt": "Manos que sostienen y moldean un rostro de barro, junto a una figura vestida de azul.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     },
     "salmo-23": {
       "subtitulo": "",
       "alt": "Mujer vestida de blanco que danza con un manto amarillo en un camino hacia la luz.",
       "descripcion": "",
       "declaracion": "",
-      "subtituloPropuesto": ""
+      "subtituloPropuesto": "",
+      "tecnica": ""
     }
   },
 
