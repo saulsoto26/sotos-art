@@ -34,7 +34,7 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 
 ### Datos de contacto y biografía
 - [ ] Confirmar que el 787-690-6865 usa WhatsApp.
-- [ ] Autorización para publicar teléfono, correo, Instagram y ubicación (Vega Alta).
+- [ ] Autorización para publicar teléfono, correo, Instagram y ubicación (Luciann pidió presentarse como artista de Puerto Rico, sin municipio).
 - [ ] Enlace de su página de Facebook.
 - [ ] Revisión y aprobación de la biografía y la línea de tiempo (tomadas de su perfil de LinkedIn).
 

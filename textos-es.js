@@ -58,7 +58,7 @@ window.TEXTOS = {
     "artista.kicker": "Conoce a Luciann",
     "artista.titulo": "Una vida enseñando a otros a expresarse mediante el arte.",
     "artista.eje": "Una obra que nos invita a descubrir lo que sentimos.",
-    "artista.p1": "Luciann Soto Soto es artista, museóloga y maestra de Bellas Artes de Vega Alta, Puerto Rico. Se formó en la Escuela Central de Artes Visuales de Santurce, y su maestría en Museología le dio otra mirada: la de quien entiende cómo una obra se encuentra con las personas.",
+    "artista.p1": "Luciann Soto Soto es una artista puertorriqueña, museóloga y educadora en Bellas Artes. Su trabajo explora la espiritualidad, la fe, la naturaleza y las experiencias humanas mediante el color, la forma y la textura. Se formó en la Escuela Central de Artes Visuales de Santurce, y su maestría en Museología le dio otra mirada: la de quien entiende cómo una obra se encuentra con las personas.",
     "artista.p2": "Desde 2014 crea, enseña y comparte su arte a través de Soto’s Art. Ha acompañado a niños y adultos en talleres como «Explorando las maravillas del Arte», y en 2018 fundó Photoboricua Kids Corp, una organización sin fines de lucro que preside. En el salón de clases enseña dibujo, pintura, drama y canto.",
     "artista.p3": "Su colección habla de lo que se rompe y se restaura, de la fe, la naturaleza y la fortaleza.",
     "artista.cita": "Cada obra es una invitación a conectar con la belleza, la fe y la fuerza de la vida.",

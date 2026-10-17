@@ -124,7 +124,7 @@ alt_inicio = [(l, URL["inicio"](l)) for l in IDIOMAS] + [("x-default", SITIO)]
 for l in IDIOMAS:
     m = TX[l]["meta"]
     ld = {"@context": "https://schema.org", "@type": "Person", "name": CONFIG["nombreLegal"], "jobTitle": m["oficio"], "url": URL["inicio"](l),
-          "sameAs": [f"https://www.instagram.com/{CONFIG['instagram']}/"], "address": {"@type": "PostalAddress", "addressLocality": "Vega Alta", "addressCountry": "PR"}}
+          "sameAs": [f"https://www.instagram.com/{CONFIG['instagram']}/"], "address": {"@type": "PostalAddress", "addressCountry": "PR"}}
     extra = '\n<script type="application/ld+json">\n' + json.dumps(ld, ensure_ascii=False) + "\n</script>"
     dest = lambda o: f"{o}/"
     head = cabeza(l, m["titulo"], m["descripcion"], URL["inicio"](l), "website", m["titulo"], m["ogDescripcion"], og(l), "", alt_inicio, extra + alternos_json(l, "../", dest))

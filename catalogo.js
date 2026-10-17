@@ -18,7 +18,7 @@ const CONFIG = {
   artista: "Luciann Soto",
   nombreLegal: "Luciann Soto Soto",          // nombre que aparece en su tarjeta y LinkedIn
   marca: "Soto’s Art – Blessing Art",
-  ubicacion: "Vega Alta, Puerto Rico",        // de su perfil de LinkedIn: CONFIRMAR
+  ubicacion: "Puerto Rico",                  // así lo pidió Luciann: su identidad pública es Puerto Rico
   telefono: "787-690-6865",                   // afiche y tarjeta oficiales
   whatsapp: "17876906865",                    // CONFIRMAR que este número usa WhatsApp
   correo: "l.sotosart@gmail.com",             // tarjeta oficial

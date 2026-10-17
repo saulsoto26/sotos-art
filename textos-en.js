@@ -59,7 +59,7 @@ window.TEXTOS = {
     "artista.kicker": "Meet Luciann",
     "artista.titulo": "A life spent teaching others to express themselves through art.",
     "artista.eje": "Art that invites us to discover what we feel.",
-    "artista.p1": "Luciann Soto Soto is an artist, museologist and Fine Arts teacher from Vega Alta, Puerto Rico. She trained at the Escuela Central de Artes Visuales in Santurce, and her master’s degree in Museology gave her another way of seeing: that of someone who understands how a work of art meets people.",
+    "artista.p1": "Luciann Soto Soto is a Puerto Rican artist, museologist, and fine arts educator. Her work explores spirituality, faith, nature, and human experiences through color, form, and texture. She trained at the Escuela Central de Artes Visuales in Santurce, and her master’s degree in Museology gave her another way of seeing: that of someone who understands how a work of art meets people.",
     "artista.p2": "Since 2014 she has created, taught and shared her art through Soto’s Art. She has guided children and adults in workshops such as “Explorando las maravillas del Arte” (Exploring the Wonders of Art), and in 2018 she founded Photoboricua Kids Corp, a nonprofit organization she leads as president. In the classroom she teaches drawing, painting, drama and singing.",
     "artista.p3": "Her collection speaks of what breaks and is restored, of faith, nature and strength.",
     "artista.cita": "Every painting is an invitation to connect with the beauty, the faith and the strength of life.",
