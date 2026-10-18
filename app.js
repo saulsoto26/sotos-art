@@ -1014,7 +1014,8 @@ function renderFooter(){
   f.innerHTML = `<em class="lema">${esc(CONFIG.lema)}</em><br>${tr("pie.telefono")} <a href="${telHref()}">${esc(CONFIG.telefono)}</a><br>${tr("pie.correo")} <a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a><br>Instagram: <a href="https://www.instagram.com/${esc(CONFIG.instagram)}/" target="_blank" rel="noopener">@${esc(CONFIG.instagram)}</a>${CONFIG.facebook ? ` &nbsp; <a href="${esc(CONFIG.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}`;
   $("#yr").textContent = new Date().getFullYear();
   f.insertAdjacentHTML("afterend", `<p><button class="btn line pie-compartir" type="button" data-compartir-galeria>${tr("compartir.galeria")}</button></p>`);
-  $("[data-compartir-galeria]").addEventListener("click", () => Compartir.abrir(document.body.dataset.obra ? datosObra(bySlug(document.body.dataset.obra)) : datosGaleria()));
+  /* Encabezado y pie: en una página de obra comparten esa obra; en la portada, la galería */
+  $$("[data-compartir-galeria]").forEach(b => b.addEventListener("click", () => Compartir.abrir(document.body.dataset.obra ? datosObra(bySlug(document.body.dataset.obra)) : datosGaleria())));
 }
 
 /* ---------- Idioma: selector, preferencia y sugerencia ---------- */

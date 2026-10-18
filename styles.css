@@ -519,3 +519,11 @@ dialog.compartir h2{font-family:var(--display);font-weight:400;font-size:1.7rem;
 .comp-url input{width:100%;font:inherit;font-size:.8rem;padding:.5rem .6rem;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--text-2);text-align:center}
 .pie-compartir{color:var(--ivory);border-color:rgba(238,230,214,.4);margin-top:.4rem}
 dialog.compartir .close{color:var(--text);background:transparent;border:1px solid var(--line)}
+
+/* Compartir en el encabezado: ícono junto al idioma */
+.top-compartir{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid rgba(238,230,214,.28);background:transparent;color:#D9CDB8;cursor:pointer;margin-left:auto}
+.top-compartir:hover,.top-compartir:focus-visible{color:#fff;border-color:rgba(238,230,214,.6)}
+.top-compartir svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+header.top .wrap > .idioma{margin-left:0}
+/* Teléfonos: deja respirar el encabezado (la sección “La artista” se alcanza al bajar) */
+@media (max-width:430px){nav.main a[href$="#artista"]{display:none}.brand{font-size:1.2rem}header.top .wrap{gap:.55rem}.top-compartir{width:38px;height:38px}}
