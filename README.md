@@ -37,12 +37,23 @@ Los archivos `index.html`, `obra-*.html`, `sitemap.xml`, `robots.txt` y `generar
 - Sus propias palabras (la cita y sus declaraciones) no se muestran en inglés hasta que en `textos-en.js` se cambie `palabrasArtista: false` a `true`.
 - Para agregar otro idioma: copiar `textos-en.js` como `textos-pt.js`, traducir y añadir `"pt"` a `idiomas` en `catalogo.js`.
 
+## Trayectoria y exposiciones
+- Está en “Conoce a Luciann”, después de su biografía: cuatro momentos destacados y un desplegable con la trayectoria completa.
+- Las exposiciones (nombres oficiales, sin traducir) están en `catalogo.js` → `TRAYECTORIA`. Los textos de enseñanza, formación y reconocimientos están en cada `textos-xx.js` → `trayectoria`.
+- Un dato con `revisar` está pendiente de confirmar: no se publica la parte en duda.
+- Nunca se publica la dirección postal de Luciann; su ubicación pública es “Puerto Rico”.
+
 ## Modo museo / Museum View
 - Se entra desde “Entrar al Modo museo”, en la colección, o desde el botón “Modo museo” de cada ficha. Cada obra tiene su enlace: `…/es/#/museo/quebrantada`.
 - El orden de la sala está en `catalogo.js` → `EXPERIENCIA.museo`.
 - La cartela muestra el título, el año, la técnica y las medidas del original, la lectura curatorial (separada de las palabras de Luciann) y los botones “Ver tamaños y precio” y “Ver en mi espacio”.
 - Con `anio` y `medidas` del original en `catalogo.js`, y la `tecnica` en cada `textos-xx.js`, la sala deja de decir “por confirmar”. Cuando todas las obras tienen medidas, se muestran a escala entre sí.
 - El marco es opcional y la sala aclara que es solo de presentación.
+
+## Compartir
+- En cada ficha (“Comparte esta historia”), en el Modo museo y en el pie de página (“Compartir esta galería”) se abre un panel con el código QR, “Enviar por WhatsApp”, “Copiar enlace” y, en teléfonos, “Más opciones”.
+- “Guardar el código QR” crea una imagen con el nombre de la obra, lista para imprimir o reenviar.
+- El código lleva siempre a la página en el idioma del visitante. `qr.js` genera los códigos en el propio teléfono: no se envía nada a otros servicios.
 
 ## Actualizar el sitio (desde el celular)
 1. En github.com abre el repositorio `sotos-art`.
@@ -67,13 +78,3 @@ Sube la nueva foto con **el mismo nombre** (por ejemplo `obra-quebrantada.jpg`).
 
 ## Lanzamiento
 En `catalogo.js` cambia `publicarEnBuscadores: false` a `true`. Eso retira el “noindex” de todas las páginas.
-
-## Imágenes de las obras
-- `obra-<obra>.jpg` (1600 px) y `obra-<obra>-800.jpg` (teléfonos) son la obra sola, sin pared ni marco. Nunca se amplían.
-- `ambiente-<obra>.jpg` es la obra **original** en un hogar: se muestra como inspiración en la ficha, nunca como foto del producto.
-- `obra-salmo-23-enmarcada.jpg` es la única foto existente de «Salmo 23» y se usa en el Modo museo.
-- `original-*.jpeg` son las fotos tal como llegaron, de respaldo. **No se publican.**
-- Para cambiar una foto: sube el archivo con el mismo nombre y actualiza `w` y `h` en `catalogo.js`.
-
-## Capítulos
-El recorrido y el Modo museo siguen `EXPERIENCIA.capitulos` en `catalogo.js`. Los nombres de los capítulos están en `textos-es.js` y `textos-en.js` → `capitulos`.

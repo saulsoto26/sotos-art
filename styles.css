@@ -431,54 +431,39 @@ dialog.museo::backdrop{background:#15110D}
 .museo-marco-btn[aria-pressed="true"]{background:#EEE6D6;color:#15110D}
 @media (min-width:900px){.museo-marco-btn{left:1.4rem}}
 
-/* ---------- Capítulos del recorrido ---------- */
-.rec-caps{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0 0}
-.rec-caps button{border:1px solid rgba(224,196,142,.35);background:transparent;color:var(--gold-soft);border-radius:999px;padding:.3rem .8rem;font-size:.82rem;min-height:34px;cursor:pointer}
-.rec-caps button[aria-current="true"]{background:rgba(224,196,142,.16);border-color:var(--gold-soft)}
-.rec-num b{display:inline-block}
+/* Trayectoria y exposiciones: pequeña experiencia editorial dentro de “Conoce a Luciann” */
+.tray{margin-top:clamp(2.5rem,7vw,4.5rem);padding-top:clamp(2rem,5vw,3rem);border-top:1px solid var(--line);display:block}
+.tray-titulo{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4.6vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem}
+.tray-intro{max-width:40rem;color:var(--text-2);margin:0 0 1.8rem}
+.tray-momentos{list-style:none;margin:0 0 1.6rem;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.tray-momentos li{background:var(--surface);padding:1.3rem 1.2rem 1.4rem;display:flex;flex-direction:column;gap:.35rem}
+.tray-anio{font-family:var(--display);font-size:1.6rem;line-height:1;color:var(--accent-text)}
+.tray-momentos b{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.tray-momentos li > span:last-child{color:var(--text-2);font-size:.96rem}
+.tray-completa{max-width:46rem}
+.tray-grupo{font-family:var(--display);font-style:italic;font-weight:400;font-size:1.25rem;margin:1.8rem 0 .2rem;color:var(--text)}
+.tray-completa .timeline{margin-top:.8rem}
+.tray-completa .timeline li{grid-template-columns:5.6rem 1fr}
+.tray-completa .timeline span i{font-family:var(--display);font-size:1.08rem;color:var(--text)}
+.tray-completa .timeline small{display:block;font-size:.88rem;margin-top:.1rem}
+.tray-completa .timeline img{display:block;margin-top:.6rem;max-width:min(100%,320px);height:auto}
+.tray-volver{margin-top:1.6rem}
+.museo-tray{margin-top:.4rem}
+.artist .wrap.tray{display:block}
 
-/* ---------- La voz de Luciann ---------- */
-.voz-sec{position:relative;overflow:hidden;text-align:center;padding:6rem 0 5rem!important;background:var(--surface-2)}
-.voz-textura{position:absolute;inset:0;pointer-events:none;opacity:.55;
-  background:radial-gradient(40% 55% at 12% 30%,rgba(184,146,79,.16),transparent 70%),radial-gradient(35% 50% at 88% 70%,rgba(95,195,221,.10),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(138,90,59,.12),transparent 70%)}
-.voz-sec .wrap{position:relative;max-width:46rem}
-.voz-frase{margin:1.4rem auto 1rem;font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(1.55rem,4.6vw,2.5rem);line-height:1.32;color:var(--text);max-width:24ch}
-.voz-frase p{margin:0}
-.voz-frase::before{content:"";display:block;width:48px;height:1px;margin:0 auto 1.6rem;background:var(--gold)}
-.voz-firma{margin:0 0 1.6rem;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
-.voz-orig{max-width:40ch;margin:-.8rem auto 1.4rem}
-.voz-completa{max-width:40rem;margin:0 auto;text-align:left}
-.voz-completa p{font-size:1.06rem;line-height:1.75}
-.voz-principio{margin:2.4rem auto 0;max-width:36ch;font-size:.92rem;color:var(--text-2)}
-
-/* ---------- Dos obras: banda de luz entre los marcos ---------- */
-.puente{position:relative;align-self:stretch;display:grid;place-items:center;min-width:14px}
-.puente .luz{position:absolute;top:8%;bottom:8%;left:50%;width:46px;margin-left:-23px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(closest-side,rgba(240,208,140,.55),rgba(240,208,140,0));opacity:0;transform:scaleY(.15);animation:luz 2.4s ease .4s forwards}
-@keyframes luz{60%{opacity:1}100%{opacity:.6;transform:scaleY(1)}}
-@media (prefers-reduced-motion: reduce){.puente .luz{animation:none;opacity:.5;transform:none}}
-
-/* ---------- Ficha: original en un hogar (inspiración) ---------- */
-.sheet-fig figcaption{max-width:560px;margin-top:.8rem;color:#BDB09E;text-align:center}
-.ambiente{margin:1.6rem 0 0}
-.ambiente img{width:100%;height:auto;border-radius:2px}
-.ambiente figcaption{font-size:.86rem;color:var(--text-2);margin-top:.5rem}
-.ambiente figcaption b{display:block;color:var(--text);font-weight:600}
-
-/* ---------- Museum View: resolución real, lectura plegable y paso al hogar ---------- */
-.museo-obra.zoom .museo-lienzo img{transform:scale(var(--zs,2.4))}
-.museo-insc{margin:.9rem 0;font-family:var(--display);font-style:italic}
-.museo-insc .museo-etq{display:block;font-family:var(--body);font-style:normal}
-details.museo-lectura summary{cursor:pointer;list-style-position:inside}
-.museo-acasa{position:absolute;inset:auto 0 5%;margin:0;text-align:center;font-family:var(--display);font-style:italic;font-size:clamp(1.2rem,3.6vw,1.7rem);color:#F3E7CF;opacity:0;transition:opacity .6s .3s;pointer-events:none;z-index:3}
-.museo-pared{transition:background-color .9s ease}
-.museo.a-casa .museo-pared{background-color:#2a221b}
-.museo.a-casa .museo-pared::after{background:rgba(18,14,10,.55);transition:background .9s ease}
-.museo.a-casa .museo-obra{transform:scale(.9);filter:brightness(.55);transition:transform .9s ease,filter .9s ease}
-.museo.a-casa .museo-acasa{opacity:1}
-.rooms.llega .wall{animation:llega 1.2s ease}
-@keyframes llega{from{filter:brightness(.35)}to{filter:none}}
-.museo.a-casa .museo-marco-btn,.museo.a-casa .museo-flecha{opacity:0;transition:opacity .3s}
-.museo-orig{color:var(--text-2)}
-.original-linea{margin:.3rem 0 1.1rem;padding:.7rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.95rem;line-height:1.55;color:var(--text)}
-.original-linea span{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text);margin-bottom:.15rem}
+/* Compartir: código QR, WhatsApp, copiar enlace */
+dialog.compartir{width:min(420px,calc(100% - 1.5rem));max-height:calc(100% - 1.5rem);overflow:auto;border:0;border-radius:6px;padding:1.6rem 1.4rem 1.3rem;background:var(--surface);color:var(--text);box-shadow:0 30px 70px -30px rgba(0,0,0,.7);text-align:center}
+dialog.compartir::backdrop{background:rgba(20,16,12,.62)}
+dialog.compartir .close{position:absolute;top:.6rem;right:.6rem}
+dialog.compartir h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:.2rem 0 .1rem}
+.comp-que{margin:0 0 1rem;font-family:var(--display);font-style:italic;color:var(--text-2);font-size:1.12rem}
+.comp-qr{margin:0 auto 1.1rem;max-width:260px}
+.comp-codigo{aspect-ratio:1;background:#fff;border-radius:4px;padding:6px;display:grid;place-items:center;box-shadow:0 0 0 1px var(--line)}
+.comp-codigo svg{width:100%;height:100%;display:block}
+.comp-qr figcaption{font-size:.86rem;color:var(--text-2);margin-top:.55rem}
+.comp-acciones{display:grid;gap:.55rem}
+.comp-acciones .btn{width:100%;justify-content:center}
+.comp-url{margin:.9rem 0 0}
+.comp-url input{width:100%;font:inherit;font-size:.8rem;padding:.5rem .6rem;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--text-2);text-align:center}
+.pie-compartir{color:var(--ivory);border-color:rgba(238,230,214,.4);margin-top:.4rem}
+dialog.compartir .close{color:var(--text);background:transparent;border:1px solid var(--line)}
