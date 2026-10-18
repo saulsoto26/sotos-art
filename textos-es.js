@@ -281,6 +281,10 @@ window.TEXTOS = {
     "museo.ayuda": "Desliza o usa las flechas para recorrer la sala. Toca la obra para acercarte.",
     "museo.sueno": "Una sala imaginada para el sueño de Luciann: una futura galería-estudio familiar.",
     "museo.marco": "Marco",
+    "museo.original": "obra original",
+    "pared.refChip": "Tamaño de la obra original",
+    "pared.refCorta": "tamaño del original",
+    "pared.refNota": "Referencia: es el tamaño de la pintura original, no un tamaño de reproducción disponible. Los tamaños de reproducción están por confirmar con la artista.",
     "rec.capituloNombre": "Capítulo {n} · {nombre}",
     "rec.capitulos": "Capítulos",
     "museo.lecturaPosible": "Una lectura posible",
@@ -312,7 +316,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "Pintura acrílica sobre lienzo"
     },
     "restaurada": {
       "subtitulo": "",
@@ -320,7 +324,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": "",
+      "tecnica": "Pintura acrílica sobre lienzo",
       "inscripcion": "Mujer restaurada por Cristo con su amor"
     },
     "madre-naturaleza": {
@@ -329,7 +333,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "Pintura acrílica sobre lienzo"
     },
     "sigo-en-victoria": {
       "subtitulo": "",
@@ -337,7 +341,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "Pintura acrílica sobre lienzo"
     },
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
@@ -345,7 +349,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "Pintura acrílica sobre lienzo"
     },
     "salmo-23": {
       "subtitulo": "",
@@ -353,7 +357,7 @@ window.TEXTOS = {
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "Pintura acrílica sobre lienzo"
     }
   },
 

@@ -63,7 +63,8 @@ const DECLARACION_DESTACADA = 3;   // oración que se muestra en grande (0 = pri
 
 /* ---------------------------------------------------------------------
    OBRAS
-   anio: año de la pintura original · medidas: del ORIGINAL (no de la reproducción);
+   anio: año de la pintura original · medidas: de la PINTURA ORIGINAL (ficha de Luciann), no de la reproducción.
+   w y h: solo la proporción de la fotografía en pantalla. variantes: los tamaños que se venden.
    con medidas, el Modo museo muestra las obras a escala entre sí.
    imagen: foto de la obra sin pared ni marco (1600 px). Junto a ella va la versión
    “-800.jpg” para teléfonos; ninguna sirve como archivo maestro de impresión.
@@ -78,20 +79,20 @@ const DECLARACION_DESTACADA = 3;   // oración que se muestra en grande (0 = pri
    --------------------------------------------------------------------- */
 const OBRAS = [
   { sku:"SA-001", slug:"quebrantada", titulo:"Quebrantada", imagen:"obra-quebrantada.jpg", w:1029, h:1281,
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:16, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-002", slug:"restaurada", titulo:"Restaurada", imagen:"obra-restaurada.jpg", w:967, h:1211,
     ambiente:{ imagen:"ambiente-restaurada.jpg", w:1050, h:1400 },
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:16, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-003", slug:"madre-naturaleza", titulo:"Madre Naturaleza", imagen:"obra-madre-naturaleza.jpg", w:1118, h:1495,
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:16, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-004", slug:"sigo-en-victoria", titulo:"Sigo en Victoria", imagen:"obra-sigo-en-victoria.jpg", w:1600, h:788,
     ambiente:{ imagen:"ambiente-sigo-en-victoria.jpg", w:1400, h:653 },
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:30, alto:18, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-005", slug:"en-las-manos-del-alfarero", titulo:"En las manos del Alfarero", imagen:"obra-en-las-manos-del-alfarero.jpg", w:1600, h:1041,
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:20, alto:16, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-006", slug:"salmo-23", titulo:"Salmo 23", imagen:"obra-salmo-23.jpg", w:1482, h:1045,
     enmarcada:{ imagen:"obra-salmo-23-enmarcada.jpg", w:1600, h:1157 },   // única foto disponible: la obra con su marco
-    video:"", original:"", anio:"", medidas:{ ancho:0, alto:0, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false }
+    video:"", original:"", anio:"", medidas:{ ancho:28, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false }
 ];
 
 /* ---------------------------------------------------------------------

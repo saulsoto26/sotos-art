@@ -282,6 +282,10 @@ window.TEXTOS = {
     "museo.ayuda": "Swipe or use the arrow keys to walk through the room. Tap the painting to look closer.",
     "museo.sueno": "An imagined room for Luciann’s dream: a future family gallery-studio.",
     "museo.marco": "Frame",
+    "museo.original": "original painting",
+    "pared.refChip": "Size of the original painting",
+    "pared.refCorta": "size of the original",
+    "pared.refNota": "Reference only: this is the size of the original painting, not an available reproduction size. Reproduction sizes are still to be confirmed with the artist.",
     "rec.capituloNombre": "Chapter {n} · {nombre}",
     "rec.capitulos": "Chapters",
     "museo.lecturaPosible": "A possible reading",
@@ -313,7 +317,7 @@ window.TEXTOS = {
       "alt": "A woman’s face shaped like a cracked clay vessel, eyes closed and shedding a tear, over blue water beneath rays of light, with fragments around her.",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "Acrylic on canvas"
     },
     "restaurada": {
       "subtitulo": "",
@@ -321,7 +325,7 @@ window.TEXTOS = {
       "alt": "The serene face of a woman shaped like a clay vessel, resting on a closed book inscribed “Mujer restaurada por Cristo con su amor” (Woman restored by Christ with his love).",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": "",
+      "tecnica": "Acrylic on canvas",
       "inscripcion": "Mujer restaurada por Cristo con su amor (Woman restored by Christ with his love)"
     },
     "madre-naturaleza": {
@@ -330,7 +334,7 @@ window.TEXTOS = {
       "alt": "A waterfall in a green forest falling into a pool, with a red flower in the foreground.",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "Acrylic on canvas"
     },
     "sigo-en-victoria": {
       "subtitulo": "",
@@ -338,7 +342,7 @@ window.TEXTOS = {
       "alt": "A woman seen from behind in a wheelchair with sunflowers for wheels, arms raised, beside an earthen path with flowers rising against a green background.",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "Acrylic on canvas"
     },
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
@@ -346,7 +350,7 @@ window.TEXTOS = {
       "alt": "Hands holding a cracked clay face that rests against a figure dressed in blue.",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "Acrylic on canvas"
     },
     "salmo-23": {
       "subtitulo": "",
@@ -354,7 +358,7 @@ window.TEXTOS = {
       "alt": "A woman dressed in white dancing with a yellow cloak along a path that leads from a dark landscape toward the light.",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "Acrylic on canvas"
     }
   },
 

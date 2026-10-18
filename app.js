@@ -55,6 +55,19 @@ const srcs = (o, sizes) => {          // la versión “-800” mide 800 px en s
   return Math.max(o.w, o.h) > 800 ? `src="${esc(o.imagen)}" srcset="${esc(o.imagen.replace(/\.jpg$/, "-800.jpg"))} ${w8}w, ${esc(o.imagen)} ${o.w}w" sizes="${sizes}"` : `src="${esc(o.imagen)}"`;
 };
 /* Capítulos (lectura curatorial): a cuál pertenece una obra y su nombre en este idioma */
+/* Medidas de la pintura ORIGINAL, en la notación de su ficha (medida menor primero) y en centímetros */
+function medidasOriginal(o){
+  const m = o.medidas; if (!m || !m.ancho || !m.alto) return "";
+  const a = Math.min(m.ancho, m.alto), b = Math.max(m.ancho, m.alto);
+  if (m.unidad === "cm") return `${a} × ${b} cm`;
+  const c = n => (Math.round(n * 25.4) / 10).toString().replace(".", tr("formato.decimal"));
+  return `${a} × ${b} ${tr("unidad.pulg")} (${c(a)} × ${c(b)} cm)`;
+}
+/* Tamaño en pantalla a partir del original: la medida mayor da la escala y la FOTO da la forma (nunca se deforma la obra) */
+function ladosCm(o, f){
+  const m = o.medidas, c = m.unidad === "cm" ? 1 : 2.54, L = Math.max(m.ancho, m.alto) * c, p = prop(f || o);
+  return p >= 1 ? [L, L / p] : [L * p, L];
+}
 const capDe = slug => EXPERIENCIA.capitulos.findIndex(c => c.obras.includes(slug));
 const capNombre = k => (TX.capitulos || {})[(EXPERIENCIA.capitulos[k] || {}).clave] || "";
 const listJoin = a => a.length > 1 ? a.slice(0, -1).join(", ") + " " + tr("lista.y") + " " + a.at(-1) : (a[0] || "");
@@ -235,7 +248,7 @@ function renderFicha(o, mount, opts = {}){
     const rows = [
       [tr("ficha.obra"), `${cita(esc(o.titulo))}, ${esc(o.sku)}`],
       [tr("ficha.queRecibes"), tr("ficha.reproduccion") + (o.original ? " " + tr("ficha.original", { x: esc(o.original) }) : "")],
-      [tr("ficha.originalFila"), [o.tecnica, o.anio, o.medidas && o.medidas.ancho && o.medidas.alto ? `${o.medidas.ancho} × ${o.medidas.alto} ${o.medidas.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : ""].filter(Boolean).map(esc).join(", ") || tr("ficha.originalPendiente")],
+      [tr("ficha.originalFila"), [o.tecnica, medidasOriginal(o), o.anio].filter(Boolean).map(esc).join(" · ") || tr("ficha.originalPendiente")],
       [tr("ficha.tamano"), v ? esc(variantLabel(v)) : pc],
       [tr("ficha.materialAcabado"), v && (v.material || v.acabado) ? esc([v.tipo, v.material, v.acabado].filter(Boolean).map(val).join(", ")) : pc],
       [tr("ficha.marco"), pol.marco ? esc(pol.marco) : pc],
@@ -803,7 +816,10 @@ const Pared = (() => {
   function setSlug(it, slug, label){
     const o = bySlug(slug); it.slug = slug; it.el.src = o.imagen; it.el.alt = tr("pared.simulacion", { titulo: o.titulo });
     const vs = o.variantes.filter(v => v.ancho && v.alto), v = vs.find(x => variantLabel(x) === label) || vs[0];
-    if (v){ it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); } else { it.cm = 0; it.cmH = 0; it.label = ""; }
+    it.ref = false;
+    if (v){ it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); }
+    else if (medidasOriginal(o)){ [it.cm, it.cmH] = ladosCm(o); it.label = "ref"; it.ref = true; }
+    else { it.cm = 0; it.cmH = 0; it.label = ""; }
   }
   function pxPerCm(){
     const ref = toCm(+$("#refLen").value || 0, SC.unit), W = wall.clientWidth, H = wall.clientHeight;
@@ -818,7 +834,8 @@ const Pared = (() => {
       Object.assign(it.el.style, { width: w + "px", left: it.x * 100 + "%", top: it.y * 100 + "%" });
       it.el.classList.toggle("active", items.length > 1 && i === act);
       it.tag.hidden = !k;
-      if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? tr("unidad.pulg") : "cm"}`;
+      if (k && it.ref){ it.tag.textContent = `${medidasOriginal(o)} · ${tr("pared.refCorta")}`; it.tag.style.left = it.x * 100 + "%"; it.tag.style.top = `calc(${it.y * 100}% + ${w / prop(o) / 2 + 8}px)`; }
+      else if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? tr("unidad.pulg") : "cm"}`;
         it.tag.style.left = it.x * 100 + "%"; it.tag.style.top = `calc(${it.y * 100}% + ${w / prop(o) / 2 + 8}px)`; }
     });
     $(".wall-size").hidden = !!k;
@@ -840,7 +857,9 @@ const Pared = (() => {
       const v = vs.find(x => variantLabel(x) === it.label);
       row.insertAdjacentHTML("beforeend", v ? `<span class="small" style="flex-basis:100%">${v.precio ? tr("pared.precioTamano", { precio: money(v.precio) }) : tr("precio.pendiente")}</span>` : "");
     } else {
-      row.innerHTML = `<span class="small">${tr("pared.sinTamanos", { titulo: esc(o.titulo) })}</span>`;
+      row.innerHTML = medidasOriginal(o)
+        ? `<button class="chip" aria-pressed="true" disabled>${tr("pared.refChip")}: ${esc(medidasOriginal(o))}</button><span class="small" style="flex-basis:100%">${tr("pared.refNota")}</span>`
+        : `<span class="small">${tr("pared.sinTamanos", { titulo: esc(o.titulo) })}</span>`;
       row.onclick = null;
     }
   }
@@ -886,7 +905,7 @@ const Pared = (() => {
   });
   $("#wallReset").addEventListener("click", () => { photo.hidden = true; photo.removeAttribute("src"); if (url){ URL.revokeObjectURL(url); url = null; }
     wall.style.aspectRatio = ""; $("#wallEmpty").hidden = false; wall.classList.remove("photo"); $("#wallReset").hidden = true; $("#scalePanel").hidden = true; $("#wallMeasure").setAttribute("hidden", ""); place(); });
-  $("#roomBuy").addEventListener("click", () => { if (A()){ track("pared_ordenar", A().slug); openWork(A().slug, A().el, A().label); } });
+  $("#roomBuy").addEventListener("click", () => { if (A()){ track("pared_ordenar", A().slug); openWork(A().slug, A().el, A().ref ? "" : A().label); } });
   addEventListener("resize", place);
   function reset(list){ items.forEach(it => { it.el.remove(); it.tag.remove(); }); items = []; act = 0; list.forEach(([s, x, y, l]) => make(s, x, y)); list.forEach(([, , , l], i) => l && setSlug(items[i], items[i].slug, l)); sync(); }
   reset([[OBRAS[0].slug, .5, .4]]);
@@ -1021,8 +1040,8 @@ const Museo = (() => {
     let w, h;
     if (conMedidas){
       /* escala común: la obra más grande de la sala ocupa el espacio disponible */
-      const k = Math.min(...orden.map(s => { const x = bySlug(s).medidas, c = cm(x); return Math.min(maxW / (x.ancho * c), maxH / (x.alto * c)); }));
-      w = m.ancho * cm(m) * k; h = m.alto * cm(m) * k;
+      const k = Math.min(...orden.map(s => { const b = bySlug(s), [x, y] = ladosCm(b, b.enmarcada); return Math.min(maxW / x, maxH / y); }));
+      const [x, y] = ladosCm(o, f); w = x * k; h = y * k;
     } else { const p = prop(f); w = Math.min(maxW, maxH * p); h = w / p; }
     lienzo.style.width = Math.round(w) + "px"; lienzo.style.height = Math.round(h) + "px";
     /* el acercamiento nunca pasa de lo que permite la resolución real de la foto */
@@ -1030,14 +1049,14 @@ const Museo = (() => {
   }
   function cartelaHTML(o){
     const m = o.medidas, rec = (TX.recorrido || {})[o.slug];
-    const medidas = m && m.ancho && m.alto ? `${m.ancho} × ${m.alto} ${m.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : tr("museo.medidasPendientes");
+    const medidas = medidasOriginal(o) || tr("museo.medidasPendientes");
     const k = capDe(o.slug);
     return `<p class="museo-n">${tr("museo.contador", { n: i + 1, total: orden.length })}${k >= 0 ? " · " + esc(tr("rec.capituloNombre", { n: ["I", "II", "III", "IV"][k], nombre: capNombre(k) })) : ""}</p>
       <h2 class="museo-titulo">${esc(o.titulo)}</h2>
       ${o.subtitulo ? `<p class="museo-subt">${esc(o.subtitulo)}</p>` : ""}
       <dl class="museo-datos"><dt class="sr-only">${tr("ficha.artista")}</dt><dd>Luciann Soto${o.anio ? ", " + esc(o.anio) : ""}</dd>
         <dt class="sr-only">${tr("museo.tecnica")}</dt><dd>${o.tecnica ? esc(o.tecnica) : tr("museo.tecnicaPendiente")}</dd>
-        <dt class="sr-only">${tr("museo.medidas")}</dt><dd>${esc(medidas)}${conMedidas ? "" : ` · ${tr("museo.escala")}`}</dd></dl>
+        <dt class="sr-only">${tr("museo.medidas")}</dt><dd>${esc(medidas)}${medidasOriginal(o) ? `<span class="museo-orig"> · ${tr("museo.original")}</span>` : ""}${conMedidas ? "" : ` · ${tr("museo.escala")}`}</dd></dl>
       ${o.inscripcion ? `<p class="museo-insc"><span class="museo-etq">${tr("museo.inscripcion")}</span>${cita(esc(o.inscripcion))}</p>` : ""}
       ${o.enmarcada ? `<p class="small">${tr("museo.enmarcada")}</p>` : ""}
       ${rec || o.descripcion ? `<details class="museo-lectura"><summary class="museo-etq">${tr("museo.lecturaPosible")}</summary>
@@ -1051,7 +1070,10 @@ const Museo = (() => {
   function pintar(nuevo){
     const o = bySlug(orden[i]);
     const poner = () => {
-      const f = o.enmarcada || o; img.src = f.imagen; img.alt = o.alt; zoom = false;
+      const f = o.enmarcada || o; img.alt = o.alt; zoom = false;
+      /* si la foto enmarcada no carga, se muestra la imagen de la obra: nunca un recuadro vacío */
+      img.onerror = () => { if (o.enmarcada && img.src.endsWith(o.enmarcada.imagen.split("/").pop())){ img.src = o.imagen; $("[data-marco]", dlg).hidden = false; } };
+      img.src = f.imagen;
       $("[data-marco]", dlg).hidden = !!o.enmarcada; obra.classList.remove("zoom"); lienzo.style.setProperty("--ox", "50%"); lienzo.style.setProperty("--oy", "50%");
       img.title = tr("museo.acercar"); obra.classList.toggle("marco", marco && !o.enmarcada);
       $(".museo-cuenta", dlg).textContent = `${i + 1} / ${orden.length}`; cartela.innerHTML = cartelaHTML(o); medir();

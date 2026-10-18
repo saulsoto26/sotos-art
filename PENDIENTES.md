@@ -46,7 +46,8 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Fotos de obras colgadas en hogares reales, con permiso.
 
 ## Modo museo (fase 2)
-- [ ] Año, técnica (por ejemplo, acrílico sobre lienzo) y medidas de cada pintura original.
+- [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
+- [ ] Año de cada pintura original.
 - [ ] Fotos en alta resolución: en la sala, al acercarse a los detalles, las imágenes actuales se ven borrosas.
 - [ ] Aprobación de Luciann de la frase sobre su futura galería-estudio familiar.
 

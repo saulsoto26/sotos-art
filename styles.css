@@ -479,3 +479,4 @@ details.museo-lectura summary{cursor:pointer;list-style-position:inside}
 .rooms.llega .wall{animation:llega 1.2s ease}
 @keyframes llega{from{filter:brightness(.35)}to{filter:none}}
 .museo.a-casa .museo-marco-btn,.museo.a-casa .museo-flecha{opacity:0;transition:opacity .3s}
+.museo-orig{color:var(--text-2)}
