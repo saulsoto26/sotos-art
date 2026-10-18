@@ -215,6 +215,7 @@ function renderFicha(o, mount, opts = {}){
       <span class="sku">${esc(o.sku)}</span>
       ${opts.page ? `<h1 id="sheetTitle">${esc(o.titulo)}</h1>` : `<h2 id="sheetTitle">${esc(o.titulo)}</h2>`}
       ${o.subtitulo ? `<p class="subt">${esc(o.subtitulo)}</p>` : ""}
+      ${o.tecnica || medidasOriginal(o) ? `<p class="original-linea"><span>${tr("ficha.originalFila")}</span>${[o.tecnica, medidasOriginal(o)].filter(Boolean).map(esc).join("<br>")}</p>` : ""}
       ${o.descripcion ? `<p class="lead">${esc(o.descripcion)}</p>` : ""}
       ${o.declaracion ? `<blockquote class="voice">${esc(o.declaracion)}<cite>Luciann Soto</cite></blockquote>` : ""}
       ${o.video ? mediaHTML(o.video, tr("media.obra", { titulo: o.titulo })) : ""}
