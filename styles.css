@@ -430,3 +430,52 @@ dialog.museo::backdrop{background:#15110D}
 .museo-marco-btn::before{content:"";width:12px;height:12px;border:1.5px solid currentColor}
 .museo-marco-btn[aria-pressed="true"]{background:#EEE6D6;color:#15110D}
 @media (min-width:900px){.museo-marco-btn{left:1.4rem}}
+
+/* ---------- Capítulos del recorrido ---------- */
+.rec-caps{display:flex;flex-wrap:wrap;gap:.4rem;margin:.7rem 0 0}
+.rec-caps button{border:1px solid rgba(224,196,142,.35);background:transparent;color:var(--gold-soft);border-radius:999px;padding:.3rem .8rem;font-size:.82rem;min-height:34px;cursor:pointer}
+.rec-caps button[aria-current="true"]{background:rgba(224,196,142,.16);border-color:var(--gold-soft)}
+.rec-num b{display:inline-block}
+
+/* ---------- La voz de Luciann ---------- */
+.voz-sec{position:relative;overflow:hidden;text-align:center;padding:6rem 0 5rem!important;background:var(--surface-2)}
+.voz-textura{position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background:radial-gradient(40% 55% at 12% 30%,rgba(184,146,79,.16),transparent 70%),radial-gradient(35% 50% at 88% 70%,rgba(95,195,221,.10),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(138,90,59,.12),transparent 70%)}
+.voz-sec .wrap{position:relative;max-width:46rem}
+.voz-frase{margin:1.4rem auto 1rem;font-family:var(--display);font-style:italic;font-weight:400;font-size:clamp(1.55rem,4.6vw,2.5rem);line-height:1.32;color:var(--text);max-width:24ch}
+.voz-frase p{margin:0}
+.voz-frase::before{content:"";display:block;width:48px;height:1px;margin:0 auto 1.6rem;background:var(--gold)}
+.voz-firma{margin:0 0 1.6rem;font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text)}
+.voz-orig{max-width:40ch;margin:-.8rem auto 1.4rem}
+.voz-completa{max-width:40rem;margin:0 auto;text-align:left}
+.voz-completa p{font-size:1.06rem;line-height:1.75}
+.voz-principio{margin:2.4rem auto 0;max-width:36ch;font-size:.92rem;color:var(--text-2)}
+
+/* ---------- Dos obras: banda de luz entre los marcos ---------- */
+.puente{position:relative;align-self:stretch;display:grid;place-items:center;min-width:14px}
+.puente .luz{position:absolute;top:8%;bottom:8%;left:50%;width:46px;margin-left:-23px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(240,208,140,.55),rgba(240,208,140,0));opacity:0;transform:scaleY(.15);animation:luz 2.4s ease .4s forwards}
+@keyframes luz{60%{opacity:1}100%{opacity:.6;transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){.puente .luz{animation:none;opacity:.5;transform:none}}
+
+/* ---------- Ficha: original en un hogar (inspiración) ---------- */
+.sheet-fig figcaption{max-width:560px;margin-top:.8rem;color:#BDB09E;text-align:center}
+.ambiente{margin:1.6rem 0 0}
+.ambiente img{width:100%;height:auto;border-radius:2px}
+.ambiente figcaption{font-size:.86rem;color:var(--text-2);margin-top:.5rem}
+.ambiente figcaption b{display:block;color:var(--text);font-weight:600}
+
+/* ---------- Museum View: resolución real, lectura plegable y paso al hogar ---------- */
+.museo-obra.zoom .museo-lienzo img{transform:scale(var(--zs,2.4))}
+.museo-insc{margin:.9rem 0;font-family:var(--display);font-style:italic}
+.museo-insc .museo-etq{display:block;font-family:var(--body);font-style:normal}
+details.museo-lectura summary{cursor:pointer;list-style-position:inside}
+.museo-acasa{position:absolute;inset:auto 0 5%;margin:0;text-align:center;font-family:var(--display);font-style:italic;font-size:clamp(1.2rem,3.6vw,1.7rem);color:#F3E7CF;opacity:0;transition:opacity .6s .3s;pointer-events:none;z-index:3}
+.museo-pared{transition:background-color .9s ease}
+.museo.a-casa .museo-pared{background-color:#2a221b}
+.museo.a-casa .museo-pared::after{background:rgba(18,14,10,.55);transition:background .9s ease}
+.museo.a-casa .museo-obra{transform:scale(.9);filter:brightness(.55);transition:transform .9s ease,filter .9s ease}
+.museo.a-casa .museo-acasa{opacity:1}
+.rooms.llega .wall{animation:llega 1.2s ease}
+@keyframes llega{from{filter:brightness(.35)}to{filter:none}}
+.museo.a-casa .museo-marco-btn,.museo.a-casa .museo-flecha{opacity:0;transition:opacity .3s}

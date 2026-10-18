@@ -61,3 +61,14 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 
 ## Mensaje sobre su situación personal
 No aparece en el sitio. Solo se preparará un texto breve y respetuoso si Luciann lo autoriza expresamente.
+
+## Fotografías nuevas y declaración de artista (fase 3)
+- [ ] **Archivos maestros de impresión.** Las fotos actuales (de 967 a 1600 px) sirven para el sitio, no para imprimir: un 16 × 20 necesita unos 4800 × 6000 px. Pedir a Luciann los originales del teléfono enviados **como documento** o por correo (WhatsApp los comprime), o una digitalización profesional.
+- [ ] **«Salmo 23» sin marco.** Solo existe la foto enmarcada; en el catálogo se retiró el marco con un recorte, sin tocar la pintura. Una foto sin marco mostraría los bordes completos del lienzo.
+- [ ] **Años de las obras.** Las firmas parecen decir: Quebrantada 2020, Restaurada 2015, En las manos del Alfarero 2025, Sigo en Victoria 2025 y Salmo 23 «26». Madre Naturaleza no se lee. Confirmar con Luciann y escribirlos en `anio` (catalogo.js).
+- [ ] **Traducción de su declaración al inglés.** Está en `textos-en.js` → `contenido.declaracion` y en la página de revisión. Mientras `palabrasArtista` sea `false`, en inglés se muestra el original en español con una nota.
+- [ ] **Capítulos del recorrido.** «La herida y las manos», «El camino» y «La vida que sostiene» son una lectura de la galería: confirmar que Luciann se siente representada.
+- [ ] **Obra del ave negra y amarilla** que aparece en su PDF: título, año y si quiere incluirla.
+- [ ] **Venta de Quebrantada y Restaurada juntas.** El botón para pedirlas en conjunto se quitó hasta que lo confirme.
+- [ ] **Opcional: palabras de la apertura.** Hoy son Esperanza, Restauración, Fortaleza y Vida. Podrían alinearse con sus temas declarados (fe, naturaleza, espiritualidad, experiencias humanas).
+- [ ] **Audio de la declaración.** Si Luciann la graba, subir el archivo y escribir su nombre en `declaracionAudio` (catalogo.js); aparece solo en «La voz de Luciann».

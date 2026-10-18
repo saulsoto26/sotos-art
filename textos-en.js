@@ -43,17 +43,19 @@ window.TEXTOS = {
     "coleccion.titulo": "The collection",
     "coleccion.lead": "High-quality reproductions of Luciann Soto’s original paintings. Tap a painting to see sizes, price and how to order it.",
     "rec.etiqueta": "A journey through the collection",
-    "rec.kicker": "Six paintings, one story",
+    "rec.kicker": "Six paintings, three chapters",
     "rec.verObra": "View this painting",
     "rec.anterior": "Previous chapter",
     "rec.siguiente": "Next",
     "rec.verColeccion": "See the collection",
-    "rec.nota": "Swipe or use the arrow keys. Curatorial readings, not the artist’s words.",
+    "rec.nota": "Swipe, use the arrow keys, or choose a chapter. Questions and readings from the gallery, not the artist’s words.",
     "queVes.kicker": "What do you see?",
     "queVes.pregunta": "Before you learn its story… how does it make you feel?",
     "dos.kicker": "Two paintings, one story",
     "dos.titulo": "Some stories begin when something breaks",
     "dos.lead": "Look at her first.",
+    "voz.kicker": "The Artist’s Voice",
+    "voz.titulo": "The Artist’s Voice",
     "artista.fotoAlt": "Luciann Soto smiling beside her painting Salmo 23 at an exhibition.",
     "artista.fotoPie": "Luciann Soto beside “Salmo 23”.",
     "artista.kicker": "Meet Luciann",
@@ -61,8 +63,7 @@ window.TEXTOS = {
     "artista.eje": "Art that invites us to discover what we feel.",
     "artista.p1": "Luciann Soto Soto is a Puerto Rican artist, museologist, and fine arts educator. Her work explores spirituality, faith, nature, and human experiences through color, form, and texture. She trained at the Escuela Central de Artes Visuales in Santurce, and her master’s degree in Museology gave her another way of seeing: that of someone who understands how a work of art meets people.",
     "artista.p2": "Since 2014 she has created, taught and shared her art through Soto’s Art. She has guided children and adults in workshops such as “Explorando las maravillas del Arte” (Exploring the Wonders of Art), and in 2018 she founded Photoboricua Kids Corp, a nonprofit organization she leads as president. In the classroom she teaches drawing, painting, drama and singing.",
-    "artista.p3": "Her collection speaks of what breaks and is restored, of faith, nature and strength.",
-    "artista.cita": "Every painting is an invitation to connect with the beauty, the faith and the strength of life.",
+        "artista.cita": "Every painting is an invitation to connect with the beauty, the faith and the strength of life.",
     "artista.trayectoria": "Her journey",
     "artista.hito1": "Founds Soto’s Art. Begins teaching visual arts workshops at Proyecto Niños de Nueva Esperanza in Sabana Seca, through 2022.",
     "artista.hito2": "Launches “Explorando las maravillas del Arte”, workshops for children and adults.",
@@ -192,7 +193,7 @@ window.TEXTOS = {
     "dos.sentimiento": "Feeling",
     "nota.curatorial": "A curatorial reading, not the artist’s words.",
     "dos.revelar": "Reveal the second painting",
-    "dos.pregunta2": "Which of these two paintings connects more with your story?",
+    "dos.pregunta2": "Which of these stories connects more with yours?",
     "dos.lasDos": "Both",
     "wa.par": "Hello Luciann, I’m interested in the reproductions of “Quebrantada” and “Restaurada” together. Could you send me information?",
     "dos.ordenarPar": "Order both, {precio}",
@@ -206,7 +207,7 @@ window.TEXTOS = {
     "artista.testimonios": "From people who have her work",
     "queVes.unaObra": "A painting from the collection.",
     "queVes.otra": "Try another painting",
-    "queVes.nota": "A curatorial reading, not the artist’s words. What you feel is just as valid.",
+    "queVes.nota": "A question from the gallery, not the artist’s words. Your reading is the one that matters.",
     "queVes.invitacion": "Perhaps this painting has something to tell you.",
     "queVes.conocer": "Discover “{titulo}”",
     "pincelada.terminada": "“{titulo}”, finished.",
@@ -280,7 +281,24 @@ window.TEXTOS = {
     "museo.alejar": "Tap to see the whole painting",
     "museo.ayuda": "Swipe or use the arrow keys to walk through the room. Tap the painting to look closer.",
     "museo.sueno": "An imagined room for Luciann’s dream: a future family gallery-studio.",
-    "museo.marco": "Frame"
+    "museo.marco": "Frame",
+    "rec.capituloNombre": "Chapter {n} · {nombre}",
+    "rec.capitulos": "Chapters",
+    "museo.lecturaPosible": "A possible reading",
+    "museo.inscripcion": "Inscription on the painting",
+    "museo.enmarcada": "Photograph of the original painting in its frame.",
+    "museo.aCasa": "Now imagine it in your space…",
+    "ficha.originalFila": "Original painting",
+    "ficha.originalPendiente": "Medium, year and dimensions to be confirmed with the artist",
+    "ficha.marco": "Frame",
+    "ficha.ambiente": "The original painting in a home",
+    "ficha.ambienteNota": "An inspiration photo. What you receive is the reproduction described under “Purchase details”.",
+    "ficha.enmarcadaNota": "The only available photograph shows the original in its frame; here it is shown without it.",
+    "voz.leer": "Read the full statement",
+    "voz.firma": "Luciann Soto Soto, Artist Statement",
+    "voz.escuchar": "Listen in her voice",
+    "voz.original": "In her own words, in Spanish. The English translation is awaiting the artist’s approval.",
+    "voz.principio": "That is why, in this gallery, the questions are yours: our readings are only one possibility."
   },
 
   /* Por obra (la clave es el slug). El título NO va aquí: se conserva en español en catalogo.js.
@@ -292,7 +310,7 @@ window.TEXTOS = {
     "quebrantada": {
       "subtitulo": "",
       "subtituloPropuesto": "A vessel broken open to the light",
-      "alt": "A woman’s face shaped like a cracked clay vessel, eyes closed, over blue water beneath rays of light.",
+      "alt": "A woman’s face shaped like a cracked clay vessel, eyes closed and shedding a tear, over blue water beneath rays of light, with fragments around her.",
       "descripcion": "",
       "declaracion": "",
       "tecnica": ""
@@ -300,10 +318,11 @@ window.TEXTOS = {
     "restaurada": {
       "subtitulo": "",
       "subtituloPropuesto": "What was broken, made whole",
-      "alt": "The serene face of a woman shaped like a clay vessel, resting on a pedestal.",
+      "alt": "The serene face of a woman shaped like a clay vessel, resting on a closed book inscribed “Mujer restaurada por Cristo con su amor” (Woman restored by Christ with his love).",
       "descripcion": "",
       "declaracion": "",
-      "tecnica": ""
+      "tecnica": "",
+      "inscripcion": "Mujer restaurada por Cristo con su amor (Woman restored by Christ with his love)"
     },
     "madre-naturaleza": {
       "subtitulo": "",
@@ -316,7 +335,7 @@ window.TEXTOS = {
     "sigo-en-victoria": {
       "subtitulo": "",
       "subtituloPropuesto": "Still standing in victory",
-      "alt": "A person seen from behind in a wheelchair, arms raised, on a pink hill covered in flowers.",
+      "alt": "A woman seen from behind in a wheelchair with sunflowers for wheels, arms raised, beside an earthen path with flowers rising against a green background.",
       "descripcion": "",
       "declaracion": "",
       "tecnica": ""
@@ -324,7 +343,7 @@ window.TEXTOS = {
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
       "subtituloPropuesto": "In the Potter’s hands",
-      "alt": "Hands holding and shaping a clay face, beside a figure dressed in blue.",
+      "alt": "Hands holding a cracked clay face that rests against a figure dressed in blue.",
       "descripcion": "",
       "declaracion": "",
       "tecnica": ""
@@ -332,7 +351,7 @@ window.TEXTOS = {
     "salmo-23": {
       "subtitulo": "",
       "subtituloPropuesto": "Psalm 23",
-      "alt": "A woman dressed in white dancing with a yellow cloak along a path toward the light.",
+      "alt": "A woman dressed in white dancing with a yellow cloak along a path that leads from a dark landscape toward the light.",
       "descripcion": "",
       "declaracion": "",
       "tecnica": ""
@@ -343,47 +362,53 @@ window.TEXTOS = {
   recorrido: {
     "quebrantada": {
       "titulo": "What breaks",
-      "linea": "Every story begins with a crack."
-    },
-    "restaurada": {
-      "titulo": "What is rebuilt",
-      "linea": "Piece by piece, what was broken finds its shape again."
+      "linea": "Where does your eye rest: on the crack, or on the light?"
     },
     "en-las-manos-del-alfarero": {
-      "titulo": "What is shaped",
-      "linea": "Some hands hold you while they give you form."
+      "titulo": "What is held",
+      "linea": "Look at the hands. What do they tell you?"
+    },
+    "restaurada": {
+      "titulo": "What is restored",
+      "linea": "The same form, a different gaze. What changed?"
     },
     "salmo-23": {
       "titulo": "What dances",
-      "linea": "Even on the dark path, the soul moves toward the light."
+      "linea": "A path from shadow into light. Where are you on it?"
     },
     "sigo-en-victoria": {
       "titulo": "What overcomes",
-      "linea": "Victory can also be felt with arms raised high."
+      "linea": "Arms raised, flowers along the way. What would you celebrate?"
     },
     "madre-naturaleza": {
-      "titulo": "What blooms",
-      "linea": "And life, once again, begins to flow."
+      "titulo": "What flows",
+      "linea": "Stay a moment with the water."
     }
+  },
+
+  capitulos: {
+    "herida": "The wound and the hands",
+    "camino": "The path",
+    "vida": "The life that sustains"
   },
 
   /* “¿Qué ves tú?”: emociones (etiqueta del botón) y reflexión curatorial */
   queVes: {
     "fortaleza": {
       "etiqueta": "Strength",
-      "texto": "Strength is not always in the gesture. Sometimes it is in what an image holds in silence."
+      "texto": "Where do you see it? Perhaps in a gesture, a color, or in what the painting holds in silence. Look again."
     },
     "paz": {
       "etiqueta": "Peace",
-      "texto": "Some paintings ask for nothing. They simply invite you to breathe a little more slowly."
+      "texto": "Stay a moment longer. Which part of the painting invites you to breathe more slowly?"
     },
     "esperanza": {
       "etiqueta": "Hope",
-      "texto": "Hope rarely shouts. It tends to hide in a detail that appears when your gaze lingers."
+      "texto": "Which detail showed it to you? Sometimes it appears when the eye slows down."
     },
     "nostalgia": {
       "etiqueta": "Nostalgia",
-      "texto": "Sometimes a painting takes us back to a place, or a person, we carry inside."
+      "texto": "Where, or to whom, did this painting take you?"
     }
   },
 
@@ -392,33 +417,33 @@ window.TEXTOS = {
     "sentimientos": {
       "fortaleza": {
         "etiqueta": "Strength",
-        "texto": "What breaks does not always end. Sometimes that is exactly where something learns to hold itself up."
+        "texto": "What showed it to you: the face, the cracks, or the light falling on her?"
       },
       "tristeza": {
         "etiqueta": "Sadness",
-        "texto": "Sadness knows how to look, too. Staying in front of a painting that hurts is a way of honoring what you have lived."
+        "texto": "Sadness knows how to look, too. Staying before a painting that hurts is a way of honoring what has been lived."
       },
       "esperanza": {
         "etiqueta": "Hope",
-        "texto": "Hope rarely shouts. It tends to hide in a detail that appears when your gaze lingers."
+        "texto": "Where did you find it? Look again at the light falling on her."
       },
       "transformacion": {
         "etiqueta": "Transformation",
-        "texto": "Nothing that passes through a wound is ever the same again. And not being the same can be another kind of beauty."
+        "texto": "Nothing that passes through a wound stays the same. What do you think comes next?"
       }
     },
     "eleccion": {
-      "quebrantada": "Perhaps you are in the chapter of the crack. Facing it is also part of healing.",
-      "restaurada": "Perhaps you already recognize what has come back together in you. Serenity is also something you win.",
-      "las-dos": "Perhaps your story holds both: what broke and what was restored. Together, they tell the whole journey."
+      "quebrantada": "Perhaps today you recognize yourself in the crack. Facing it is also part of the path.",
+      "restaurada": "Perhaps you recognize what has come back together. Serenity is something we build, too.",
+      "las-dos": "Perhaps your story holds both. Only you know which chapter you are in."
     }
   },
 
   /* Contenido que escribe o aprueba Luciann: lema, declaración, envío, políticas y textos de imágenes.
    Un campo vacío ("") no se inventa en la página: se oculta o aparece como “por confirmar”. */
   contenido: {
+    "declaracion": "My artistic work is characterized by expressionism, through which I explore color, form, and texture to express emotions and symbolic meanings. My works address themes related to spirituality, faith, nature, and human experiences. Through experimentation and intuition, I integrate figurative and abstract elements, as well as diverse materials, including eco-friendly ones. In each work, I seek to create a space for connection and reflection, inviting the viewer to feel, interpret, and discover their own relationship with the work.",
     "lema": "Art to heal, to beautify and to bless.",
-    "declaracion": "",
     "envio": {
       "destinos": "",
       "costo": "",

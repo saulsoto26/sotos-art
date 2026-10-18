@@ -114,6 +114,7 @@ def redireccion(destino_js, respaldo, canonical, titulo, extra_head=""):
 if SALIDA.exists(): shutil.rmtree(SALIDA)
 SALIDA.mkdir()
 for f in AQUI.iterdir():
+    if f.name.startswith("original-"): continue   # fotos originales de respaldo: nunca se publican
     if f.is_file() and (f.suffix.lower() in ARCHIVOS or f.name in SCRIPTS or f.name in COPIAR_HTML or re.fullmatch(r"textos-[a-z]{2}\.js", f.name)):
         shutil.copy2(f, SALIDA / f.name)
 
@@ -167,7 +168,7 @@ def planos(d, pre=""):
     elif isinstance(d, list):
         for i, x in enumerate(d): yield from planos(x, f"{pre}[{i}]")
     else: yield pre, d
-SECCIONES = [("pagina", "Portada"), ("obras", "Obras (los títulos se conservan en español)"), ("recorrido", "Recorrido (curatorial)"),
+SECCIONES = [("pagina", "Portada"), ("obras", "Obras (los títulos se conservan en español)"), ("recorrido", "Recorrido (curatorial)"), ("capitulos", "Capítulos (curatorial)"),
              ("queVes", "¿Qué ves tú? (curatorial)"), ("dosObras", "Dos obras, una historia (curatorial)"), ("contenido", "Políticas y textos de imágenes"),
              ("ui", "Botones y mensajes"), ("meta", "Buscadores y vistas previas")]
 if len(IDIOMAS) > 1:

@@ -42,17 +42,19 @@ window.TEXTOS = {
     "coleccion.titulo": "La colección",
     "coleccion.lead": "Reproducciones de alta calidad de las pinturas originales de Luciann Soto. Toca una obra para ver tamaños, precio y cómo ordenarla.",
     "rec.etiqueta": "Recorrido por la colección",
-    "rec.kicker": "Seis obras, una historia",
+    "rec.kicker": "Seis obras, tres capítulos",
     "rec.verObra": "Ver esta obra",
     "rec.anterior": "Capítulo anterior",
     "rec.siguiente": "Siguiente",
     "rec.verColeccion": "Ver la colección",
-    "rec.nota": "Desliza o usa las flechas. Lecturas curatoriales, no palabras de la artista.",
+    "rec.nota": "Desliza o usa las flechas, o elige un capítulo. Preguntas y lecturas de la galería, no palabras de la artista.",
     "queVes.kicker": "¿Qué ves tú?",
     "queVes.pregunta": "Antes de conocer su historia… ¿qué te hace sentir?",
     "dos.kicker": "Dos obras, una historia",
     "dos.titulo": "Hay historias que comienzan cuando algo se rompe",
     "dos.lead": "Mírala primero a ella.",
+    "voz.kicker": "La voz de Luciann",
+    "voz.titulo": "La voz de Luciann",
     "artista.fotoAlt": "Luciann Soto sonriendo junto a su pintura Salmo 23, en una exposición.",
     "artista.fotoPie": "Luciann Soto junto a «Salmo 23».",
     "artista.kicker": "Conoce a Luciann",
@@ -60,8 +62,7 @@ window.TEXTOS = {
     "artista.eje": "Una obra que nos invita a descubrir lo que sentimos.",
     "artista.p1": "Luciann Soto Soto es una artista puertorriqueña, museóloga y educadora en Bellas Artes. Su trabajo explora la espiritualidad, la fe, la naturaleza y las experiencias humanas mediante el color, la forma y la textura. Se formó en la Escuela Central de Artes Visuales de Santurce, y su maestría en Museología le dio otra mirada: la de quien entiende cómo una obra se encuentra con las personas.",
     "artista.p2": "Desde 2014 crea, enseña y comparte su arte a través de Soto’s Art. Ha acompañado a niños y adultos en talleres como «Explorando las maravillas del Arte», y en 2018 fundó Photoboricua Kids Corp, una organización sin fines de lucro que preside. En el salón de clases enseña dibujo, pintura, drama y canto.",
-    "artista.p3": "Su colección habla de lo que se rompe y se restaura, de la fe, la naturaleza y la fortaleza.",
-    "artista.cita": "Cada obra es una invitación a conectar con la belleza, la fe y la fuerza de la vida.",
+        "artista.cita": "Cada obra es una invitación a conectar con la belleza, la fe y la fuerza de la vida.",
     "artista.trayectoria": "Su trayectoria",
     "artista.hito1": "Funda Soto’s Art. Comienza como tallerista de artes visuales en el Proyecto Niños de Nueva Esperanza, en Sabana Seca, hasta 2022.",
     "artista.hito2": "Inicia los talleres para grandes y chicos «Explorando las maravillas del Arte».",
@@ -186,7 +187,7 @@ window.TEXTOS = {
     "dos.sentimiento": "Sentimiento",
     "nota.curatorial": "Lectura curatorial, no palabras de la artista.",
     "dos.revelar": "Revelar la segunda obra",
-    "dos.pregunta2": "¿Cuál de estas dos obras conecta más con tu historia?",
+    "dos.pregunta2": "¿Cuál de estas historias conecta más con la tuya?",
     "dos.lasDos": "Las dos",
     "wa.par": "Hola, Luciann. Me interesan las reproducciones de «Quebrantada» y «Restaurada» juntas. ¿Me puedes dar información?",
     "dos.ordenarPar": "Ordenar las dos, {precio}",
@@ -200,7 +201,7 @@ window.TEXTOS = {
     "artista.testimonios": "Lo que dicen quienes tienen su obra",
     "queVes.unaObra": "Una obra de la colección.",
     "queVes.otra": "Probar con otra obra",
-    "queVes.nota": "Lectura curatorial, no palabras de la artista. Lo que tú sientes es igual de válido.",
+    "queVes.nota": "Pregunta de la galería, no palabras de la artista. Tu lectura es la que cuenta.",
     "queVes.invitacion": "Tal vez esta obra tiene algo que decirte.",
     "queVes.conocer": "Conocer «{titulo}»",
     "pincelada.terminada": "«{titulo}», terminada.",
@@ -279,7 +280,24 @@ window.TEXTOS = {
     "museo.alejar": "Tocar para ver la obra completa",
     "museo.ayuda": "Desliza o usa las flechas para recorrer la sala. Toca la obra para acercarte.",
     "museo.sueno": "Una sala imaginada para el sueño de Luciann: una futura galería-estudio familiar.",
-    "museo.marco": "Marco"
+    "museo.marco": "Marco",
+    "rec.capituloNombre": "Capítulo {n} · {nombre}",
+    "rec.capitulos": "Capítulos",
+    "museo.lecturaPosible": "Una lectura posible",
+    "museo.inscripcion": "Inscripción en la obra",
+    "museo.enmarcada": "Fotografía de la obra original con su marco.",
+    "museo.aCasa": "Ahora imagínala en tu espacio…",
+    "ficha.originalFila": "Obra original",
+    "ficha.originalPendiente": "Técnica, año y medidas por confirmar con la artista",
+    "ficha.marco": "Marco",
+    "ficha.ambiente": "Obra original en un hogar",
+    "ficha.ambienteNota": "Fotografía de inspiración. Lo que recibes es la reproducción descrita en «Detalles de compra».",
+    "ficha.enmarcadaNota": "La única fotografía disponible muestra el original con su marco; aquí se presenta sin él.",
+    "voz.leer": "Leer la declaración completa",
+    "voz.firma": "Luciann Soto Soto, Declaración de artista",
+    "voz.escuchar": "Escúchala en su voz",
+    "voz.original": "",
+    "voz.principio": "Por eso, en esta galería las preguntas son tuyas: nuestras lecturas son solo una posibilidad."
   },
 
   /* Por obra (la clave es el slug). El título NO va aquí: se conserva en español en catalogo.js.
@@ -290,7 +308,7 @@ window.TEXTOS = {
   obras: {
     "quebrantada": {
       "subtitulo": "",
-      "alt": "Rostro de mujer en forma de vasija de barro agrietada, con los ojos cerrados, sobre agua azul bajo rayos de luz.",
+      "alt": "Rostro de mujer en forma de vasija de barro agrietada, con los ojos cerrados y una lágrima, sobre agua azul bajo rayos de luz, con fragmentos a su alrededor.",
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
@@ -298,11 +316,12 @@ window.TEXTOS = {
     },
     "restaurada": {
       "subtitulo": "",
-      "alt": "Rostro sereno de mujer en forma de vasija de barro, sobre un pedestal.",
+      "alt": "Rostro sereno de mujer en forma de vasija de barro, sobre un libro cerrado con la inscripción «Mujer restaurada por Cristo con su amor».",
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
-      "tecnica": ""
+      "tecnica": "",
+      "inscripcion": "Mujer restaurada por Cristo con su amor"
     },
     "madre-naturaleza": {
       "subtitulo": "",
@@ -314,7 +333,7 @@ window.TEXTOS = {
     },
     "sigo-en-victoria": {
       "subtitulo": "",
-      "alt": "Persona de espaldas en silla de ruedas, con los brazos en alto, sobre una colina rosada con flores.",
+      "alt": "Mujer de espaldas en una silla de ruedas con girasoles por ruedas, con los brazos en alto, junto a un camino de tierra con flores que asciende sobre un fondo verde.",
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
@@ -322,7 +341,7 @@ window.TEXTOS = {
     },
     "en-las-manos-del-alfarero": {
       "subtitulo": "",
-      "alt": "Manos que sostienen y moldean un rostro de barro, junto a una figura vestida de azul.",
+      "alt": "Manos que sostienen un rostro de barro agrietado que descansa sobre una figura vestida de azul.",
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
@@ -330,7 +349,7 @@ window.TEXTOS = {
     },
     "salmo-23": {
       "subtitulo": "",
-      "alt": "Mujer vestida de blanco que danza con un manto amarillo en un camino hacia la luz.",
+      "alt": "Mujer vestida de blanco que danza con un manto amarillo en un camino que va de un paisaje oscuro hacia la luz.",
       "descripcion": "",
       "declaracion": "",
       "subtituloPropuesto": "",
@@ -342,47 +361,53 @@ window.TEXTOS = {
   recorrido: {
     "quebrantada": {
       "titulo": "Lo que se rompe",
-      "linea": "Toda historia empieza en una grieta."
-    },
-    "restaurada": {
-      "titulo": "Lo que se reconstruye",
-      "linea": "Pieza a pieza, lo roto encuentra su forma otra vez."
+      "linea": "¿Dónde se detiene tu mirada: en la grieta o en la luz?"
     },
     "en-las-manos-del-alfarero": {
-      "titulo": "Lo que se moldea",
-      "linea": "Hay manos que sostienen mientras dan forma."
+      "titulo": "Lo que se sostiene",
+      "linea": "Observa las manos. ¿Qué te dicen?"
+    },
+    "restaurada": {
+      "titulo": "Lo que se restaura",
+      "linea": "La misma forma, otra mirada. ¿Qué cambió?"
     },
     "salmo-23": {
       "titulo": "Lo que danza",
-      "linea": "Aun en el camino oscuro, el alma se mueve hacia la luz."
+      "linea": "Un camino que va de la sombra a la luz. ¿Dónde estás tú en él?"
     },
     "sigo-en-victoria": {
       "titulo": "Lo que vence",
-      "linea": "La victoria también se siente con los brazos en alto."
+      "linea": "Brazos en alto, flores en el camino. ¿Qué celebrarías tú?"
     },
     "madre-naturaleza": {
-      "titulo": "Lo que florece",
-      "linea": "Y la vida, otra vez, vuelve a fluir."
+      "titulo": "Lo que fluye",
+      "linea": "Quédate un momento con el agua."
     }
+  },
+
+  capitulos: {
+    "herida": "La herida y las manos",
+    "camino": "El camino",
+    "vida": "La vida que sostiene"
   },
 
   /* “¿Qué ves tú?”: emociones (etiqueta del botón) y reflexión curatorial */
   queVes: {
     "fortaleza": {
       "etiqueta": "Fortaleza",
-      "texto": "La fuerza no siempre está en el gesto. A veces está en lo que una imagen sostiene en silencio."
+      "texto": "¿Dónde la ves? Tal vez en un gesto, en un color o en lo que la obra sostiene en silencio. Vuelve a mirar."
     },
     "paz": {
       "etiqueta": "Paz",
-      "texto": "Hay obras que no piden nada. Solo te invitan a respirar un poco más despacio."
+      "texto": "Quédate un momento más. ¿Qué parte de la obra te invita a respirar más despacio?"
     },
     "esperanza": {
       "etiqueta": "Esperanza",
-      "texto": "La esperanza rara vez grita. Suele esconderse en un detalle que aparece cuando la mirada se detiene."
+      "texto": "¿Qué detalle te la mostró? A veces aparece cuando la mirada se detiene."
     },
     "nostalgia": {
       "etiqueta": "Nostalgia",
-      "texto": "A veces una pintura nos devuelve a un lugar, o a una persona, que llevamos dentro."
+      "texto": "¿A qué lugar, o a qué persona, te llevó esta obra?"
     }
   },
 
@@ -391,7 +416,7 @@ window.TEXTOS = {
     "sentimientos": {
       "fortaleza": {
         "etiqueta": "Fortaleza",
-        "texto": "Lo que se rompe no siempre termina. A veces es justo ahí donde algo aprende a sostenerse."
+        "texto": "¿Qué te la mostró: el rostro, las grietas o la luz que cae sobre ella?"
       },
       "tristeza": {
         "etiqueta": "Tristeza",
@@ -399,17 +424,17 @@ window.TEXTOS = {
       },
       "esperanza": {
         "etiqueta": "Esperanza",
-        "texto": "La esperanza rara vez grita. Suele esconderse en un detalle que aparece cuando la mirada se detiene."
+        "texto": "¿Dónde la encontraste? Mira otra vez la luz que cae sobre ella."
       },
       "transformacion": {
         "etiqueta": "Transformación",
-        "texto": "Nada de lo que atraviesa una herida vuelve a ser igual. Y no ser igual puede ser otra forma de belleza."
+        "texto": "Nada de lo que atraviesa una herida vuelve a ser igual. ¿Qué crees que viene después?"
       }
     },
     "eleccion": {
-      "quebrantada": "Quizás estás en el capítulo de la grieta. Mirarla de frente también es parte de sanar.",
-      "restaurada": "Quizás ya reconoces lo que se ha vuelto a unir en ti. La serenidad también es una conquista.",
-      "las-dos": "Quizás tu historia tiene las dos: lo que se rompió y lo que se restauró. Juntas cuentan el camino completo."
+      "quebrantada": "Quizás hoy te reconoces en la grieta. Mirarla de frente también es parte del camino.",
+      "restaurada": "Quizás reconoces lo que se ha vuelto a unir. La serenidad también se construye.",
+      "las-dos": "Quizás tu historia tiene las dos. Solo tú sabes en qué capítulo estás."
     }
   },
 
@@ -417,7 +442,7 @@ window.TEXTOS = {
    Un campo vacío ("") no se inventa en la página: se oculta o aparece como “por confirmar”. */
   contenido: {
     "lema": "Arte para sanar, embellecer y bendecir.",
-    "declaracion": "",
+    "declaracion": "Mi trabajo artístico se caracteriza por el expresionismo, a través del cual exploro el color, la forma y la textura para expresar emociones y significados simbólicos. Mis obras abordan temas relacionados con la espiritualidad, la fe, la naturaleza y las experiencias humanas. Mediante la experimentación y la intuición, integro elementos figurativos y abstractos, así como diversos materiales, incluyendo los ecoamigables. En cada obra busco crear un espacio de conexión y reflexión, invitando al espectador a sentir, interpretar y descubrir su propia relación con la obra.",
     "envio": {
       "destinos": "",
       "costo": "",
