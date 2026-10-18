@@ -59,10 +59,17 @@ window.TEXTOS = {
     "artista.kicker": "Meet Luciann",
     "artista.titulo": "A life spent teaching others to express themselves through art.",
     "artista.eje": "Art that invites us to discover what we feel.",
-    "artista.p1": "Luciann Soto Soto is a Puerto Rican artist, educator and museologist. She trained at the Escuela Especializada Central de Artes Visuales, and her master’s studies with a concentration in Museology gave her another way of seeing: that of someone who understands how a work of art meets people.",
-    "artista.p2": "Since 2014 she has created, taught and shared her art through Soto’s Art. She has guided children and adults in workshops such as “Explorando las maravillas del Arte” (Exploring the Wonders of Art), and in 2018 she founded Photoboricua Kids Corp, a nonprofit organization through which she coordinates workshops and exhibitions for children and young people. Since 2021 she has been a Fine Arts teacher: in the classroom she teaches drawing, painting, drama and singing.",
+    "artista.p1": "Luciann Soto Soto is a Puerto Rican artist, museologist, and fine arts educator. Her work explores spirituality, faith, nature, and human experiences through color, form, and texture. She trained at the Escuela Central de Artes Visuales in Santurce, and her master’s degree in Museology gave her another way of seeing: that of someone who understands how a work of art meets people.",
+    "artista.p2": "Since 2014 she has created, taught and shared her art through Soto’s Art. She has guided children and adults in workshops such as “Explorando las maravillas del Arte” (Exploring the Wonders of Art), and in 2018 she founded Photoboricua Kids Corp, a nonprofit organization she leads as president. In the classroom she teaches drawing, painting, drama and singing.",
     "artista.p3": "Her collection speaks of what breaks and is restored, of faith, nature and strength.",
     "artista.cita": "Every painting is an invitation to connect with the beauty, the faith and the strength of life.",
+    "artista.trayectoria": "Her journey",
+    "artista.hito1": "Founds Soto’s Art. Begins teaching visual arts workshops at Proyecto Niños de Nueva Esperanza in Sabana Seca, through 2022.",
+    "artista.hito2": "Launches “Explorando las maravillas del Arte”, workshops for children and adults.",
+    "artista.hito3": "Founds and presides over Photoboricua Kids Corp.",
+    "artista.hito4": "Bachelor’s degree in Digital Communication and Multimedia Content, Universidad Ana G. Méndez.",
+    "artista.hito5": "Fine Arts teacher.",
+    "artista.hito6": "Master of Education with a specialization in Museology, Caribbean University.",
     "pincelada.titulo": "Behind every brushstroke",
     "pincelada.lead": "The real work behind her paintings.",
     "explora.titulo": "Exploring techniques",
@@ -94,12 +101,7 @@ window.TEXTOS = {
     "comprar.paso4b": "From the payment platform or from Luciann.",
     "comprar.politicas": "Shipping and policies",
     "comprar.faq": "Frequently asked questions",
-    "pie.derechos": "Images of the paintings may not be reproduced without permission.",
-    "tray.kicker": "Her path",
-    "tray.titulo": "Exhibitions & Artistic Journey",
-    "tray.intro": "Luciann has devoted her life to creating, teaching and sharing art. These are a few moments along the way.",
-    "tray.verCompleta": "See the full journey",
-    "tray.volver": "Back to the collection"
+    "pie.derechos": "Images of the paintings may not be reproduced without permission."
   },
 
   /* Botones, avisos, mensajes y fichas. {x}, {titulo}, {precio}… se reemplazan solos: no los traduzcas */
@@ -278,22 +280,7 @@ window.TEXTOS = {
     "museo.alejar": "Tap to see the whole painting",
     "museo.ayuda": "Swipe or use the arrow keys to walk through the room. Tap the painting to look closer.",
     "museo.sueno": "An imagined room for Luciann’s dream: a future family gallery-studio.",
-    "museo.marco": "Frame",
-    "museo.trayectoria": "About the artist: exhibitions since 2009",
-    "compartir.titulo": "Share",
-    "compartir.galeria": "Share this gallery",
-    "compartir.galeriaNombre": "The gallery of Luciann Soto",
-    "compartir.textoGaleria": "Discover Soto’s Art, the gallery of Luciann Soto",
-    "compartir.escanea": "Scan the code with another phone’s camera.",
-    "compartir.whatsapp": "Send on WhatsApp",
-    "compartir.copiar": "Copy link",
-    "compartir.mas": "More options",
-    "compartir.guardar": "Save the QR code",
-    "compartir.enlace": "Link",
-    "compartir.qrAlt": "QR code to open {titulo}",
-    "compartir.qrError": "The QR code couldn’t be created. You can copy the link.",
-    "compartir.qrObra": "Scan to discover the painting",
-    "compartir.qrGaleria": "Scan to visit the gallery"
+    "museo.marco": "Frame"
   },
 
   /* Por obra (la clave es el slug). El título NO va aquí: se conserva en español en catalogo.js.
@@ -425,102 +412,6 @@ window.TEXTOS = {
       "restaurada": "Perhaps you already recognize what has come back together in you. Serenity is also something you win.",
       "las-dos": "Perhaps your story holds both: what broke and what was restored. Together, they tell the whole journey."
     }
-  },
-
-  /* Trayectoria y exposiciones (fuente: “Luciann Trayectoria Artística 2026” y precisiones de Luciann).
-   Las exposiciones (nombres oficiales) están en catalogo.js → TRAYECTORIA. revisar: dato pendiente de confirmar (no se publica). */
-  trayectoria: {
-    "momentos": [
-      {
-        "anio": "1991–1996",
-        "titulo": "Training",
-        "texto": "Studies at the Escuela Especializada Central de Artes Visuales, a specialized visual arts school."
-      },
-      {
-        "anio": "2009–2026",
-        "titulo": "Exhibitions",
-        "texto": "Exhibits her work, from “Bajo Las Sábanas” at the Museo de Dorado to the Segundo Encuentro en MUSA."
-      },
-      {
-        "anio": "2018",
-        "titulo": "Muralist",
-        "texto": "Takes part in the Colectivo de Murales in Vega Alta and is recognized for her work as a muralist."
-      },
-      {
-        "anio": "Since 2021",
-        "titulo": "Teacher",
-        "texto": "Fine Arts teacher, after years leading workshops in art, digital media and creative writing."
-      }
-    ],
-    "grupos": {
-      "exposiciones": "Exhibitions",
-      "ensenanza": "Teaching & community",
-      "formacion": "Education",
-      "reconocimientos": "Recognitions"
-    },
-    "tipos": {
-      "colectiva": "Group exhibition",
-      "murales": "Mural collective",
-      "": "Exhibition"
-    },
-    "ensenanza": [
-      {
-        "anio": "Since 2021",
-        "texto": "Fine Arts teacher."
-      },
-      {
-        "anio": "2018–2026",
-        "texto": "Photoboricua Kids Corp: founder and coordinator of workshops and exhibitions for children and young people."
-      },
-      {
-        "anio": "2015",
-        "texto": "“Explorando las maravillas del Arte”, workshops for children and adults."
-      },
-      {
-        "anio": "2014–2022",
-        "texto": "Proyecto Niños de Nueva Esperanza: art workshop leader."
-      },
-      {
-        "anio": "Since 2014",
-        "texto": "Soto’s Art: creating, teaching and sharing her art."
-      },
-      {
-        "anio": "2012–2018",
-        "texto": "Taller de Fotoperiodismo (a photojournalism workshop): leader of digital media and creative writing workshops."
-      }
-    ],
-    "formacion": [
-      {
-        "anio": "",
-        "texto": "Maestría en Artes de la Educación con Concentración en Museología (Master of Arts in Education, concentration in Museology), Caribbean University, Bayamón."
-      },
-      {
-        "anio": "2019",
-        "texto": "Bachillerato en Artes de la Comunicación (Bachelor of Arts in Communication), Universidad Ana G. Méndez, Cupey."
-      },
-      {
-        "anio": "1991–1996",
-        "texto": "Escuela Especializada Central de Artes Visuales."
-      },
-      {
-        "anio": "",
-        "texto": "Continuing education in neuroeducation, STEAM teaching and arts integration across the curriculum."
-      }
-    ],
-    "reconocimientos": [
-      {
-        "anio": "2020",
-        "texto": "Recognized as “Mujer Vegalteña destacada”."
-      },
-      {
-        "anio": "2019",
-        "texto": "Recognition for coordination and performance in Talleres y Exposición, Alcaldía de Vega Alta (municipality of Vega Alta)."
-      },
-      {
-        "anio": "2018",
-        "texto": "Recognition for her participation as a muralist, Vega Alta."
-      }
-    ]
   },
 
   /* Contenido que escribe o aprueba Luciann: lema, declaración, envío, políticas y textos de imágenes.
