@@ -17,12 +17,12 @@ import json, re, sys, html, shutil, subprocess, pathlib
 AQUI = pathlib.Path(__file__).resolve().parent
 SALIDA = AQUI / (sys.argv[sys.argv.index("--salida") + 1] if "--salida" in sys.argv else "_site")
 ARCHIVOS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".mp3", ".m4a", ".mp4", ".webm", ".pdf", ".css", ".ico"}
-SCRIPTS = {"catalogo.js", "app.js"}
+SCRIPTS = {"catalogo.js", "app.js", "qr.js"}
 COPIAR_HTML = {"prototipo-v1.html"}
 
 def leer(idioma):
     js = (AQUI / "catalogo.js").read_text(encoding="utf-8") + "\n" + (AQUI / f"textos-{idioma}.js").read_text(encoding="utf-8")
-    js = "const window = {};\n" + js + "\n;console.log(JSON.stringify({CONFIG, OBRAS, TEXTOS: window.TEXTOS}));"
+    js = "const window = {};\n" + js + "\n;console.log(JSON.stringify({CONFIG, OBRAS, TRAYECTORIA: typeof TRAYECTORIA === 'undefined' ? {} : TRAYECTORIA, TEXTOS: window.TEXTOS}));"
     r = subprocess.run(["node", "-e", js], capture_output=True, text=True)
     if r.returncode: sys.exit(f"Error al leer catalogo.js o textos-{idioma}.js:\n{r.stderr}")
     return json.loads(r.stdout)
@@ -35,7 +35,7 @@ def og(l, s=""):
 def fmt(s, **v): return re.sub(r"\{(\w+)\}", lambda m: str(v.get(m.group(1), m.group(0))), s)
 e = lambda s: html.escape(str(s), quote=True)
 
-base = leer("es"); CONFIG, OBRAS = base["CONFIG"], base["OBRAS"]
+base = leer("es"); CONFIG, OBRAS, TRAYECTORIA = base["CONFIG"], base["OBRAS"], base["TRAYECTORIA"]
 SITIO = CONFIG["sitioURL"]; IDIOMAS = CONFIG.get("idiomas") or ["es"]; DEF = IDIOMAS[0]
 INDEXAR = bool(CONFIG.get("publicarEnBuscadores"))
 TX = {l: (base if l == "es" else leer(l))["TEXTOS"] for l in IDIOMAS}
@@ -79,6 +79,26 @@ def alternos_json(l, R, destino):
           "etiqueta": TX[o]["ui"]["idioma.etiqueta"], "ver": TX[o]["ui"]["idioma.ver"]} for o in IDIOMAS if o != l]
     return '\n<script type="application/json" id="idiomas">' + json.dumps(d, ensure_ascii=False).replace("</", "<\\/") + "</script>"
 
+def trayectoria(l, R):
+    """Trayectoria escrita en la página (legible sin JavaScript y para buscadores)"""
+    T = TX[l].get("trayectoria") or {}
+    if not T: return "", ""
+    mom = '<ol class="tray-momentos">' + "".join(
+        f'<li><span class="tray-anio">{e(m["anio"])}</span><b>{e(m["titulo"])}</b><span>{e(m["texto"])}</span></li>' for m in T["momentos"]) + "</ol>"
+    lista = lambda items: '<ol class="timeline">' + "".join(
+        f'<li><b>{e(x["anio"])}</b><span>{e(x["texto"])}</span></li>' for x in items) + "</ol>"
+    expo = '<ol class="timeline">' + "".join(
+        f'<li><b>{e(x["anio"])}</b><span><i lang="es">{e(x["nombre"])}</i>'
+        + "<small>" + " · ".join(p for p in [
+            (lambda t: "" if t.lower() in x["nombre"].lower() else e(t))(T["tipos"].get(x.get("tipo", ""), "")),   # no repetir lo que ya dice el nombre
+            f'<span lang="es">{e(x["lugar"])}</span>' if x.get("lugar") else ""] if p) + "</small>"
+        + (f'<img src="{R}{e(x["foto"])}" alt="{e(x["nombre"])}" loading="lazy">' if x.get("foto") else "") + "</span></li>"
+        for x in TRAYECTORIA.get("exposiciones", [])) + "</ol>"
+    g = T["grupos"]
+    comp = "".join(f'<h4 class="tray-grupo">{e(g[k])}</h4>' + html for k, html in [
+        ("exposiciones", expo), ("ensenanza", lista(T["ensenanza"])), ("formacion", lista(T["formacion"])), ("reconocimientos", lista(T["reconocimientos"]))])
+    return mom, comp
+
 def llenar(plantilla, l, R, I, **v):
     t = TX[l]
     if not (t.get("aprobacion") or {}).get("palabrasArtista", True):
@@ -114,6 +134,7 @@ def redireccion(destino_js, respaldo, canonical, titulo, extra_head=""):
 if SALIDA.exists(): shutil.rmtree(SALIDA)
 SALIDA.mkdir()
 for f in AQUI.iterdir():
+    if f.name.startswith("original-"): continue   # fotos originales de respaldo: nunca se publican
     if f.is_file() and (f.suffix.lower() in ARCHIVOS or f.name in SCRIPTS or f.name in COPIAR_HTML or re.fullmatch(r"textos-[a-z]{2}\.js", f.name)):
         shutil.copy2(f, SALIDA / f.name)
 
@@ -124,11 +145,12 @@ alt_inicio = [(l, URL["inicio"](l)) for l in IDIOMAS] + [("x-default", SITIO)]
 for l in IDIOMAS:
     m = TX[l]["meta"]
     ld = {"@context": "https://schema.org", "@type": "Person", "name": CONFIG["nombreLegal"], "jobTitle": m["oficio"], "url": URL["inicio"](l),
-          "sameAs": [f"https://www.instagram.com/{CONFIG['instagram']}/"], "address": {"@type": "PostalAddress", "addressCountry": "PR"}}
+          "sameAs": [f"https://www.instagram.com/{CONFIG['instagram']}/"], "nationality": "Puerto Rico", "address": {"@type": "PostalAddress", "addressCountry": "PR"}}
     extra = '\n<script type="application/ld+json">\n' + json.dumps(ld, ensure_ascii=False) + "\n</script>"
     dest = lambda o: f"{o}/"
     head = cabeza(l, m["titulo"], m["descripcion"], URL["inicio"](l), "website", m["titulo"], m["ogDescripcion"], og(l), "", alt_inicio, extra + alternos_json(l, "../", dest))
-    escribir(f"{l}/index.html", llenar(P_INICIO, l, "../", "", HEAD=head, SELECTOR=selector(l, "../", dest)))
+    mom, comp = trayectoria(l, "../")
+    escribir(f"{l}/index.html", llenar(P_INICIO, l, "../", "", HEAD=head, SELECTOR=selector(l, "../", dest), TRAY_MOMENTOS=mom, TRAY_COMPLETA=comp))
     if l == DEF: sitemap.append(alt_inicio)
     for o in OBRAS:
         s, tx_o = o["slug"], TX[l]["obras"].get(o["slug"], {})
@@ -167,8 +189,8 @@ def planos(d, pre=""):
     elif isinstance(d, list):
         for i, x in enumerate(d): yield from planos(x, f"{pre}[{i}]")
     else: yield pre, d
-SECCIONES = [("pagina", "Portada"), ("obras", "Obras (los títulos se conservan en español)"), ("recorrido", "Recorrido (curatorial)"),
-             ("queVes", "¿Qué ves tú? (curatorial)"), ("dosObras", "Dos obras, una historia (curatorial)"), ("contenido", "Políticas y textos de imágenes"),
+SECCIONES = [("pagina", "Portada"), ("obras", "Obras (los títulos se conservan en español)"), ("recorrido", "Recorrido (curatorial)"), ("capitulos", "Capítulos (curatorial)"),
+             ("queVes", "¿Qué ves tú? (curatorial)"), ("dosObras", "Dos obras, una historia (curatorial)"), ("trayectoria", "Trayectoria y exposiciones"), ("contenido", "Políticas y textos de imágenes"),
              ("ui", "Botones y mensajes"), ("meta", "Buscadores y vistas previas")]
 if len(IDIOMAS) > 1:
     filas = []
@@ -182,7 +204,7 @@ if len(IDIOMAS) > 1:
             for k in sorted(set(orig) | set(trad), key=lambda k: list(orig).index(k) if k in orig else 1e9):
                 a, b = orig.get(k, ""), trad.get(k, "")
                 if a in ("", None) and b in ("", None) or isinstance(a, bool): continue
-                cls = ' class="falta"' if (a and not b) else ""
+                cls = ' class="falta"' if (a and not b) or k.endswith(".revisar") else ""
                 filas.append(f"<tr{cls}><td><code>{e(k)}</code></td><td lang='{DEF}'>{e(a)}</td><td lang='{o}'>{e(b)}</td></tr>")
             filas.append("</table>")
     escribir("revision-traducciones.html", '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'

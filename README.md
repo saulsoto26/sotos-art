@@ -78,3 +78,13 @@ Sube la nueva foto con **el mismo nombre** (por ejemplo `obra-quebrantada.jpg`).
 
 ## Lanzamiento
 En `catalogo.js` cambia `publicarEnBuscadores: false` a `true`. Eso retira el “noindex” de todas las páginas.
+
+## Imágenes de las obras
+- `obra-<obra>.jpg` (1600 px) y `obra-<obra>-800.jpg` (teléfonos) son la obra sola, sin pared ni marco. Nunca se amplían.
+- `ambiente-<obra>.jpg` es la obra **original** en un hogar: se muestra como inspiración en la ficha, nunca como foto del producto.
+- `obra-salmo-23-enmarcada.jpg` es la única foto existente de «Salmo 23» y se usa en el Modo museo.
+- `original-*.jpeg` son las fotos tal como llegaron, de respaldo. **No se publican.**
+- Para cambiar una foto: sube el archivo con el mismo nombre y actualiza `w` y `h` en `catalogo.js`.
+
+## Capítulos
+El recorrido y el Modo museo siguen `EXPERIENCIA.capitulos` en `catalogo.js`. Los nombres de los capítulos están en `textos-es.js` y `textos-en.js` → `capitulos`.

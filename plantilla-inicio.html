@@ -136,18 +136,19 @@
       <p>{{t:artista.p2}}</p>
       <!--voz-artista--><blockquote class="quote">{{t:artista.cita}}<cite>Luciann Soto, Soto’s Art – Blessing Art</cite></blockquote><!--/voz-artista-->
       <div id="voz" hidden></div>
-      <details class="soft trayectoria"><summary>{{t:artista.trayectoria}}</summary>
-        <ol class="timeline">
-          <li><b>2014</b><span>{{t:artista.hito1}}</span></li>
-          <li><b>2015</b><span>{{t:artista.hito2}}</span></li>
-          <li><b>2018</b><span>{{t:artista.hito3}}</span></li>
-          <li><b>2019</b><span>{{t:artista.hito4}}</span></li>
-          <li><b>2022</b><span>{{t:artista.hito5}}</span></li>
-          <li><b>2023</b><span>{{t:artista.hito6}}</span></li>
-        </ol>
-      </details>
       <div id="testimonios"></div>
     </div>
+  </div>
+  <!-- TRAYECTORIA Y EXPOSICIONES: después de la biografía, nunca antes de la colección -->
+  <div class="wrap tray" id="trayectoria" aria-labelledby="trayTitulo">
+    <p class="kicker">{{t:tray.kicker}}</p>
+    <h3 class="tray-titulo" id="trayTitulo">{{t:tray.titulo}}</h3>
+    <p class="tray-intro">{{t:tray.intro}}</p>
+    {{TRAY_MOMENTOS}}
+    <details class="soft tray-completa"><summary>{{t:tray.verCompleta}}</summary>
+      {{TRAY_COMPLETA}}
+    </details>
+    <p class="tray-volver"><a class="btn line" href="#obras">{{t:tray.volver}}</a></p>
   </div>
 </section>
 

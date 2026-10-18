@@ -20,10 +20,10 @@ function tr(k, v){
   CONFIG.par.nota = (C.par || {}).nota || "";
   Object.assign(CONFIG.pincelada, C.pincelada);
   CONFIG.exploracion.forEach((x, i) => Object.assign(x, (C.exploracion || [])[i]));
-  OBRAS.forEach(o => Object.assign(o, { alt: "", descripcion: "", declaracion: "", subtitulo: "" }, (TX.obras || {})[o.slug]));
+  OBRAS.forEach(o => Object.assign(o, { alt: "", descripcion: "", declaracion: "", subtitulo: "", inscripcion: "" }, (TX.obras || {})[o.slug]));
   /* Los archivos viven en la raíz del sitio: se ajusta su ruta desde esta página */
   const ruta = f => f && !/^(https?:|data:|\/)/.test(f) && /\.\w{2,4}$/.test(f) ? RAIZ + f : f;
-  OBRAS.forEach(o => { o.imagen = ruta(o.imagen); o.video = ruta(o.video); });
+  OBRAS.forEach(o => { o.imagen = ruta(o.imagen); o.video = ruta(o.video); [o.ambiente, o.enmarcada].forEach(x => { if (x) x.imagen = ruta(x.imagen); }); });
   const P = CONFIG.pincelada; P.proceso = ruta(P.proceso); P.terminada = ruta(P.terminada);
   CONFIG.exploracion.forEach(x => x.imagen = ruta(x.imagen));
   CONFIG.fotosProducto.forEach(x => x.imagen = ruta(x.imagen));
@@ -50,6 +50,26 @@ const waLink = msg => CONFIG.whatsapp ? `https://wa.me/${CONFIG.whatsapp}?text=$
 const obraHref = slug => INICIO + tr("ruta.obras") + "/" + slug + "/";
 const obraURL = o => (CONFIG.sitioURL || "") + IDIOMA + "/" + tr("ruta.obras") + "/" + o.slug + "/";
 const prop = o => (o.w && o.h) ? o.w / o.h : .8;
+const srcs = (o, sizes) => {          // la versión “-800” mide 800 px en su lado mayor
+  const w8 = o.w >= o.h ? 800 : Math.round(800 * o.w / o.h);
+  return Math.max(o.w, o.h) > 800 ? `src="${esc(o.imagen)}" srcset="${esc(o.imagen.replace(/\.jpg$/, "-800.jpg"))} ${w8}w, ${esc(o.imagen)} ${o.w}w" sizes="${sizes}"` : `src="${esc(o.imagen)}"`;
+};
+/* Capítulos (lectura curatorial): a cuál pertenece una obra y su nombre en este idioma */
+/* Medidas de la pintura ORIGINAL, en la notación de su ficha (medida menor primero) y en centímetros */
+function medidasOriginal(o){
+  const m = o.medidas; if (!m || !m.ancho || !m.alto) return "";
+  const a = Math.min(m.ancho, m.alto), b = Math.max(m.ancho, m.alto);
+  if (m.unidad === "cm") return `${a} × ${b} cm`;
+  const c = n => (Math.round(n * 25.4) / 10).toString().replace(".", tr("formato.decimal"));
+  return `${a} × ${b} ${tr("unidad.pulg")} (${c(a)} × ${c(b)} cm)`;
+}
+/* Tamaño en pantalla a partir del original: la medida mayor da la escala y la FOTO da la forma (nunca se deforma la obra) */
+function ladosCm(o, f){
+  const m = o.medidas, c = m.unidad === "cm" ? 1 : 2.54, L = Math.max(m.ancho, m.alto) * c, p = prop(f || o);
+  return p >= 1 ? [L, L / p] : [L * p, L];
+}
+const capDe = slug => EXPERIENCIA.capitulos.findIndex(c => c.obras.includes(slug));
+const capNombre = k => (TX.capitulos || {})[(EXPERIENCIA.capitulos[k] || {}).clave] || "";
 const listJoin = a => a.length > 1 ? a.slice(0, -1).join(", ") + " " + tr("lista.y") + " " + a.at(-1) : (a[0] || "");
 const minPrice = o => { const p = o.variantes.map(v => v.precio).filter(Boolean); return p.length ? Math.min(...p) : 0; };
 function toast(m){ const t = $("#toast"); if (!t) return; t.textContent = m; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 2200); }
@@ -190,11 +210,12 @@ function renderFicha(o, mount, opts = {}){
   const onWall = !!$("#wall");
   mount.innerHTML = `<div class="sheet-in">
     <figure class="sheet-fig">${opts.page ? "" : `<button class="close" aria-label="${tr("cerrar")}" data-close>×</button>`}
-      <img src="${esc(o.imagen)}" alt="${esc(o.alt)}" style="--p:${prop(o)}"></figure>
+      <img ${srcs(o, "(min-width:900px) 50vw, 100vw")} alt="${esc(o.alt)}" style="--p:${prop(o)}">${o.enmarcada ? `<figcaption class="small">${tr("ficha.enmarcadaNota")}</figcaption>` : ""}</figure>
     <div class="sheet-body">
       <span class="sku">${esc(o.sku)}</span>
       ${opts.page ? `<h1 id="sheetTitle">${esc(o.titulo)}</h1>` : `<h2 id="sheetTitle">${esc(o.titulo)}</h2>`}
       ${o.subtitulo ? `<p class="subt">${esc(o.subtitulo)}</p>` : ""}
+      ${o.tecnica || medidasOriginal(o) ? `<p class="original-linea"><span>${tr("ficha.originalFila")}</span>${[o.tecnica, medidasOriginal(o)].filter(Boolean).map(esc).join("<br>")}</p>` : ""}
       ${o.descripcion ? `<p class="lead">${esc(o.descripcion)}</p>` : ""}
       ${o.declaracion ? `<blockquote class="voice">${esc(o.declaracion)}<cite>Luciann Soto</cite></blockquote>` : ""}
       ${o.video ? mediaHTML(o.video, tr("media.obra", { titulo: o.titulo })) : ""}
@@ -211,6 +232,8 @@ function renderFicha(o, mount, opts = {}){
 </div>
       <div id="details"></div>
       <div id="review"></div>
+      ${o.ambiente ? `<figure class="ambiente"><img src="${esc(o.ambiente.imagen)}" alt="${esc(tr("ficha.ambiente"))}: ${esc(cita(o.titulo))}" width="${o.ambiente.w}" height="${o.ambiente.h}" loading="lazy">
+        <figcaption><b>${tr("ficha.ambiente")}</b> ${tr("ficha.ambienteNota")}</figcaption></figure>` : ""}
       <div class="sharebox"><p>${tr("compartir.pregunta")}</p><button class="btn line" data-share>${tr("compartir.boton")}</button></div>
       ${!opts.page && ALTERNOS.length ? `<p class="small ficha-idioma">${ALTERNOS.map(a => `<a href="${esc(a.url)}" hreflang="${a.idioma}" lang="${a.idioma}" data-cambio-idioma>${esc(a.ver)}</a>`).join(" · ")}</p>` : ""}
       ${falta.length ? `<p class="small pendline">${tr("falta.frase", { lista: listJoin(falta) })}</p>` : ""}
@@ -226,8 +249,10 @@ function renderFicha(o, mount, opts = {}){
     const rows = [
       [tr("ficha.obra"), `${cita(esc(o.titulo))}, ${esc(o.sku)}`],
       [tr("ficha.queRecibes"), tr("ficha.reproduccion") + (o.original ? " " + tr("ficha.original", { x: esc(o.original) }) : "")],
+      [tr("ficha.originalFila"), [o.tecnica, medidasOriginal(o), o.anio].filter(Boolean).map(esc).join(" · ") || tr("ficha.originalPendiente")],
       [tr("ficha.tamano"), v ? esc(variantLabel(v)) : pc],
       [tr("ficha.materialAcabado"), v && (v.material || v.acabado) ? esc([v.tipo, v.material, v.acabado].filter(Boolean).map(val).join(", ")) : pc],
+      [tr("ficha.marco"), pol.marco ? esc(pol.marco) : pc],
       [tr("ficha.precio"), v && v.precio ? money(v.precio) + " USD" : pc],
       [tr("ficha.envio"), env.costo ? esc(env.costo) : pc],
       [tr("ficha.preparacion"), env.preparacion ? esc(env.preparacion) : pc],
@@ -642,8 +667,12 @@ function initRecorrido(){
   const sec = $("#recorrido"); if (!sec) return;
   const piece = $(".piece", sec), img = $("img", piece), ROM = ["I", "II", "III", "IV", "V", "VI"];
   let cur = -1, eng = null, tok = 0, started = false;
-  $(".rec-dots", sec).innerHTML = RECORRIDO.map((r, i) => `<button aria-label="${tr("rec.capitulo", { n: ROM[i], titulo: esc(bySlug(r[0]).titulo) })}"></button>`).join("");
-  const dots = $$(".rec-dots button", sec);
+  $(".rec-dots", sec).innerHTML = RECORRIDO.map((r, i) => `<button aria-label="${tr("museo.contador", { n: i + 1, total: RECORRIDO.length })}: ${esc(bySlug(r[0]).titulo)}"></button>`).join("");
+  const dots = $$(".rec-dots button", sec), caps = $(".rec-caps", sec);
+  if (caps){
+    caps.innerHTML = EXPERIENCIA.capitulos.map((c, k) => `<button data-cap="${k}">${ROM[k]}. ${esc(capNombre(k))}</button>`).join("");
+    caps.addEventListener("click", e => { const b = e.target.closest("[data-cap]"); if (b){ track("recorrido_capitulo_elegido", b.dataset.cap); go(RECORRIDO.findIndex(r => r[0] === EXPERIENCIA.capitulos[+b.dataset.cap].obras[0])); } });
+  }
   const tone = im => { try {
       const c = document.createElement("canvas"); c.width = c.height = 12; const x = c.getContext("2d"); x.drawImage(im, 0, 0, 12, 12);
       const d = x.getImageData(0, 0, 12, 12).data; let r = 0, g = 0, b = 0, br = [0, 0, 0, 0];
@@ -659,7 +688,9 @@ function initRecorrido(){
     track("recorrido_capitulo", String(i + 1));
     setTimeout(() => {
       if (t !== tok) return;
-      $(".rec-num", sec).innerHTML = `<b>${ROM[i]}</b>${tr("rec.de", { total: ROM[RECORRIDO.length - 1] })}`; $("h3", sec).textContent = phrase; $(".rec-line", sec).textContent = line;
+      const k = capDe(slug);
+      $(".rec-num", sec).innerHTML = `<b>${ROM[k]}</b>${esc(capNombre(k))}`;
+      if (caps) $$("[data-cap]", caps).forEach(b => b.setAttribute("aria-current", +b.dataset.cap === k)); $("h3", sec).textContent = phrase; $(".rec-line", sec).textContent = line;
       $(".rec-title", sec).textContent = cita(o.titulo);
       dots.forEach((d, k) => { d.setAttribute("aria-current", k === i); d.classList.toggle("seen", k < i); });
       $("[data-prev]", sec).disabled = i === 0;
@@ -695,7 +726,7 @@ function initRecorrido(){
 function renderSalon(){
   const card = o => {
     const p = minPrice(o);
-    return `<a class="work" href="${obraHref(o.slug)}" data-slug="${o.slug}"><div class="frame"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy" decoding="async"></div>
+    return `<a class="work" href="${obraHref(o.slug)}" data-slug="${o.slug}"><div class="frame"><img ${srcs(o, "(min-width:900px) 30vw, 50vw")} alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy" decoding="async"></div>
       <h3>${esc(o.titulo)}</h3><span class="meta">${p ? tr("precio.desde", { precio: money(p) }) : tr("precio.pendiente")}</span></a>`;
   };
   $("#salon").innerHTML = OBRAS.map(card).join("");
@@ -708,7 +739,7 @@ function renderSalon(){
 function initDosObras(){
   const root = $("#dos-obras"); if (!root) return;
   const Q = bySlug("quebrantada"), R = bySlug("restaurada");
-  const fig = (o, cls = "") => `<figure class="${cls}"><img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy"><figcaption>${cita(esc(o.titulo))}</figcaption></figure>`;
+  const fig = (o, cls = "") => `<figure class="${cls}"><img ${srcs(o, "(min-width:900px) 340px, 45vw")} alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy"><figcaption>${cita(esc(o.titulo))}</figcaption></figure>`;
   const seam = `<svg class="seam" viewBox="0 0 14 200" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M7 0 L4 28 L10 52 L5 84 L9 118 L4 148 L9 176 L7 200"/></svg>`;
   const stage = $(".two-stage", root), panel = $(".two-panel", root);
   function step1(){
@@ -726,7 +757,7 @@ function initDosObras(){
     };
   }
   function step2(){
-    stage.className = "two-stage both"; stage.innerHTML = fig(Q) + seam + fig(R, "reveal");
+    stage.className = "two-stage both"; stage.innerHTML = fig(Q) + `<div class="puente" aria-hidden="true">${seam}<span class="luz"></span></div>` + fig(R, "reveal");
     panel.innerHTML = `<h3>${tr("dos.pregunta2")}</h3>
       <div class="choices" role="group" aria-label="${tr("ficha.obra")}">
         <button class="choice" data-c="quebrantada" aria-pressed="false">${esc(Q.titulo)}</button>
@@ -740,7 +771,7 @@ function initDosObras(){
       const par = CONFIG.par, pairMsg = tr("wa.par");
       const pairBtn = par.disponible && par.precio
         ? (par.enlacePago ? `<a class="btn gold" href="${esc(par.enlacePago)}" target="_blank" rel="noopener" data-pago="par">${tr("dos.ordenarPar", { precio: money(par.precio) })}</a>` : `<a class="btn gold" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">${tr("dos.ordenarPar", { precio: money(par.precio) })}</a>`)
-        : (CONFIG.whatsapp ? `<a class="btn ghost" href="${waLink(pairMsg)}" target="_blank" rel="noopener" data-obra="par">${tr("dos.preguntarPar")}</a>` : "");
+        : "";   /* no se presentan como producto conjunto hasta que Luciann lo confirme */
       $("#r2", panel).innerHTML = `<div class="fade-in"><p class="reflect">${DOS_OBRAS.eleccion[b.dataset.c]}</p>
         <p class="note">${tr("nota.curatorial")}</p>
         <div class="ctas">
@@ -748,7 +779,7 @@ function initDosObras(){
           <button class="btn gold" data-o="restaurada">${tr("dos.ver", { titulo: esc(R.titulo) })}</button>
           <button class="btn ghost" data-pair-wall>${tr("dos.parPared")}</button>
           ${pairBtn}</div>
-        ${par.disponible && par.precio ? (par.nota ? `<p class="note">${esc(par.nota)}</p>` : "") : `<p class="note">${tr("dos.parPendiente")}</p>`}
+        ${par.disponible && par.precio && par.nota ? `<p class="note">${esc(par.nota)}</p>` : ""}
         <button class="linkbtn" data-restart>${tr("dos.reiniciar")}</button></div>`;
       $("#r2", panel).onclick = ev => {
         const o = ev.target.closest("[data-o]"); if (o) return openWork(o.dataset.o);
@@ -760,10 +791,21 @@ function initDosObras(){
   step1();
 }
 
+/* La voz de Luciann: su declaración literal. Si en este idioma su traducción no está aprobada,
+   se muestra el original en español con una nota (nunca una traducción sin aprobar). */
+function renderVoz(){
+  const root = $("#voz-luciann"); if (!root) return;
+  const propia = vozArtista() && CONFIG.declaracion, texto = propia ? CONFIG.declaracion : DECLARACION_ORIGINAL, lang = propia ? IDIOMA : "es";
+  const frases = texto.match(/[^.]+\./g) || [texto], frase = (frases[DECLARACION_DESTACADA] || frases.at(-1)).trim();
+  $("#vozFrase").innerHTML = `<p lang="${lang}">${esc(frase)}</p>`;
+  $("#vozTexto").innerHTML = `<p lang="${lang}">${esc(texto)}</p>`;
+  const nota = !propia && tr("voz.original"); $("#vozOrig").textContent = nota || ""; $("#vozOrig").hidden = !nota;
+  $("#vozAudio").innerHTML = CONFIG.declaracionAudio ? `<p class="kicker">${tr("voz.escuchar")}</p>` + mediaHTML(CONFIG.declaracionAudio, tr("artista.declaracion")) : "";
+  $(".voz-completa", root).addEventListener("toggle", e => e.target.open && track("voz_declaracion_completa"));
+}
+
 function renderArtista(){
   const voz = $("#voz"); if (!voz) return; const parts = [];
-  if (CONFIG.declaracion) parts.push(`<blockquote class="quote">${esc(CONFIG.declaracion)}<cite>${tr("artista.declaracion")}</cite></blockquote>`);
-  if (CONFIG.declaracionAudio) parts.push(mediaHTML(CONFIG.declaracionAudio, tr("artista.declaracion")));
   if (CONFIG.videoArtista) parts.push(mediaHTML(CONFIG.videoArtista, tr("media.artista")));
   voz.innerHTML = parts.join(""); voz.hidden = !parts.length;
   const t = CONFIG.testimonios.filter(x => x.permiso && x.texto && x.nombre);
@@ -776,7 +818,7 @@ function initQueVes(){
   const art = $(".feel-art", root), choices = $(".choices", root), out = $(".feel-out", root);
   function paint(){
     const o = bySlug(QUE_VES.obras[i]);
-    art.innerHTML = `<img src="${esc(o.imagen)}" alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy">
+    art.innerHTML = `<img ${srcs(o, "(min-width:900px) 45vw, 92vw")} alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy">
       <p class="small">${tr("queVes.unaObra")} <button class="linkbtn" data-other>${tr("queVes.otra")}</button></p>`;
     choices.innerHTML = Object.entries(QUE_VES.emociones).map(([k, x]) => `<button class="choice" data-k="${k}" aria-pressed="false">${x.etiqueta}</button>`).join("");
     out.innerHTML = "";
@@ -841,7 +883,10 @@ const Pared = (() => {
   function setSlug(it, slug, label){
     const o = bySlug(slug); it.slug = slug; it.el.src = o.imagen; it.el.alt = tr("pared.simulacion", { titulo: o.titulo });
     const vs = o.variantes.filter(v => v.ancho && v.alto), v = vs.find(x => variantLabel(x) === label) || vs[0];
-    if (v){ it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); } else { it.cm = 0; it.cmH = 0; it.label = ""; }
+    it.ref = false;
+    if (v){ it.cm = toCm(v.ancho, v.unidad || "in"); it.cmH = toCm(v.alto, v.unidad || "in"); it.label = variantLabel(v); }
+    else if (medidasOriginal(o)){ [it.cm, it.cmH] = ladosCm(o); it.label = "ref"; it.ref = true; }
+    else { it.cm = 0; it.cmH = 0; it.label = ""; }
   }
   function pxPerCm(){
     const ref = toCm(+$("#refLen").value || 0, SC.unit), W = wall.clientWidth, H = wall.clientHeight;
@@ -856,7 +901,8 @@ const Pared = (() => {
       Object.assign(it.el.style, { width: w + "px", left: it.x * 100 + "%", top: it.y * 100 + "%" });
       it.el.classList.toggle("active", items.length > 1 && i === act);
       it.tag.hidden = !k;
-      if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? tr("unidad.pulg") : "cm"}`;
+      if (k && it.ref){ it.tag.textContent = `${medidasOriginal(o)} · ${tr("pared.refCorta")}`; it.tag.style.left = it.x * 100 + "%"; it.tag.style.top = `calc(${it.y * 100}% + ${w / prop(o) / 2 + 8}px)`; }
+      else if (k){ it.tag.textContent = `${fmt(fromCm(it.cm, SC.unit))} × ${fmt(fromCm(it.cmH || it.cm / prop(o), SC.unit))} ${SC.unit === "in" ? tr("unidad.pulg") : "cm"}`;
         it.tag.style.left = it.x * 100 + "%"; it.tag.style.top = `calc(${it.y * 100}% + ${w / prop(o) / 2 + 8}px)`; }
     });
     $(".wall-size").hidden = !!k;
@@ -878,7 +924,9 @@ const Pared = (() => {
       const v = vs.find(x => variantLabel(x) === it.label);
       row.insertAdjacentHTML("beforeend", v ? `<span class="small" style="flex-basis:100%">${v.precio ? tr("pared.precioTamano", { precio: money(v.precio) }) : tr("precio.pendiente")}</span>` : "");
     } else {
-      row.innerHTML = `<span class="small">${tr("pared.sinTamanos", { titulo: esc(o.titulo) })}</span>`;
+      row.innerHTML = medidasOriginal(o)
+        ? `<button class="chip" aria-pressed="true" disabled>${tr("pared.refChip")}: ${esc(medidasOriginal(o))}</button><span class="small" style="flex-basis:100%">${tr("pared.refNota")}</span>`
+        : `<span class="small">${tr("pared.sinTamanos", { titulo: esc(o.titulo) })}</span>`;
       row.onclick = null;
     }
   }
@@ -924,7 +972,7 @@ const Pared = (() => {
   });
   $("#wallReset").addEventListener("click", () => { photo.hidden = true; photo.removeAttribute("src"); if (url){ URL.revokeObjectURL(url); url = null; }
     wall.style.aspectRatio = ""; $("#wallEmpty").hidden = false; wall.classList.remove("photo"); $("#wallReset").hidden = true; $("#scalePanel").hidden = true; $("#wallMeasure").setAttribute("hidden", ""); place(); });
-  $("#roomBuy").addEventListener("click", () => { if (A()){ track("pared_ordenar", A().slug); openWork(A().slug, A().el, A().label); } });
+  $("#roomBuy").addEventListener("click", () => { if (A()){ track("pared_ordenar", A().slug); openWork(A().slug, A().el, A().ref ? "" : A().label); } });
   addEventListener("resize", place);
   function reset(list){ items.forEach(it => { it.el.remove(); it.tag.remove(); }); items = []; act = 0; list.forEach(([s, x, y, l]) => make(s, x, y)); list.forEach(([, , , l], i) => l && setSlug(items[i], items[i].slug, l)); sync(); }
   reset([[OBRAS[0].slug, .5, .4]]);
@@ -1048,6 +1096,7 @@ const Museo = (() => {
         <button class="museo-flecha prev" data-paso="-1" aria-label="${esc(tr("museo.anterior"))}">‹</button>
         <button class="museo-flecha next" data-paso="1" aria-label="${esc(tr("museo.siguiente"))}">›</button>
         <button class="museo-marco-btn" data-marco aria-pressed="false">${esc(tr("museo.marco"))}</button>
+        <p class="museo-acasa" aria-hidden="true">${esc(tr("museo.aCasa"))}</p>
       </div>
       <aside class="museo-cartela" aria-live="polite"></aside>
     </div>
@@ -1055,27 +1104,32 @@ const Museo = (() => {
   </div>`;
   const pared = $(".museo-pared", dlg), obra = $(".museo-obra", dlg), lienzo = $(".museo-lienzo", dlg), img = $("img", dlg), cartela = $(".museo-cartela", dlg);
   function medir(){
-    const o = bySlug(orden[i]), W = pared.clientWidth, H = pared.clientHeight;
+    const o = bySlug(orden[i]), W = pared.clientWidth, H = pared.clientHeight, f = o.enmarcada || o;
     const maxW = W * (innerWidth >= 900 ? .62 : .74), maxH = H * .7, m = o.medidas;
     let w, h;
     if (conMedidas){
       /* escala común: la obra más grande de la sala ocupa el espacio disponible */
-      const k = Math.min(...orden.map(s => { const x = bySlug(s).medidas, c = cm(x); return Math.min(maxW / (x.ancho * c), maxH / (x.alto * c)); }));
-      w = m.ancho * cm(m) * k; h = m.alto * cm(m) * k;
-    } else { const p = prop(o); w = Math.min(maxW, maxH * p); h = w / p; }
+      const k = Math.min(...orden.map(s => { const b = bySlug(s), [x, y] = ladosCm(b, b.enmarcada); return Math.min(maxW / x, maxH / y); }));
+      const [x, y] = ladosCm(o, f); w = x * k; h = y * k;
+    } else { const p = prop(f); w = Math.min(maxW, maxH * p); h = w / p; }
     lienzo.style.width = Math.round(w) + "px"; lienzo.style.height = Math.round(h) + "px";
+    /* el acercamiento nunca pasa de lo que permite la resolución real de la foto */
+    lienzo.style.setProperty("--zs", Math.max(1.3, Math.min(2.4, f.w / w * 1.1)).toFixed(2));
   }
   function cartelaHTML(o){
     const m = o.medidas, rec = (TX.recorrido || {})[o.slug];
-    const medidas = m && m.ancho && m.alto ? `${m.ancho} × ${m.alto} ${m.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : tr("museo.medidasPendientes");
-    return `<p class="museo-n">${tr("museo.contador", { n: i + 1, total: orden.length })}</p>
+    const medidas = medidasOriginal(o) || tr("museo.medidasPendientes");
+    const k = capDe(o.slug);
+    return `<p class="museo-n">${tr("museo.contador", { n: i + 1, total: orden.length })}${k >= 0 ? " · " + esc(tr("rec.capituloNombre", { n: ["I", "II", "III", "IV"][k], nombre: capNombre(k) })) : ""}</p>
       <h2 class="museo-titulo">${esc(o.titulo)}</h2>
       ${o.subtitulo ? `<p class="museo-subt">${esc(o.subtitulo)}</p>` : ""}
       <dl class="museo-datos"><dt class="sr-only">${tr("ficha.artista")}</dt><dd>Luciann Soto${o.anio ? ", " + esc(o.anio) : ""}</dd>
         <dt class="sr-only">${tr("museo.tecnica")}</dt><dd>${o.tecnica ? esc(o.tecnica) : tr("museo.tecnicaPendiente")}</dd>
-        <dt class="sr-only">${tr("museo.medidas")}</dt><dd>${esc(medidas)}${conMedidas ? "" : ` · ${tr("museo.escala")}`}</dd></dl>
-      ${rec || o.descripcion ? `<div class="museo-lectura"><p class="museo-etq">${tr("museo.lectura")}</p>
-        ${rec ? `<p class="museo-frase">${esc(rec.titulo)}</p><p>${esc(rec.linea)}</p>` : ""}${o.descripcion ? `<p>${esc(o.descripcion)}</p>` : ""}</div>` : ""}
+        <dt class="sr-only">${tr("museo.medidas")}</dt><dd>${esc(medidas)}${medidasOriginal(o) ? `<span class="museo-orig"> · ${tr("museo.original")}</span>` : ""}${conMedidas ? "" : ` · ${tr("museo.escala")}`}</dd></dl>
+      ${o.inscripcion ? `<p class="museo-insc"><span class="museo-etq">${tr("museo.inscripcion")}</span>${cita(esc(o.inscripcion))}</p>` : ""}
+      ${o.enmarcada ? `<p class="small">${tr("museo.enmarcada")}</p>` : ""}
+      ${rec || o.descripcion ? `<details class="museo-lectura"><summary class="museo-etq">${tr("museo.lecturaPosible")}</summary>
+        ${rec ? `<p class="museo-frase">${esc(rec.titulo)}</p><p>${esc(rec.linea)}</p>` : ""}${o.descripcion ? `<p>${esc(o.descripcion)}</p>` : ""}<p class="small">${tr("nota.curatorial")}</p></details>` : ""}
       ${o.declaracion ? `<blockquote class="museo-voz"><p class="museo-etq">${tr("museo.palabras")}</p>${esc(o.declaracion)}</blockquote>` : ""}
       ${o.provisional ? `<p class="small">${tr("explora.provisional")}</p>` : ""}
       <div class="museo-acciones"><button class="btn gold" data-ir="ficha">${tr("museo.verPrecio")}</button><button class="btn line" data-ir="pared">${tr("museo.verEspacio")}</button><button class="btn line" data-compartir-museo>${tr("compartir.titulo")}</button></div>
@@ -1086,11 +1140,15 @@ const Museo = (() => {
   function pintar(nuevo){
     const o = bySlug(orden[i]);
     const poner = () => {
-      img.src = o.imagen; img.alt = o.alt; zoom = false; obra.classList.remove("zoom"); lienzo.style.setProperty("--ox", "50%"); lienzo.style.setProperty("--oy", "50%");
-      img.title = tr("museo.acercar"); obra.classList.toggle("marco", marco);
+      const f = o.enmarcada || o; img.alt = o.alt; zoom = false;
+      /* si la foto enmarcada no carga, se muestra la imagen de la obra: nunca un recuadro vacío */
+      img.onerror = () => { if (o.enmarcada && img.src.endsWith(o.enmarcada.imagen.split("/").pop())){ img.src = o.imagen; $("[data-marco]", dlg).hidden = false; } };
+      img.src = f.imagen;
+      $("[data-marco]", dlg).hidden = !!o.enmarcada; obra.classList.remove("zoom"); lienzo.style.setProperty("--ox", "50%"); lienzo.style.setProperty("--oy", "50%");
+      img.title = tr("museo.acercar"); obra.classList.toggle("marco", marco && !o.enmarcada);
       $(".museo-cuenta", dlg).textContent = `${i + 1} / ${orden.length}`; cartela.innerHTML = cartelaHTML(o); medir();
       if (nuevo) { $(".museo-sala", dlg).scrollTop = 0; cartela.scrollTop = 0; }
-      [orden[(i + 1) % orden.length], orden[(i - 1 + orden.length) % orden.length]].forEach(s => { const x = new Image(); x.src = bySlug(s).imagen; });
+      [orden[(i + 1) % orden.length], orden[(i - 1 + orden.length) % orden.length]].forEach(s => { const x = new Image(), b = bySlug(s); x.src = (b.enmarcada || b).imagen; });
       const h = "#/museo/" + o.slug; if (location.hash !== h) history.replaceState(null, "", h);
       document.title = o.titulo + " · " + tr("museo.nombre") + " | Soto’s Art";
       requestAnimationFrame(() => pared.classList.remove("cambio"));
@@ -1116,9 +1174,16 @@ const Museo = (() => {
     if (e.target.closest("[data-compartir-museo]")) return Compartir.abrir(datosObra(bySlug(orden[i])));
     const mb = e.target.closest("[data-marco]");
     if (mb){ marco = !marco; mb.setAttribute("aria-pressed", marco); obra.classList.toggle("marco", marco); cartela.innerHTML = cartelaHTML(bySlug(orden[i])); track("museo_marco", marco ? "si" : "no"); return medir(); }
-    const d = e.target.closest("[data-ir]"); if (d){ const s = orden[i]; dlg.close();
-      if (d.dataset.ir === "trayectoria"){ const t = $("#trayectoria"); t.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); track("museo_trayectoria", s); return; }
-      return d.dataset.ir === "ficha" ? openWork(s) : Pared.show(s); }
+    const d = e.target.closest("[data-ir]");
+    if (d){
+      const s = orden[i];
+      if (d.dataset.ir === "trayectoria"){ dlg.close(); $("#trayectoria").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); track("museo_trayectoria", s); return; }
+      if (d.dataset.ir === "ficha"){ dlg.close(); return openWork(s); }
+      /* De la sala al hogar: la luz de la sala se apaga y se enciende la pared del visitante */
+      const llegar = () => { dlg.classList.remove("a-casa"); dlg.close(); Pared.show(s); const e2 = $("#espacio"); if (e2 && !reduce){ e2.classList.remove("llega"); void e2.offsetWidth; e2.classList.add("llega"); } };
+      if (reduce) return llegar();
+      $(".museo-sala", dlg).scrollTo({ top: 0, behavior: "smooth" }); dlg.classList.add("a-casa"); return setTimeout(llegar, 1300);
+    }
   });
   /* Examinar detalles: tocar acerca en ese punto; arrastrar recorre; tocar otra vez aleja */
   let sx = null, sy = null, movido = false;
@@ -1150,7 +1215,7 @@ const Museo = (() => {
   renderFooter(); initIdioma();
   const page = document.body.dataset.obra;
   if (page){ const o = bySlug(page), m = $("#obraPage"); if (o && m){ renderFicha(o, m, { page: true }); track("ver_obra", o.slug); } return; }
-  initUmbral(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderArtista(); initPincelada(); renderConfianza();
+  initUmbral(); renderSalon(); initRecorrido(); initQueVes(); initDosObras(); renderVoz(); renderArtista(); initPincelada(); renderConfianza();
   const sheet = $("#sheet");
   sheet.addEventListener("close", () => { if (/^#\/obra\//.test(location.hash)){ history.replaceState(null, "", location.pathname + location.search); document.title = TX.meta.titulo; } });
   /* Enlaces internos a una obra o a la sala (#/obra/…, #/museo/…) también funcionan sin recargar */
