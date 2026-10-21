@@ -18,7 +18,7 @@ const CONFIG = {
   artista: "Luciann Soto",
   nombreLegal: "Luciann Soto Soto",          // nombre que aparece en su tarjeta y LinkedIn
   marca: "Soto’s Art – Blessing Art",
-  ubicacion: "Puerto Rico",                  // identificación pública pedida por Luciann. Nunca publicar su dirección postal.
+  ubicacion: "Puerto Rico",                  // así lo pidió Luciann: su identidad pública es Puerto Rico
   telefono: "787-690-6865",                   // afiche y tarjeta oficiales
   whatsapp: "17876906865",                    // CONFIRMAR que este número usa WhatsApp
   correo: "l.sotosart@gmail.com",             // tarjeta oficial
@@ -27,7 +27,10 @@ const CONFIG = {
 
   /* Pagos: el botón de pago solo aparece si la variante tiene su enlace oficial.
      Aquí se indica qué métodos ofrece la artista en general. */
-  metodosPago: { athMovil: false, stripe: false, paypal: false },
+  metodosPago: { athMovil: false, stripe: false, paypal: false },   // pago EN LÍNEA (enlaces oficiales)
+  /* ATH Móvil al número de Luciann: el visitante confirma su orden con ella y luego envía el pago.
+     El sitio no procesa ni confirma pagos; la orden queda confirmada cuando Luciann recibe el pago. */
+  athMovilNumero: "787-690-6865",
 
   /* Envío y políticas: sus textos están en textos-es.js (sección contenido) */
 
@@ -94,23 +97,6 @@ const OBRAS = [
     enmarcada:{ imagen:"obra-salmo-23-enmarcada.jpg", w:1600, h:1157 },   // única foto disponible: la obra con su marco
     video:"", original:"", anio:"", medidas:{ ancho:28, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false }
 ];
-
-/* ---------------------------------------------------------------------
-   TRAYECTORIA: exposiciones documentadas en “Luciann Trayectoria Artística 2026”.
-   nombre y lugar se conservan como en la fuente (oficiales, no se traducen).
-   tipo: "colectiva" solo cuando la fuente lo dice; "murales"; "" = exposición.
-   Fotos: solo auténticas, en foto:"archivo.jpg" (vacío = no se muestra).
-   --------------------------------------------------------------------- */
-const TRAYECTORIA = {
-  exposiciones: [
-    { anio:"2026", nombre:"Segundo Encuentro en MUSA", lugar:"", tipo:"", foto:"" },
-    { anio:"2025", nombre:"“Celebra”", lugar:"Pop Up de Incubadora Creativa, Antiguo Edificio de la Bolsa, Mayagüez", tipo:"colectiva", foto:"" },
-    { anio:"2025", nombre:"“Junte Creativo del Norte al Sur”", lugar:"Ex Centralinos", tipo:"colectiva", foto:"" },
-    { anio:"2018", nombre:"Colectivo de Murales", lugar:"Vega Alta", tipo:"murales", foto:"" },
-    { anio:"2014", nombre:"Exposición Colectiva de Ex Centralinos", lugar:"Biblioteca Conrado, Recinto de Ciencias Médicas", tipo:"colectiva", foto:"" },
-    { anio:"2009", nombre:"Bajo Las Sábanas", lugar:"Museo de Dorado", tipo:"", foto:"" }
-  ]
-};
 
 /* ---------------------------------------------------------------------
    EXPERIENCIA: qué obras aparecen y en qué orden (igual en todos los idiomas).

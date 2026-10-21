@@ -19,7 +19,9 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Descripción breve de cada obra, escrita o aprobada por Luciann (en `textos-es.js` → `obras`).
 
 ### Pagos
-- [ ] Cuenta de ATH Móvil Business y su enlace o método de cobro.
+- [x] ATH Móvil: pagos al 787-690-6865 después de confirmar la orden con Luciann (número en `athMovilNumero`, catalogo.js).
+- [ ] Opcional: ATH Móvil Business, si Luciann quiere recibos de negocio o un enlace de pago por obra.
+- [ ] Pago con tarjeta para compradores fuera de Puerto Rico (ATH Móvil solo funciona con bancos de Puerto Rico).
 - [ ] Procesador de tarjetas (por ejemplo, Stripe Payment Links o PayPal Business) con un enlace por variante.
 - [ ] Prueba de una compra real de bajo monto, de principio a fin, antes del lanzamiento.
 
@@ -44,13 +46,6 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Sus propias palabras para el recorrido, “¿Qué ves tú?” y “Dos obras, una historia” (hoy son lecturas curatoriales identificadas como tales).
 - [ ] Testimonios reales, solo con permiso escrito.
 - [ ] Fotos de obras colgadas en hogares reales, con permiso.
-
-## Trayectoria (confirmar con Luciann antes de la versión definitiva)
-- [ ] Año de la maestría: el documento de 2026 dice 2025 y una captura anterior decía 2023. Hoy se publica sin año.
-- [ ] Concentración del bachillerato de 2019: “Gerencia de Medios” (documento de 2026) o “Comunicación Digital y Contenidos Multimedia” (captura anterior). Hoy se publica sin concentración.
-- [ ] ¿Incluir “Voces para Cristo” (2020) y el XIX Iberoamericano de la voz (2001)? Están en el documento, pero se dejaron fuera por ser de canto.
-- [ ] Confirmar que teléfono, correo e Instagram son los canales autorizados para compradores.
-- [ ] Fotos auténticas de las exposiciones (opcional): se agregan en `foto:` de cada exposición en `catalogo.js`.
 
 ## Modo museo (fase 2)
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).

@@ -258,7 +258,7 @@ function renderFicha(o, mount, opts = {}){
       [tr("ficha.preparacion"), env.preparacion ? esc(env.preparacion) : pc],
       [tr("ficha.entrega"), env.entrega ? esc(env.entrega) : pc],
       [tr("ficha.cancelacion"), pol.devoluciones || pol.cancelaciones ? `<a href="${INICIO}#comprar">${tr("ficha.verPoliticas")}</a>` : pc],
-      [tr("ficha.pago"), metodos.length ? tr("ficha.pagoEnLinea", { lista: listJoin(metodos) }) : tr("ficha.pagoDirecto")],
+      [tr("ficha.pago"), [metodos.length && tr("ficha.pagoEnLinea", { lista: listJoin(metodos) }), CONFIG.athMovilNumero && tr("ath.fila", { numero: esc(CONFIG.athMovilNumero) })].filter(Boolean).join("<br>") || tr("ficha.pagoDirecto")],
       [tr("ficha.artista"), `${esc(CONFIG.nombreLegal)}, <a href="${telHref()}">${esc(CONFIG.telefono)}</a>`]
     ];
     $("#details", mount).innerHTML = `<details class="soft"><summary>${tr("ficha.detalles")}</summary><dl class="spec">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></details>`;
@@ -267,6 +267,8 @@ function renderFicha(o, mount, opts = {}){
   mount.onclick = e => {
     if (e.target === mount || e.target.closest("[data-close]")) return mount.close && mount.close();
     if (e.target.closest("[data-share]")) return share(o);
+    if (e.target.closest("[data-copiar-ath]")){ track("ath_numero_copiado", o.slug);
+      return (navigator.clipboard ? navigator.clipboard.writeText(CONFIG.athMovilNumero.replace(/\D/g, "")) : Promise.reject()).then(() => toast(tr("ath.copiado")), () => toast(CONFIG.athMovilNumero)); }
     if (e.target.closest("[data-review]")){ track("clic_ordenar", o.slug); return review(o, current(), mount); }
     if (e.target.closest("[data-wall]")){ mount.close && mount.close(); return Pared.show(o.slug, variantLabel(current() || {})); }
     if (e.target.closest("[data-museo-obra]")){ mount.close && mount.close(); return Museo.abrir(o.slug); }
@@ -290,82 +292,20 @@ function review(o, v, mount){
     <div class="actions">${pay}
       ${CONFIG.whatsapp ? `<a class="btn ${pay ? "line" : "gold"}" href="${waLink(msg)}" target="_blank" rel="noopener" data-obra="${o.slug}">${tr("orden.whatsapp")}</a>` : ""}
       <a class="btn line" href="${telHref()}" data-obra="${o.slug}">${tr("llamar")}</a></div>
-    <p class="small">${tr("orden.vende", { nombre: esc(CONFIG.nombreLegal), marca: esc(CONFIG.marca) })} ${pay ? tr("orden.pagoOficial") : tr("orden.pagoInactivo")}
+    ${CONFIG.athMovilNumero ? `<div class="ath"><p class="ath-t">${tr("ath.titulo")}</p>
+      <p class="ath-num"><span>${esc(CONFIG.athMovilNumero)}</span><button class="btn line" type="button" data-copiar-ath>${tr("ath.copiar")}</button></p>
+      <ol><li>${tr("ath.paso1")}</li><li>${tr("ath.paso2", { numero: esc(CONFIG.athMovilNumero) })}</li><li>${tr("ath.paso3")}</li></ol>
+      <p class="small">${tr("ath.soloPR")}</p></div>` : ""}
+    <p class="small">${tr("orden.vende", { nombre: esc(CONFIG.nombreLegal), marca: esc(CONFIG.marca) })} ${pay ? tr("orden.pagoOficial") : CONFIG.athMovilNumero ? "" : tr("orden.pagoInactivo")}
       ${CONFIG.politicas.confirmacion ? esc(CONFIG.politicas.confirmacion) + " " : ""}<a href="${INICIO}#comprar">${tr("orden.politicas")}</a></p></div>`;
   $("#review", mount).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
 }
-/* ---------- Compartir: código QR, WhatsApp, copiar enlace y opciones del teléfono ---------- */
-const datosObra = o => ({ id: o.slug, url: obraURL(o), titulo: cita(o.titulo), nombre: o.titulo,
-  texto: tr("compartir.texto", { titulo: o.titulo }), pie: tr("compartir.qrObra") });
-const datosGaleria = () => ({ id: "galeria", url: (CONFIG.sitioURL || location.origin + "/") + IDIOMA + "/", titulo: "Soto’s Art", nombre: tr("compartir.galeriaNombre"),
-  texto: tr("compartir.textoGaleria"), pie: tr("compartir.qrGaleria") });
-function share(o){ Compartir.abrir(datosObra(o)); }
-const Compartir = (() => {
-  let dlg = null, actual = null, cargando = null;
-  const cargarQR = () => window.qrcode ? Promise.resolve() : (cargando = cargando || new Promise((ok, no) => {
-    const sc = document.createElement("script"); sc.src = RAIZ + "qr.js"; sc.onload = ok; sc.onerror = () => { cargando = null; no(); }; document.head.appendChild(sc); }));
-  const matriz = url => { const q = qrcode(0, "M"); q.addData(url); q.make(); return q; };
-  function svg(url, etiqueta){
-    const q = matriz(url), n = q.getModuleCount(), m = 4; let d = "";
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
-    return `<svg viewBox="0 0 ${n + 2 * m} ${n + 2 * m}" shape-rendering="crispEdges" role="img" aria-label="${esc(etiqueta)}"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#14100C"/></svg>`;
-  }
-  /* Imagen para guardar o enviar: el código con el nombre de la obra, lista para imprimir o reenviar */
-  function imagen(dt){
-    const W = 1080, H = 1350, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
-    const g = cv.getContext("2d"), q = matriz(dt.url), n = q.getModuleCount(), lado = 720, k = lado / n, x0 = (W - lado) / 2, y0 = 250;
-    g.fillStyle = "#F7F1E6"; g.fillRect(0, 0, W, H);
-    g.fillStyle = "#fff"; g.fillRect(x0 - 50, y0 - 50, lado + 100, lado + 100);
-    g.fillStyle = "#14100C";
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect(Math.floor(x0 + c * k), Math.floor(y0 + r * k), Math.ceil(k), Math.ceil(k));
-    g.textAlign = "center"; g.fillStyle = "#8A6A3B"; g.font = "italic 54px 'Bodoni Moda', Georgia, serif"; g.fillText("Soto’s Art", W / 2, 150);
-    g.fillStyle = "#1E1812"; g.font = "italic 60px 'Bodoni Moda', Georgia, serif"; g.fillText(dt.titulo === "Soto’s Art" ? dt.nombre : dt.titulo, W / 2, y0 + lado + 150, W - 120);
-    g.fillStyle = "#5A4C3E"; g.font = "36px Karla, Helvetica, Arial, sans-serif"; g.fillText(dt.pie, W / 2, y0 + lado + 215, W - 120);
-    g.font = "28px Karla, Helvetica, Arial, sans-serif"; g.fillStyle = "#8C7E6E"; g.fillText(dt.url.replace(/^https?:\/\//, "").replace(/\/$/, ""), W / 2, H - 70, W - 120);
-    return cv;
-  }
-  function crear(){
-    dlg = document.createElement("dialog"); dlg.className = "compartir"; dlg.setAttribute("aria-labelledby", "compTitulo");
-    dlg.innerHTML = `<button class="close" data-cerrar aria-label="${esc(tr("cerrar"))}">×</button>
-      <h2 id="compTitulo">${esc(tr("compartir.titulo"))}</h2><p class="comp-que"></p>
-      <figure class="comp-qr"><div class="comp-codigo" aria-live="polite"></div><figcaption>${esc(tr("compartir.escanea"))}</figcaption></figure>
-      <div class="comp-acciones">
-        <a class="btn gold" data-accion="whatsapp" target="_blank" rel="noopener">${esc(tr("compartir.whatsapp"))}</a>
-        <button class="btn line" data-accion="copiar">${esc(tr("compartir.copiar"))}</button>
-        ${navigator.share ? `<button class="btn line" data-accion="nativo">${esc(tr("compartir.mas"))}</button>` : ""}
-        <button class="linkbtn" data-accion="guardar">${esc(tr("compartir.guardar"))}</button>
-      </div>
-      <p class="comp-url"><input readonly aria-label="${esc(tr("compartir.enlace"))}"></p>`;
-    document.body.appendChild(dlg);
-    dlg.addEventListener("click", e => {
-      if (e.target === dlg || e.target.closest("[data-cerrar]")) return dlg.close();
-      const b = e.target.closest("[data-accion]"); if (!b || !actual) return;
-      const a = b.dataset.accion; track("compartir_" + a, actual.id);
-      if (a === "copiar"){
-        const ok = () => toast(tr("compartir.copiado"));
-        (navigator.clipboard ? navigator.clipboard.writeText(actual.url) : Promise.reject()).then(ok, () => {
-          const inp = $(".comp-url input", dlg); inp.focus(); inp.select();
-          try { document.execCommand("copy") ? ok() : toast(tr("compartir.error")); } catch (er) { toast(tr("compartir.error")); } });
-      }
-      if (a === "nativo") navigator.share({ title: actual.nombre + " | Soto’s Art", text: actual.texto, url: actual.url }).catch(() => {});
-      if (a === "guardar") cargarQR().then(() => imagen(actual).toBlob(bl => {
-        const nombre = `sotos-art-qr-${actual.id}.png`, f = new File([bl], nombre, { type: "image/png" });
-        if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], title: actual.nombre }).catch(() => {});
-        const u = URL.createObjectURL(bl), l = document.createElement("a"); l.href = u; l.download = nombre; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
-      }, "image/png"), () => toast(tr("compartir.qrError")));
-    });
-  }
-  function abrir(dt){
-    if (!dlg) crear(); actual = dt;
-    $(".comp-que", dlg).textContent = dt.titulo === "Soto’s Art" ? dt.nombre : dt.titulo;
-    $("[data-accion=whatsapp]", dlg).href = "https://wa.me/?text=" + encodeURIComponent(dt.texto + "\n" + dt.url);
-    $(".comp-url input", dlg).value = dt.url;
-    const box = $(".comp-codigo", dlg); box.innerHTML = "";
-    cargarQR().then(() => { if (actual === dt) box.innerHTML = svg(dt.url, tr("compartir.qrAlt", { titulo: dt.nombre })); }, () => { box.innerHTML = `<p class="small">${esc(tr("compartir.qrError"))}</p>`; });
-    if (!dlg.open) dlg.showModal(); track("compartir", dt.id);
-  }
-  return { abrir };
-})();
+function share(o){
+  const url = obraURL(o), data = { title: o.titulo + " | Soto’s Art", text: tr("compartir.texto", { titulo: o.titulo }), url };
+  track("compartir", o.slug);
+  if (navigator.share) navigator.share(data).catch(() => {});
+  else (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast(tr("compartir.copiado")), () => toast(tr("compartir.error")));
+}
 function mediaHTML(src, title){
   if (/\.(mp4|webm|mov)$/i.test(src)) return `<video class="video" controls preload="none" playsinline src="${esc(src)}" title="${esc(title)}"></video>`;
   if (/\.(mp3|m4a|wav|ogg)$/i.test(src)) return `<audio controls preload="none" src="${esc(src)}" style="width:100%"></audio>`;
@@ -995,7 +935,9 @@ function renderConfianza(){
     <div class="ctas">${CONFIG.whatsapp ? `<a class="btn gold" href="${waLink(tr("wa.general"))}" target="_blank" rel="noopener">${tr("confianza.whatsapp")}</a>` : ""}
       <a class="btn ghost" href="${telHref()}">${tr("llamar")}</a></div>`;
   const P = [["athMovil", "ATH Móvil Business"], ["stripe", tr("pago.stripe")], ["paypal", "PayPal Business"]];
-  $("#paygrid").innerHTML = P.map(([k, n]) => `<div class="pay"><b>${n}</b><small>${CONFIG.metodosPago[k] ? tr("pago.disponible") : tr("pago.inactivo")}</small></div>`).join("");
+  $("#paygrid").innerHTML = P.map(([k, n]) => k === "athMovil" && CONFIG.athMovilNumero && !CONFIG.metodosPago.athMovil
+      ? `<div class="pay"><b>ATH Móvil</b><small>${tr("ath.grid", { numero: esc(CONFIG.athMovilNumero) })}</small></div>`
+      : `<div class="pay"><b>${n}</b><small>${CONFIG.metodosPago[k] ? tr("pago.disponible") : tr("pago.inactivo")}</small></div>`).join("");
   const pol = CONFIG.politicas, env = CONFIG.envio, pc = tr("pendienteArtista") + ".";
   const item = (t, b) => `<details><summary>${t}</summary><p>${b}</p></details>`;
   $("#policies").innerHTML = item(tr("pol.envio"), [env.destinos && tr("pol.destinos") + " " + esc(env.destinos), env.costo && tr("pol.costo") + " " + esc(env.costo), env.preparacion && tr("pol.preparacion") + " " + esc(env.preparacion), env.entrega && tr("pol.entrega") + " " + esc(env.entrega), env.recogido && tr("pol.recogido") + " " + esc(env.recogido)].filter(Boolean).join("<br>") || pc)
@@ -1013,9 +955,6 @@ function renderFooter(){
   const f = $("#footContact"); if (!f) return;
   f.innerHTML = `<em class="lema">${esc(CONFIG.lema)}</em><br>${tr("pie.telefono")} <a href="${telHref()}">${esc(CONFIG.telefono)}</a><br>${tr("pie.correo")} <a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a><br>Instagram: <a href="https://www.instagram.com/${esc(CONFIG.instagram)}/" target="_blank" rel="noopener">@${esc(CONFIG.instagram)}</a>${CONFIG.facebook ? ` &nbsp; <a href="${esc(CONFIG.facebook)}" target="_blank" rel="noopener">Facebook</a>` : ""}`;
   $("#yr").textContent = new Date().getFullYear();
-  f.insertAdjacentHTML("afterend", `<p><button class="btn line pie-compartir" type="button" data-compartir-galeria>${tr("compartir.galeria")}</button></p>`);
-  /* Encabezado y pie: en una página de obra comparten esa obra; en la portada, la galería */
-  $$("[data-compartir-galeria]").forEach(b => b.addEventListener("click", () => Compartir.abrir(document.body.dataset.obra ? datosObra(bySlug(document.body.dataset.obra)) : datosGaleria())));
 }
 
 /* ---------- Idioma: selector, preferencia y sugerencia ---------- */
@@ -1133,10 +1072,9 @@ const Museo = (() => {
         ${rec ? `<p class="museo-frase">${esc(rec.titulo)}</p><p>${esc(rec.linea)}</p>` : ""}${o.descripcion ? `<p>${esc(o.descripcion)}</p>` : ""}<p class="small">${tr("nota.curatorial")}</p></details>` : ""}
       ${o.declaracion ? `<blockquote class="museo-voz"><p class="museo-etq">${tr("museo.palabras")}</p>${esc(o.declaracion)}</blockquote>` : ""}
       ${o.provisional ? `<p class="small">${tr("explora.provisional")}</p>` : ""}
-      <div class="museo-acciones"><button class="btn gold" data-ir="ficha">${tr("museo.verPrecio")}</button><button class="btn line" data-ir="pared">${tr("museo.verEspacio")}</button><button class="btn line" data-compartir-museo>${tr("compartir.titulo")}</button></div>
+      <div class="museo-acciones"><button class="btn gold" data-ir="ficha">${tr("museo.verPrecio")}</button><button class="btn line" data-ir="pared">${tr("museo.verEspacio")}</button></div>
       ${marco ? `<p class="small museo-marco">${tr("museo.marcoNota")}</p>` : ""}
-      <p class="small museo-ayuda">${tr("museo.ayuda")}</p>
-      ${$("#trayectoria") ? `<p class="museo-tray"><button class="linkbtn" data-ir="trayectoria">${tr("museo.trayectoria")}</button></p>` : ""}`;
+      <p class="small museo-ayuda">${tr("museo.ayuda")}</p>`;
   }
   function pintar(nuevo){
     const o = bySlug(orden[i]);
@@ -1172,13 +1110,11 @@ const Museo = (() => {
   dlg.addEventListener("click", e => {
     if (e.target.closest("[data-cerrar]")) return dlg.close();
     const p = e.target.closest("[data-paso]"); if (p) return ir(+p.dataset.paso);
-    if (e.target.closest("[data-compartir-museo]")) return Compartir.abrir(datosObra(bySlug(orden[i])));
     const mb = e.target.closest("[data-marco]");
     if (mb){ marco = !marco; mb.setAttribute("aria-pressed", marco); obra.classList.toggle("marco", marco); cartela.innerHTML = cartelaHTML(bySlug(orden[i])); track("museo_marco", marco ? "si" : "no"); return medir(); }
     const d = e.target.closest("[data-ir]");
     if (d){
       const s = orden[i];
-      if (d.dataset.ir === "trayectoria"){ dlg.close(); $("#trayectoria").scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); track("museo_trayectoria", s); return; }
       if (d.dataset.ir === "ficha"){ dlg.close(); return openWork(s); }
       /* De la sala al hogar: la luz de la sala se apaga y se enciende la pared del visitante */
       const llegar = () => { dlg.classList.remove("a-casa"); dlg.close(); Pared.show(s); const e2 = $("#espacio"); if (e2 && !reduce){ e2.classList.remove("llega"); void e2.offsetWidth; e2.classList.add("llega"); } };

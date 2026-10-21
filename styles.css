@@ -482,48 +482,9 @@ details.museo-lectura summary{cursor:pointer;list-style-position:inside}
 .museo-orig{color:var(--text-2)}
 .original-linea{margin:.3rem 0 1.1rem;padding:.7rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:.95rem;line-height:1.55;color:var(--text)}
 .original-linea span{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text);margin-bottom:.15rem}
-
-/* Trayectoria y exposiciones: pequeña experiencia editorial dentro de “Conoce a Luciann” */
-.tray{margin-top:clamp(2.5rem,7vw,4.5rem);padding-top:clamp(2rem,5vw,3rem);border-top:1px solid var(--line);display:block}
-.tray-titulo{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4.6vw,2.4rem);line-height:1.1;margin:.2rem 0 .6rem}
-.tray-intro{max-width:40rem;color:var(--text-2);margin:0 0 1.8rem}
-.tray-momentos{list-style:none;margin:0 0 1.6rem;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(12.5rem,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
-.tray-momentos li{background:var(--surface);padding:1.3rem 1.2rem 1.4rem;display:flex;flex-direction:column;gap:.35rem}
-.tray-anio{font-family:var(--display);font-size:1.6rem;line-height:1;color:var(--accent-text)}
-.tray-momentos b{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
-.tray-momentos li > span:last-child{color:var(--text-2);font-size:.96rem}
-.tray-completa{max-width:46rem}
-.tray-grupo{font-family:var(--display);font-style:italic;font-weight:400;font-size:1.25rem;margin:1.8rem 0 .2rem;color:var(--text)}
-.tray-completa .timeline{margin-top:.8rem}
-.tray-completa .timeline li{grid-template-columns:5.6rem 1fr}
-.tray-completa .timeline span i{font-family:var(--display);font-size:1.08rem;color:var(--text)}
-.tray-completa .timeline small{display:block;font-size:.88rem;margin-top:.1rem}
-.tray-completa .timeline img{display:block;margin-top:.6rem;max-width:min(100%,320px);height:auto}
-.tray-volver{margin-top:1.6rem}
-.museo-tray{margin-top:.4rem}
-.artist .wrap.tray{display:block}
-
-/* Compartir: código QR, WhatsApp, copiar enlace */
-dialog.compartir{width:min(420px,calc(100% - 1.5rem));max-height:calc(100% - 1.5rem);overflow:auto;border:0;border-radius:6px;padding:1.6rem 1.4rem 1.3rem;background:var(--surface);color:var(--text);box-shadow:0 30px 70px -30px rgba(0,0,0,.7);text-align:center}
-dialog.compartir::backdrop{background:rgba(20,16,12,.62)}
-dialog.compartir .close{position:absolute;top:.6rem;right:.6rem}
-dialog.compartir h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:.2rem 0 .1rem}
-.comp-que{margin:0 0 1rem;font-family:var(--display);font-style:italic;color:var(--text-2);font-size:1.12rem}
-.comp-qr{margin:0 auto 1.1rem;max-width:260px}
-.comp-codigo{aspect-ratio:1;background:#fff;border-radius:4px;padding:6px;display:grid;place-items:center;box-shadow:0 0 0 1px var(--line)}
-.comp-codigo svg{width:100%;height:100%;display:block}
-.comp-qr figcaption{font-size:.86rem;color:var(--text-2);margin-top:.55rem}
-.comp-acciones{display:grid;gap:.55rem}
-.comp-acciones .btn{width:100%;justify-content:center}
-.comp-url{margin:.9rem 0 0}
-.comp-url input{width:100%;font:inherit;font-size:.8rem;padding:.5rem .6rem;border:1px solid var(--line);border-radius:3px;background:transparent;color:var(--text-2);text-align:center}
-.pie-compartir{color:var(--ivory);border-color:rgba(238,230,214,.4);margin-top:.4rem}
-dialog.compartir .close{color:var(--text);background:transparent;border:1px solid var(--line)}
-
-/* Compartir en el encabezado: ícono junto al idioma */
-.top-compartir{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid rgba(238,230,214,.28);background:transparent;color:#D9CDB8;cursor:pointer;margin-left:auto}
-.top-compartir:hover,.top-compartir:focus-visible{color:#fff;border-color:rgba(238,230,214,.6)}
-.top-compartir svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-header.top .wrap > .idioma{margin-left:0}
-/* Teléfonos: deja respirar el encabezado (la sección “La artista” se alcanza al bajar) */
-@media (max-width:430px){nav.main a[href$="#artista"]{display:none}.brand{font-size:1.2rem}header.top .wrap{gap:.55rem}.top-compartir{width:38px;height:38px}}
+.ath{margin:1.2rem 0 .8rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:4px}
+.ath-t{margin:0 0 .5rem;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text)}
+.ath-num{display:flex;align-items:center;flex-wrap:wrap;gap:.6rem 1rem;margin:0 0 .7rem}
+.ath-num span{font-size:1.35rem;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.ath-num .btn{min-height:40px;padding:.4rem .9rem}
+.ath ol{margin:0 0 .6rem;padding-left:1.2rem;line-height:1.6}
