@@ -12,7 +12,7 @@ Construye el sitio publicable en la carpeta _site/ (GitHub lo hace solo en cada 
 Uso local:  python3 construir.py            (crea _site/)
 Lee catalogo.js y textos-<idioma>.js con Node.js. No hay que editar este archivo.
 """
-import json, re, sys, html, shutil, subprocess, pathlib
+import hashlib, json, re, sys, html, shutil, subprocess, pathlib
 
 AQUI = pathlib.Path(__file__).resolve().parent
 SALIDA = AQUI / (sys.argv[sys.argv.index("--salida") + 1] if "--salida" in sys.argv else "_site")
@@ -99,6 +99,11 @@ def trayectoria(l, R):
         ("exposiciones", expo), ("ensenanza", lista(T["ensenanza"])), ("formacion", lista(T["formacion"])), ("reconocimientos", lista(T["reconocimientos"]))])
     return mom, comp
 
+def version(nombre, _c={}):
+    """Huella corta del contenido del archivo; cambia solo cuando el archivo cambia"""
+    if nombre not in _c: _c[nombre] = hashlib.sha1((AQUI / nombre).read_bytes()).hexdigest()[:8]
+    return _c[nombre]
+
 def llenar(plantilla, l, R, I, **v):
     t = TX[l]
     if not (t.get("aprobacion") or {}).get("palabrasArtista", True):
@@ -113,6 +118,9 @@ def llenar(plantilla, l, R, I, **v):
     s = s.replace("{{HTML}}", f'<html lang="{l}" data-raiz="{R}" data-inicio="{I}">')
     for k, x in v.items(): s = s.replace("{{" + k + "}}", x)
     s = s.replace("{{R}}", R).replace("{{I}}", I).replace("{{LANG}}", l)
+    # Versión de cada archivo en su enlace: así el teléfono no mezcla archivos viejos (caché) con nuevos
+    for nombre in ("styles.css", "catalogo.js", f"textos-{l}.js", "app.js"):
+        s = s.replace(f'"{R}{nombre}"', f'"{R}{nombre}?v={version(nombre)}"')
     s = re.sub(r"\{\{(t|ui|m):([\w.]+)\}\}", rep, s)
     if "{{" in s: sys.exit("Quedó un marcador sin llenar: " + s[s.index("{{"):][:40])
     return s
