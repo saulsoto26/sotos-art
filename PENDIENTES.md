@@ -47,6 +47,13 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Testimonios reales, solo con permiso escrito.
 - [ ] Fotos de obras colgadas en hogares reales, con permiso.
 
+## Trayectoria (confirmar con Luciann antes de la versión definitiva)
+- [ ] Año de la maestría: el documento de 2026 dice 2025 y una captura anterior decía 2023. Hoy se publica sin año.
+- [ ] Concentración del bachillerato de 2019: “Gerencia de Medios” (documento de 2026) o “Comunicación Digital y Contenidos Multimedia” (captura anterior). Hoy se publica sin concentración.
+- [ ] ¿Incluir “Voces para Cristo” (2020) y el XIX Iberoamericano de la voz (2001)? Están en el documento, pero se dejaron fuera por ser de canto.
+- [ ] Confirmar que teléfono, correo e Instagram son los canales autorizados para compradores.
+- [ ] Fotos auténticas de las exposiciones (opcional): se agregan en `foto:` de cada exposición en `catalogo.js`.
+
 ## Modo museo (fase 2)
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
 - [ ] Año de cada pintura original.
