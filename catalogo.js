@@ -92,7 +92,7 @@ const OBRAS = [
     ambiente:{ imagen:"ambiente-sigo-en-victoria.jpg", w:1400, h:653 },
     video:"", original:"", anio:"", medidas:{ ancho:30, alto:18, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-005", slug:"en-las-manos-del-alfarero", titulo:"En las manos del Alfarero", imagen:"obra-en-las-manos-del-alfarero.jpg", w:1600, h:1041,
-    video:"", original:"", anio:"", medidas:{ ancho:20, alto:16, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
+    video:"", original:"", anio:"", medidas:{ ancho:16, alto:14, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false },
   { sku:"SA-006", slug:"salmo-23", titulo:"Salmo 23", imagen:"obra-salmo-23.jpg", w:1482, h:1045,
     enmarcada:{ imagen:"obra-salmo-23-enmarcada.jpg", w:1600, h:1157 },   // única foto disponible: la obra con su marco
     video:"", original:"", anio:"", medidas:{ ancho:28, alto:20, unidad:"in" }, disponibilidad:"", variantes:[], provisional:false }

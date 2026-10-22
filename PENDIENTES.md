@@ -56,6 +56,7 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 
 ## Modo museo (fase 2)
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
+- [ ] Medir los lienzos: en tres obras la medida no coincide con la forma de la foto. En las manos del Alfarero (14 × 16″, corregida por Luciann; la foto es más alargada), Sigo en Victoria (18 × 30″) y Madre Naturaleza (16 × 20″). En pantalla la forma siempre sale de la foto, para no deformar las obras.
 - [ ] Año de cada pintura original.
 - [ ] Fotos en alta resolución: en la sala, al acercarse a los detalles, las imágenes actuales se ven borrosas.
 - [ ] Aprobación de Luciann de la frase sobre su futura galería-estudio familiar.
