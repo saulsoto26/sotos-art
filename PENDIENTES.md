@@ -55,6 +55,10 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Fotos auténticas de las exposiciones (opcional): se agregan en `foto:` de cada exposición en `catalogo.js`.
 
 ## Modo museo (fase 2)
+- [x] Aviso en la página: cada pieza incluye un certificado de autenticidad firmado por la artista (`certificado: true` en catalogo.js). El sitio no genera ni muestra el certificado real.
+- [ ] Ajustes al formato del certificado antes de usarlo: tipo de pieza (original o reproducción autorizada), datos de la reproducción (material, tamaño, fecha de impresión, edición), foto pequeña de la obra, “propiedad” en lugar de “posesión”, quitar el precio, contacto impreso, versión en inglés.
+- [ ] ¿Edición limitada y numerada o edición abierta?
+- [ ] Más adelante: herramienta privada para que Luciann prepare cada certificado; panel para que edite obras y datos.
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
 - [ ] Medir los lienzos: en tres obras la medida no coincide con la forma de la foto. En las manos del Alfarero (14 × 16″, corregida por Luciann; la foto es más alargada), Sigo en Victoria (18 × 30″) y Madre Naturaleza (16 × 20″). En pantalla la forma siempre sale de la foto, para no deformar las obras.
 - [ ] Año de cada pintura original.

@@ -533,3 +533,10 @@ header.top .wrap > .idioma{margin-left:0}
 .ath-num span{font-size:1.35rem;letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .ath-num .btn{min-height:40px;padding:.4rem .9rem}
 .ath ol{margin:0 0 .6rem;padding-left:1.2rem;line-height:1.6}
+.certificado{display:flex;gap:1.1rem;align-items:flex-start;padding:1.4rem 1.5rem;margin:0 0 2.6rem;border:1px solid var(--line);border-left:3px solid var(--accent-text)}
+.certificado h3{font-family:var(--display);font-weight:400;font-size:1.45rem;line-height:1.2;margin:.15rem 0 .5rem}
+.certificado p{margin:0 0 .5rem}
+.certificado p:last-child{margin-bottom:0}
+.cert-sello{flex:none;width:44px;height:44px;color:var(--accent-text)}
+.cert-orden{margin:.2rem 0 .8rem;padding-left:1.6rem;position:relative}
+.cert-orden::before{content:"✦";position:absolute;left:.2rem;color:var(--accent-text)}

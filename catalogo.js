@@ -31,6 +31,9 @@ const CONFIG = {
   /* ATH Móvil al número de Luciann: el visitante confirma su orden con ella y luego envía el pago.
      El sitio no procesa ni confirma pagos; la orden queda confirmada cuando Luciann recibe el pago. */
   athMovilNumero: "787-690-6865",
+  /* Certificado de autenticidad firmado por la artista con cada pieza. El sitio solo lo anuncia:
+     no genera ni muestra el certificado real. false = no se menciona. */
+  certificado: true,
 
   /* Envío y políticas: sus textos están en textos-es.js (sección contenido) */
 

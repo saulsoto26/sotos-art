@@ -258,6 +258,7 @@ function renderFicha(o, mount, opts = {}){
       [tr("ficha.preparacion"), env.preparacion ? esc(env.preparacion) : pc],
       [tr("ficha.entrega"), env.entrega ? esc(env.entrega) : pc],
       [tr("ficha.cancelacion"), pol.devoluciones || pol.cancelaciones ? `<a href="${INICIO}#comprar">${tr("ficha.verPoliticas")}</a>` : pc],
+      ...(CONFIG.certificado ? [[tr("cert.titulo"), tr("cert.fila")]] : []),
       [tr("ficha.pago"), [metodos.length && tr("ficha.pagoEnLinea", { lista: listJoin(metodos) }), CONFIG.athMovilNumero && tr("ath.fila", { numero: esc(CONFIG.athMovilNumero) })].filter(Boolean).join("<br>") || tr("ficha.pagoDirecto")],
       [tr("ficha.artista"), `${esc(CONFIG.nombreLegal)}, <a href="${telHref()}">${esc(CONFIG.telefono)}</a>`]
     ];
@@ -296,6 +297,7 @@ function review(o, v, mount){
       <p class="ath-num"><span>${esc(CONFIG.athMovilNumero)}</span><button class="btn line" type="button" data-copiar-ath>${tr("ath.copiar")}</button></p>
       <ol><li>${tr("ath.paso1")}</li><li>${tr("ath.paso2", { numero: esc(CONFIG.athMovilNumero) })}</li><li>${tr("ath.paso3")}</li></ol>
       <p class="small">${tr("ath.soloPR")}</p></div>` : ""}
+    ${CONFIG.certificado ? `<p class="cert-orden">${tr("cert.orden")}</p>` : ""}
     <p class="small">${tr("orden.vende", { nombre: esc(CONFIG.nombreLegal), marca: esc(CONFIG.marca) })} ${pay ? tr("orden.pagoOficial") : CONFIG.athMovilNumero ? "" : tr("orden.pagoInactivo")}
       ${CONFIG.politicas.confirmacion ? esc(CONFIG.politicas.confirmacion) + " " : ""}<a href="${INICIO}#comprar">${tr("orden.politicas")}</a></p></div>`;
   $("#review", mount).scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
@@ -1004,6 +1006,9 @@ function renderConfianza(){
   $("#paygrid").innerHTML = P.map(([k, n]) => k === "athMovil" && CONFIG.athMovilNumero && !CONFIG.metodosPago.athMovil
       ? `<div class="pay"><b>ATH Móvil</b><small>${tr("ath.grid", { numero: esc(CONFIG.athMovilNumero) })}</small></div>`
       : `<div class="pay"><b>${n}</b><small>${CONFIG.metodosPago[k] ? tr("pago.disponible") : tr("pago.inactivo")}</small></div>`).join("");
+  const cert = $("#certificado");
+  if (cert) cert.outerHTML = CONFIG.certificado ? `<div class="certificado" id="certificado"><svg class="cert-sello" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="24" cy="20" r="9.5" fill="none" stroke="currentColor" stroke-width="1"/><path d="M19.5 20.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 31l-3 12 6-3 4 5 1-12M32 31l3 12-6-3-4 5-1-12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      <div><h3>${tr("cert.titulo")}</h3><p>${tr("cert.texto")}</p><p class="small">${tr("cert.derechos")}</p></div></div>` : "";
   const pol = CONFIG.politicas, env = CONFIG.envio, pc = tr("pendienteArtista") + ".";
   const item = (t, b) => `<details><summary>${t}</summary><p>${b}</p></details>`;
   $("#policies").innerHTML = item(tr("pol.envio"), [env.destinos && tr("pol.destinos") + " " + esc(env.destinos), env.costo && tr("pol.costo") + " " + esc(env.costo), env.preparacion && tr("pol.preparacion") + " " + esc(env.preparacion), env.entrega && tr("pol.entrega") + " " + esc(env.entrega), env.recogido && tr("pol.recogido") + " " + esc(env.recogido)].filter(Boolean).join("<br>") || pc)
@@ -1015,6 +1020,7 @@ function renderConfianza(){
     + item(tr("faq.marco"), pol.marco ? esc(pol.marco) : tr("faq.marcoR"))
     + item(tr("faq.colores"), tr("faq.coloresR"))
     + item(tr("faq.regalo"), tr("faq.regaloR"))
+    + (CONFIG.certificado ? item(tr("faq.certificado"), tr("faq.certificadoR")) : "")
     + item(tr("faq.cuenta"), tr("faq.cuentaR"));
 }
 function renderFooter(){
