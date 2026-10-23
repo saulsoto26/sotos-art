@@ -20,9 +20,26 @@ ARCHIVOS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".mp3", ".m4a", ".
 SCRIPTS = {"catalogo.js", "app.js", "qr.js", "inventario.json", "admin.js"}
 COPIAR_HTML = {"prototipo-v1.html"}   # admin.html se copia aparte, con versión en sus enlaces
 
+def leer_datos():
+    """datos.json: lo que Luciann edita desde su herramienta. Si está dañado, no se publica nada."""
+    f = AQUI / "datos.json"
+    if not f.exists(): return None
+    try: d = json.loads(f.read_text(encoding="utf-8"))
+    except ValueError as err: sys.exit(f"datos.json no es válido: {err}")
+    if not isinstance(d, dict) or not isinstance(d.get("obras", {}), dict): sys.exit("datos.json no tiene la forma esperada.")
+    for s, o in d.get("obras", {}).items():
+        if not isinstance(o, dict): sys.exit(f"datos.json: la obra «{s}» no tiene la forma esperada.")
+        if "titulo" in o and not str(o["titulo"]).strip(): sys.exit(f"datos.json: la obra «{s}» quedó sin título.")
+        for v in o.get("variantes", []) or []:
+            if not isinstance(v, dict) or not isinstance(v.get("precio", 0), (int, float)): sys.exit(f"datos.json: revisa los tamaños de «{s}».")
+    return d
+DATOS = leer_datos()
+
 def leer(idioma):
     js = (AQUI / "catalogo.js").read_text(encoding="utf-8") + "\n" + (AQUI / f"textos-{idioma}.js").read_text(encoding="utf-8")
-    js = "const window = {};\n" + js + "\n;console.log(JSON.stringify({CONFIG, OBRAS, TRAYECTORIA: typeof TRAYECTORIA === 'undefined' ? {} : TRAYECTORIA, TEXTOS: window.TEXTOS}));"
+    js = ("const window = {};\nwindow.DATOS = " + json.dumps(DATOS, ensure_ascii=False) + ";\n" + js
+          + f"\n;aplicarDatos(window.DATOS, window.TEXTOS, {json.dumps(idioma)});"
+          + "\n;console.log(JSON.stringify({CONFIG, OBRAS, TRAYECTORIA: typeof TRAYECTORIA === 'undefined' ? {} : TRAYECTORIA, TEXTOS: window.TEXTOS}));")
     r = subprocess.run(["node", "-e", js], capture_output=True, text=True)
     if r.returncode: sys.exit(f"Error al leer catalogo.js o textos-{idioma}.js:\n{r.stderr}")
     return json.loads(r.stdout)
@@ -101,7 +118,7 @@ def trayectoria(l, R):
 
 def version(nombre, _c={}):
     """Huella corta del contenido del archivo; cambia solo cuando el archivo cambia"""
-    if nombre not in _c: _c[nombre] = hashlib.sha1((AQUI / nombre).read_bytes()).hexdigest()[:8]
+    if nombre not in _c: _c[nombre] = hashlib.sha1((AQUI / ("datos.json" if nombre == "datos.js" else nombre)).read_bytes()).hexdigest()[:8]
     return _c[nombre]
 
 def llenar(plantilla, l, R, I, **v):
@@ -119,7 +136,7 @@ def llenar(plantilla, l, R, I, **v):
     for k, x in v.items(): s = s.replace("{{" + k + "}}", x)
     s = s.replace("{{R}}", R).replace("{{I}}", I).replace("{{LANG}}", l)
     # Versión de cada archivo en su enlace: así el teléfono no mezcla archivos viejos (caché) con nuevos
-    for nombre in ("styles.css", "catalogo.js", f"textos-{l}.js", "app.js"):
+    for nombre in ("styles.css", "datos.js", "catalogo.js", f"textos-{l}.js", "app.js"):
         s = s.replace(f'"{R}{nombre}"', f'"{R}{nombre}?v={version(nombre)}"')
     s = re.sub(r"\{\{(t|ui|m):([\w.]+)\}\}", rep, s)
     if "{{" in s: sys.exit("Quedó un marcador sin llenar: " + s[s.index("{{"):][:40])
@@ -148,9 +165,10 @@ for f in AQUI.iterdir():
 
 if (AQUI / "admin.html").is_file():   # herramienta privada de Luciann
     _t = (AQUI / "admin.html").read_text(encoding="utf-8")
-    for _n in ("admin.css", "admin.js", "catalogo.js", "textos-es.js"):
+    for _n in ("admin.css", "admin.js", "datos.js", "catalogo.js", "textos-es.js"):
         _t = _t.replace(f'"{_n}"', f'"{_n}?v={version(_n)}"')
     (SALIDA / "admin.html").write_text(_t, encoding="utf-8")
+(SALIDA / "datos.js").write_text("window.DATOS = " + json.dumps(DATOS, ensure_ascii=False).replace("</", "<\\/") + ";\n", encoding="utf-8")
 P_INICIO = (AQUI / "plantilla-inicio.html").read_text(encoding="utf-8")
 P_OBRA = (AQUI / "plantilla-obra.html").read_text(encoding="utf-8")
 sitemap = []

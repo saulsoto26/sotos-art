@@ -31,6 +31,11 @@ Si pierde el teléfono: borra la llave en GitHub (paso 2, botón **Delete**) y c
 - **Nueva venta:** después de confirmar el pago, escoge la obra, la **cantidad de piezas** y escribe los datos del comprador. Al confirmar, la venta se guarda en el repositorio privado, el inventario baja según la cantidad y se abren los certificados listos para imprimir y firmar a mano.
 - **Varias piezas en una venta:** cada pieza recibe su propio certificado y número, seguidos (por ejemplo, SA-002-R-0001 a SA-002-R-0004). Si la edición es numerada, se escribe el número de la primera pieza y los demás siguen solos. Si hay menos piezas listas que las pedidas, se restan las que hay y el resto queda por encargo. Una obra original siempre es una sola pieza.
 - **Ventas:** lista de ventas, con botones para volver a imprimir los certificados o anular una venta. Al anularla, se anulan todos sus certificados, las piezas vuelven al inventario y los números no se vuelven a usar.
+- **Página:** cambia lo que se muestra en la página pública, sin tocar el diseño.
+  - **Obras:** título, año, medidas, técnica, subtítulo, descripción, sus palabras sobre la obra, inscripción y los tamaños de reproducción a la venta (medidas, material, tipo, acabado, precio y si está disponible).
+  - **Envío y políticas:** destinos, costo, tiempos, recogido, cancelaciones, devoluciones, daños, marco, confirmación y privacidad.
+  - **Contacto y pago:** teléfono, WhatsApp, correo, Instagram, Facebook, número de ATH Móvil y el aviso del certificado.
+  - Cada texto tiene su versión en español (ES) y en inglés (EN). Si el inglés queda vacío, la página en inglés muestra el español. Si cambias el español y no el inglés, la herramienta te avisa.
 
 Cada cambio de inventario se ve en la página en uno o dos minutos, que es lo que tarda en publicarse.
 
@@ -38,7 +43,11 @@ Cada cambio de inventario se ve en la página en uno o dos minutos, que es lo qu
 | Dato | Dónde |
 |---|---|
 | Cantidad disponible por obra | `inventario.json`, en el repositorio público |
+| Datos de la página (obras, precios, envío, contacto) | `datos.json`, en el repositorio público |
 | Comprador, contacto, monto, referencia de ATH, notas | `registro.json`, en el repositorio privado `sotos-art-ventas` |
 | La llave | Solo en el teléfono de Luciann |
 
 Los cambios quedan registrados en GitHub a nombre de la cuenta dueña de la llave.
+
+## Si algo sale mal
+Cada cambio queda guardado en GitHub. Para volver atrás: abre el archivo (`datos.json` o `inventario.json`) en el repositorio `sotos-art`, toca **History**, escoge la versión anterior y cópiala. Si el constructor encuentra un error en los datos, no publica nada y la página anterior sigue en línea.

@@ -63,7 +63,10 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [ ] Luciann pone las cantidades iniciales en Inventario (hoy no se muestra ninguna).
 - [ ] Inventario por tamaño cuando se definan los tamaños de reproducción; estado “Edición agotada” si hay ediciones limitadas.
 - [ ] Versión en inglés del certificado.
-- [ ] Más adelante: panel para que Luciann edite obras, medidas y textos; pagos y recibos automáticos.
+- [x] Fase 1 del panel: Luciann edita en la pestaña Página los datos de las obras, los tamaños y precios, envío, políticas y contacto (`datos.json`).
+- [ ] Fase 2: cambiar y añadir fotos y videos. Al cambiar un título, regenerar también su imagen para compartir.
+- [ ] Fase 3: añadir obras nuevas.
+- [ ] Más adelante: pagos y recibos automáticos.
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
 - [ ] Medir los lienzos: en tres obras la medida no coincide con la forma de la foto. En las manos del Alfarero (14 × 16″, corregida por Luciann; la foto es más alargada), Sigo en Victoria (18 × 30″) y Madre Naturaleza (16 × 20″). En pantalla la forma siempre sale de la foto, para no deformar las obras.
 - [ ] Año de cada pintura original.

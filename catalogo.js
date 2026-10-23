@@ -73,6 +73,9 @@ const DECLARACION_DESTACADA = 3;   // oración que se muestra en grande (0 = pri
 
 /* ---------------------------------------------------------------------
    OBRAS
+   IMPORTANTE: título, año, medidas y variantes de cada obra, y sus textos (técnica, subtítulo,
+   descripción, palabras de Luciann, inscripción), se editan ahora en datos.json desde la
+   herramienta de Luciann (pestaña Página). Lo que diga datos.json manda sobre lo de aquí.
    anio: año de la pintura original · medidas: de la PINTURA ORIGINAL (ficha de Luciann), no de la reproducción.
    w y h: solo la proporción de la fotografía en pantalla. variantes: los tamaños que se venden.
    con medidas, el Modo museo muestra las obras a escala entre sí.
@@ -140,3 +143,30 @@ const EXPERIENCIA = {
 /* Orden derivado de los capítulos (no editar) */
 EXPERIENCIA.recorrido = EXPERIENCIA.capitulos.flatMap(c => c.obras);
 EXPERIENCIA.museo = EXPERIENCIA.recorrido;
+
+/* =====================================================================
+   DATOS EDITABLES DESDE LA HERRAMIENTA DE LUCIANN (datos.json)
+   Lo que está en datos.json manda sobre los valores de este archivo y de textos-*.js:
+   contacto, número de ATH Móvil, certificado, envío, políticas y, por obra, título, año,
+   medidas, tamaños de reproducción (variantes) y sus textos en cada idioma.
+   El constructor publica datos.json como datos.js (window.DATOS), que se carga antes que este archivo.
+   En inglés, un campo vacío muestra el texto en español.
+   ===================================================================== */
+function aplicarDatos(D, T, idioma){
+  if (!D) return;
+  const hay = x => x !== undefined && x !== null;
+  const txt = b => { const es = (b || {}).es || {}, lo = (b || {})[idioma] || {}, r = {};
+    new Set([...Object.keys(es), ...Object.keys(lo)]).forEach(k => { r[k] = hay(lo[k]) && lo[k] !== "" ? lo[k] : (hay(es[k]) ? es[k] : ""); }); return r; };
+  Object.entries(D.contacto || {}).forEach(([k, v]) => { if (hay(v)) CONFIG[k] = v; });
+  const V = D.venta || {};
+  if (hay(V.athMovilNumero)) CONFIG.athMovilNumero = V.athMovilNumero;
+  if (hay(V.certificado)) CONFIG.certificado = !!V.certificado;
+  if (T){ T.contenido = T.contenido || {};
+    if (D.envio) T.contenido.envio = { ...(T.contenido.envio || {}), ...txt(D.envio) };
+    if (D.politicas) T.contenido.politicas = { ...(T.contenido.politicas || {}), ...txt(D.politicas) }; }
+  OBRAS.forEach(o => { const d = (D.obras || {})[o.slug]; if (!d) return;
+    ["titulo", "anio"].forEach(k => { if (hay(d[k])) o[k] = d[k]; });
+    if (d.medidas !== undefined) o.medidas = d.medidas;
+    if (Array.isArray(d.variantes)) o.variantes = d.variantes;
+    if (T && d.textos){ T.obras = T.obras || {}; T.obras[o.slug] = { ...(T.obras[o.slug] || {}), ...txt(d.textos) }; } });
+}

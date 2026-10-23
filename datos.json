@@ -1,0 +1,206 @@
+{
+  "_nota": "Datos de la página que Luciann edita desde su herramienta (admin.html). Mandan sobre catalogo.js y textos-*.js. Nunca guardar aquí datos de compradores.",
+  "contacto": {
+    "telefono": "787-690-6865",
+    "whatsapp": "17876906865",
+    "correo": "l.sotosart@gmail.com",
+    "instagram": "sotosart_blessingart",
+    "facebook": ""
+  },
+  "venta": {
+    "athMovilNumero": "787-690-6865",
+    "certificado": true
+  },
+  "envio": {
+    "es": {
+      "destinos": "",
+      "costo": "",
+      "preparacion": "",
+      "entrega": "",
+      "recogido": ""
+    },
+    "en": {
+      "destinos": "",
+      "costo": "",
+      "preparacion": "",
+      "entrega": "",
+      "recogido": ""
+    }
+  },
+  "politicas": {
+    "es": {
+      "cancelaciones": "",
+      "devoluciones": "",
+      "danos": "",
+      "marco": "",
+      "confirmacion": "",
+      "privacidad": ""
+    },
+    "en": {
+      "cancelaciones": "",
+      "devoluciones": "",
+      "danos": "",
+      "marco": "",
+      "confirmacion": "",
+      "privacidad": ""
+    }
+  },
+  "obras": {
+    "quebrantada": {
+      "titulo": "Quebrantada",
+      "anio": "",
+      "medidas": {
+        "ancho": 16,
+        "alto": 20,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": ""
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": ""
+        }
+      }
+    },
+    "restaurada": {
+      "titulo": "Restaurada",
+      "anio": "",
+      "medidas": {
+        "ancho": 16,
+        "alto": 20,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": "Mujer restaurada por Cristo con su amor"
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": "Mujer restaurada por Cristo con su amor (Woman restored by Christ with his love)"
+        }
+      }
+    },
+    "madre-naturaleza": {
+      "titulo": "Madre Naturaleza",
+      "anio": "",
+      "medidas": {
+        "ancho": 16,
+        "alto": 20,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": ""
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": ""
+        }
+      }
+    },
+    "sigo-en-victoria": {
+      "titulo": "Sigo en Victoria",
+      "anio": "",
+      "medidas": {
+        "ancho": 30,
+        "alto": 18,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": ""
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": ""
+        }
+      }
+    },
+    "en-las-manos-del-alfarero": {
+      "titulo": "En las manos del Alfarero",
+      "anio": "",
+      "medidas": {
+        "ancho": 16,
+        "alto": 14,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": ""
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": ""
+        }
+      }
+    },
+    "salmo-23": {
+      "titulo": "Salmo 23",
+      "anio": "",
+      "medidas": {
+        "ancho": 28,
+        "alto": 20,
+        "unidad": "in"
+      },
+      "variantes": [],
+      "textos": {
+        "es": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Pintura acrílica sobre lienzo",
+          "inscripcion": ""
+        },
+        "en": {
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "tecnica": "Acrylic on canvas",
+          "inscripcion": ""
+        }
+      }
+    }
+  }
+}

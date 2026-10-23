@@ -110,6 +110,7 @@ window.TEXTOS = {
     "unidad.pulg": "pulg",
     "recibe.pendiente": "Material, tamaño y acabado de la reproducción por confirmar.",
     "recibe.tipo": "reproducción {x}",
+    "recibe.sinTipo": "reproducción",
     "recibe.material": "en {x}",
     "recibe.tamano": "de {x}",
     "recibe.acabado": "acabado {x}",

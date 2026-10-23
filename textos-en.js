@@ -116,6 +116,7 @@ window.TEXTOS = {
     "idioma.seguir": "Continue in English",
     "recibe.pendiente": "Material, size and finish of the reproduction to be confirmed.",
     "recibe.tipo": "{x} reproduction",
+    "recibe.sinTipo": "reproduction",
     "recibe.material": "on {x}",
     "recibe.tamano": "{x}",
     "recibe.acabado": "{x} finish",
