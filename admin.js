@@ -10,7 +10,9 @@ const A = CONFIG.admin, API = "https://api.github.com", LLAVE = "sa-admin-llave"
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const TX = window.TEXTOS || {};
-OBRAS.forEach(o => Object.assign(o, { tecnica: "", inscripcion: "" }, (TX.obras || {})[o.slug]));
+let DAT = window.DATOS || null;   // datos.json: lo que Luciann edita en la pestaña Página
+function refrescarObras(){ if (DAT) aplicarDatos(DAT, TX, "es"); OBRAS.forEach(o => Object.assign(o, { tecnica: "", inscripcion: "" }, (TX.obras || {})[o.slug])); }
+refrescarObras();
 const porSlug = s => OBRAS.find(o => o.slug === s);
 
 /* ---------- Guardar la llave solo en este dispositivo ---------- */
@@ -81,8 +83,8 @@ async function verificar(){
 }
 async function entrar(){
   mostrar("vPrincipal");
-  await Promise.all([cargarInventario(), cargarVentas()]);
-  pintarObras(); pintarInventario(); pintarVentas();
+  await Promise.all([cargarInventario(), cargarVentas(), cargarDatos()]);
+  pintarObras(); pintarInventario(); pintarVentas(); pintarPagina();
 }
 $("#btnConectar").addEventListener("click", async () => {
   const v = $("#llave").value.trim(), err = $("#errConectar"); err.textContent = "";
@@ -233,6 +235,178 @@ $("#listaVentas").addEventListener("click", async e => {
     if (r) INV = await actualizar(A.repoSitio, "inventario.json", d => { d.obras = d.obras || {}; const n = d.obras[v.obra]; if (Number.isInteger(n)) d.obras[v.obra] = n + r; return d; }, `Inventario: venta anulada de «${v.titulo}»`);
     pintarVentas(); pintarInventario(); alCambiarObra(); aviso("Venta anulada.");
   } catch (er) { alert(er.message); an.disabled = false; }
+});
+
+/* ---------- Página: datos de la página pública (datos.json en el repositorio del sitio) ---------- */
+async function cargarDatos(){ const d = (await leer(A.repoSitio, "datos.json")).datos; if (d){ DAT = d; refrescarObras(); } }
+const DEF_DATOS = () => ({ contacto: {}, venta: {}, envio: { es: {}, en: {} }, politicas: { es: {}, en: {} }, obras: {} });
+const pinta = v => v === undefined || v === null ? "" : String(v);
+/* Campo en dos idiomas: español arriba, inglés debajo */
+function bi(k, etq, es, en, op = {}){
+  const caja = (l, v) => op.area ? `<textarea data-k="${k}" data-l="${l}" rows="${op.filas || 3}">${esc(v)}</textarea>` : `<input data-k="${k}" data-l="${l}" value="${esc(v)}">`;
+  return `<div class="bi"><span class="etq">${etq}</span>${op.nota ? `<p class="nota">${op.nota}</p>` : ""}
+    <label class="idi"><span>ES</span>${caja("es", pinta(es))}</label><label class="idi"><span>EN</span>${caja("en", pinta(en))}</label></div>`;
+}
+const leerBi = (f, ks) => { const r = { es: {}, en: {} }; ks.forEach(k => ["es", "en"].forEach(l => { const el = $(`[data-k="${k}"][data-l="${l}"]`, f); r[l][k] = el ? el.value.trim() : ""; })); return r; };
+/* Si cambió el español y el inglés quedó igual, se avisa (en inglés, vacío = se muestra el español) */
+function avisoIngles(antes, ahora, ks, nombres){
+  const p = ks.filter(k => pinta((antes.es || {})[k]) !== ahora.es[k] && pinta((antes.en || {})[k]) === ahora.en[k] && ahora.es[k] !== "").map(k => nombres[k]);
+  return p.length ? `Cambiaste en español: ${p.join(", ")}. Revisa la versión en inglés; si la dejas vacía, la página en inglés muestra tu texto en español.` : "";
+}
+$$("[data-sub]").forEach(b => b.addEventListener("click", () => {
+  $$("[data-sub]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  $$("[data-subpanel]").forEach(p => p.hidden = p.dataset.subpanel !== b.dataset.sub);
+}));
+function pintarPagina(){ pintarListaObras(); pintarEnvio(); pintarContacto(); }
+
+/* Obras */
+const TXK = ["tecnica", "subtitulo", "descripcion", "declaracion", "inscripcion"];
+const NOMBRES = { tecnica: "Técnica", subtitulo: "Subtítulo", descripcion: "Descripción", declaracion: "Tus palabras sobre la obra", inscripcion: "Inscripción" };
+const precioTxt = n => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+function resumenObra(o){
+  const vs = o.variantes || [], p = vs.map(v => v.precio).filter(x => x > 0);
+  return [o.anio || "Año por confirmar", vs.length ? `${vs.length} ${vs.length === 1 ? "tamaño" : "tamaños"}${p.length ? " · desde " + precioTxt(Math.min(...p)) : " · precio por confirmar"}` : "Sin tamaños de reproducción"].join(" · ");
+}
+function pintarListaObras(){
+  $("#listaObras").innerHTML = `<div class="tarjeta">${OBRAS.map(o => `<button type="button" class="fila-obra" data-editar="${o.slug}">
+    <img src="${esc(o.imagen)}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${esc(resumenObra(o))}</small></span><span class="ir" aria-hidden="true">›</span></button>`).join("")}</div>`;
+}
+$("#listaObras").addEventListener("click", e => { const b = e.target.closest("[data-editar]"); if (b) editarObra(b.dataset.editar); });
+const MATERIALES = ["lienzo", "papel de arte", "papel"], TIPOS = ["giclée"], ACABADOS = ["mate", "satinado", "brillo", "con bastidor", "sin bastidor", "enrollado"];
+const lista = (id, xs) => `<datalist id="${id}">${xs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>`;
+function filaVariante(v = {}){
+  return `<div class="variante" data-var>
+    <div class="tres"><label>Ancho<input data-v="ancho" inputmode="decimal" value="${pinta(v.ancho)}"></label><label>Alto<input data-v="alto" inputmode="decimal" value="${pinta(v.alto)}"></label>
+      <label>Unidad<select data-v="unidad"><option value="in"${v.unidad !== "cm" ? " selected" : ""}>pulg</option><option value="cm"${v.unidad === "cm" ? " selected" : ""}>cm</option></select></label></div>
+    <div class="dos"><label>Material<input data-v="material" list="dlMat" value="${esc(pinta(v.material))}" placeholder="lienzo"></label><label>Tipo<input data-v="tipo" list="dlTipo" value="${esc(pinta(v.tipo))}" placeholder="giclée"></label></div>
+    <div class="dos"><label>Acabado<input data-v="acabado" list="dlAcab" value="${esc(pinta(v.acabado))}" placeholder="mate"></label><label>Precio (USD)<input data-v="precio" inputmode="decimal" value="${v.precio ? pinta(v.precio) : ""}" placeholder="vacío = por confirmar"></label></div>
+    <div class="var-pie"><label class="check"><input type="checkbox" data-v="disponible"${v.disponible === false ? "" : " checked"}> <span>Disponible para ordenar</span></label>
+      <button type="button" class="enlace" data-quitar>Quitar este tamaño</button></div></div>`;
+}
+let EDITANDO = null;
+function editarObra(slug){
+  const o = porSlug(slug), d = ((DAT || {}).obras || {})[slug] || {}, t = d.textos || { es: {}, en: {} }, m = o.medidas || {};
+  EDITANDO = { slug, variantes: JSON.parse(JSON.stringify(o.variantes || [])), textos: JSON.parse(JSON.stringify(t)) };
+  const f = $("#fObra");
+  f.innerHTML = `<p class="volver"><button type="button" class="enlace" data-cerrar-obra>← Todas las obras</button></p>
+    <div class="cab-obra"><img src="${esc(o.imagen)}" alt=""><div><span class="num">${esc(o.sku)}</span><h2>${esc(o.titulo)}</h2></div></div>
+    <fieldset><legend>La obra original</legend>
+      <label for="oTitulo">Título</label><input id="oTitulo" value="${esc(o.titulo)}">
+      <p class="nota">El título es el mismo en los dos idiomas. La dirección de la página de la obra no cambia.</p>
+      <label for="oAnio">Año</label><input id="oAnio" inputmode="numeric" value="${esc(pinta(o.anio))}" placeholder="Ej.: 2020">
+      <span class="etq">Medidas de la pintura original</span>
+      <div class="tres"><label>Ancho<input id="oAncho" inputmode="decimal" value="${pinta(m.ancho)}"></label><label>Alto<input id="oAlto" inputmode="decimal" value="${pinta(m.alto)}"></label>
+        <label>Unidad<select id="oUnidad"><option value="in"${m.unidad !== "cm" ? " selected" : ""}>pulg</option><option value="cm"${m.unidad === "cm" ? " selected" : ""}>cm</option></select></label></div>
+    </fieldset>
+    <fieldset><legend>Textos</legend>
+      ${bi("tecnica", "Técnica", t.es && t.es.tecnica, t.en && t.en.tecnica)}
+      ${bi("subtitulo", "Subtítulo", t.es && t.es.subtitulo, t.en && t.en.subtitulo, { nota: "Opcional. Una frase corta debajo del título." })}
+      ${bi("descripcion", "Descripción", t.es && t.es.descripcion, t.en && t.en.descripcion, { area: true, filas: 4 })}
+      ${bi("declaracion", "Tus palabras sobre la obra", t.es && t.es.declaracion, t.en && t.en.declaracion, { area: true, filas: 4, nota: "Se muestran como una cita tuya. Si dejas el inglés vacío, la página en inglés muestra tu texto en español." })}
+      ${bi("inscripcion", "Inscripción en la obra", t.es && t.es.inscripcion, t.en && t.en.inscripcion, { nota: "Si la pintura tiene palabras escritas." })}
+    </fieldset>
+    <fieldset><legend>Tamaños de reproducción a la venta</legend>
+      <p class="nota">Cada tamaño aparece como una opción en la ficha. Sin precio, la página dice “por confirmar”.</p>
+      <div id="variantes">${EDITANDO.variantes.map(filaVariante).join("")}</div>
+      <button type="button" class="btn linea" data-anadir>+ Añadir un tamaño</button>
+      ${lista("dlMat", MATERIALES)}${lista("dlTipo", TIPOS)}${lista("dlAcab", ACABADOS)}
+    </fieldset>
+    <button class="btn oro" type="submit" id="btnObra">Guardar cambios</button>
+    <p class="error" id="errObra" role="alert"></p><p class="nota" id="notaObra"></p>`;
+  $("#listaObras").hidden = true; f.hidden = false; scrollTo(0, 0);
+}
+$("#fObra").addEventListener("click", e => {
+  if (e.target.closest("[data-cerrar-obra]")){ $("#fObra").hidden = true; $("#listaObras").hidden = false; EDITANDO = null; return; }
+  if (e.target.closest("[data-anadir]")){ $("#variantes").insertAdjacentHTML("beforeend", filaVariante()); EDITANDO.variantes.push({}); return; }
+  const q = e.target.closest("[data-quitar]");
+  if (q){ const filas = $$("[data-var]", $("#variantes")), i = filas.indexOf(q.closest("[data-var]")); filas[i].remove(); EDITANDO.variantes.splice(i, 1); }
+});
+const num = s => { const t = String(s).trim().replace(",", "."); return t === "" ? null : /^\d+(\.\d+)?$/.test(t) ? Number(t) : NaN; };
+$("#fObra").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const f = $("#fObra"), err = $("#errObra"), slug = EDITANDO.slug; err.textContent = ""; $("#notaObra").textContent = "";
+  const titulo = $("#oTitulo").value.trim(), anio = $("#oAnio").value.trim(), an = num($("#oAncho").value), al = num($("#oAlto").value);
+  if (!titulo) return err.textContent = "La obra necesita un título.";
+  if (anio && !/^\d{4}$/.test(anio)) return err.textContent = "Escribe el año con cuatro números (por ejemplo, 2020), o déjalo vacío.";
+  if (Number.isNaN(an) || Number.isNaN(al) || (an === null) !== (al === null) || an === 0 || al === 0) return err.textContent = "Revisa las medidas: escribe el ancho y el alto con números, o deja los dos vacíos.";
+  const variantes = [];
+  for (const [i, fila] of $$("[data-var]", $("#variantes")).entries()){
+    const g = k => $(`[data-v="${k}"]`, fila), a = num(g("ancho").value), h = num(g("alto").value), p = num(g("precio").value);
+    if (a === null && h === null && !g("material").value.trim() && p === null) continue;   // fila vacía: se ignora
+    if (!a || !h || Number.isNaN(a) || Number.isNaN(h)) return err.textContent = `Tamaño ${i + 1}: escribe el ancho y el alto con números.`;
+    if (Number.isNaN(p)) return err.textContent = `Tamaño ${i + 1}: el precio debe ser un número, sin el signo $.`;
+    variantes.push({ ...(EDITANDO.variantes[i] || {}), ancho: a, alto: h, unidad: g("unidad").value, material: g("material").value.trim(), tipo: g("tipo").value.trim(),
+      acabado: g("acabado").value.trim(), precio: p || 0, disponible: g("disponible").checked });
+  }
+  const textos = leerBi(f, TXK), aviso2 = avisoIngles(EDITANDO.textos, textos, TXK, NOMBRES);
+  const nuevo = { titulo, anio, medidas: an === null ? null : { ancho: an, alto: al, unidad: $("#oUnidad").value }, variantes, textos };
+  $("#btnObra").disabled = true;
+  try {
+    DAT = await actualizar(A.repoSitio, "datos.json", d => { d = d || DEF_DATOS(); d.obras = d.obras || {}; d.obras[slug] = { ...(d.obras[slug] || {}), ...nuevo }; return d; },
+      `Página: «${titulo}» actualizada desde la herramienta de Luciann`);
+    refrescarObras(); pintarObras(); pintarInventario(); pintarListaObras();
+    EDITANDO.textos = textos; EDITANDO.variantes = variantes;
+    $("#notaObra").textContent = aviso2; aviso("Guardado. La página se actualiza en uno o dos minutos.");
+  } catch (e) { err.textContent = e.message; }
+  finally { $("#btnObra").disabled = false; }
+});
+
+/* Envío y políticas */
+const ENV = ["destinos", "costo", "preparacion", "entrega", "recogido"], POL = ["cancelaciones", "devoluciones", "danos", "marco", "confirmacion", "privacidad"];
+const N_ENV = { destinos: "A dónde envías", costo: "Costo de envío", preparacion: "Tiempo de preparación", entrega: "Tiempo de entrega", recogido: "Recogido en persona" };
+const N_POL = { cancelaciones: "Cancelaciones", devoluciones: "Devoluciones", danos: "Si la pieza llega dañada", marco: "Marco", confirmacion: "Confirmación de la orden", privacidad: "Privacidad" };
+const AYUDA = { destinos: "Ej.: Puerto Rico y Estados Unidos.", costo: "Ej.: $15 en Puerto Rico.", preparacion: "Ej.: 5 a 7 días laborables.", recogido: "Si se puede recoger en persona y dónde (sin dirección exacta).",
+  marco: "Si la reproducción incluye marco o no.", confirmacion: "Cómo y cuándo confirmas cada orden." };
+let ENV_ANTES = null;
+function pintarEnvio(){
+  const d = DAT || DEF_DATOS(), e = d.envio || {}, p = d.politicas || {};
+  ENV_ANTES = { es: { ...(e.es || {}), ...(p.es || {}) }, en: { ...(e.en || {}), ...(p.en || {}) } };
+  $("#fEnvio").innerHTML = `<p class="nota">Vacío = la página dice “por confirmar”.</p>
+    <fieldset><legend>Envío</legend>${ENV.map(k => bi("e_" + k, N_ENV[k], (e.es || {})[k], (e.en || {})[k], { area: true, filas: 2, nota: AYUDA[k] })).join("")}</fieldset>
+    <fieldset><legend>Políticas</legend>${POL.map(k => bi("p_" + k, N_POL[k], (p.es || {})[k], (p.en || {})[k], { area: true, filas: 3, nota: AYUDA[k] })).join("")}</fieldset>
+    <button class="btn oro" type="submit" id="btnEnvio">Guardar envío y políticas</button>
+    <p class="error" id="errEnvio" role="alert"></p><p class="nota" id="notaEnvio"></p>`;
+}
+$("#fEnvio").addEventListener("submit", async ev => {
+  ev.preventDefault(); const f = $("#fEnvio"), err = $("#errEnvio"); err.textContent = "";
+  const e = leerBi(f, ENV.map(k => "e_" + k)), p = leerBi(f, POL.map(k => "p_" + k)), quita = (o, pre) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k.slice(pre.length), v]));
+  const envio = { es: quita(e.es, "e_"), en: quita(e.en, "e_") }, politicas = { es: quita(p.es, "p_"), en: quita(p.en, "p_") };
+  const ahora = { es: { ...envio.es, ...politicas.es }, en: { ...envio.en, ...politicas.en } }, aviso2 = avisoIngles(ENV_ANTES, ahora, [...ENV, ...POL], { ...N_ENV, ...N_POL });
+  $("#btnEnvio").disabled = true;
+  try { DAT = await actualizar(A.repoSitio, "datos.json", d => ({ ...(d || DEF_DATOS()), envio, politicas }), "Página: envío y políticas actualizados desde la herramienta de Luciann");
+    ENV_ANTES = ahora; $("#notaEnvio").textContent = aviso2; aviso("Guardado. La página se actualiza en uno o dos minutos."); }
+  catch (x) { err.textContent = x.message; } finally { $("#btnEnvio").disabled = false; }
+});
+
+/* Contacto y pago */
+function pintarContacto(){
+  const c = { telefono: CONFIG.telefono, whatsapp: CONFIG.whatsapp, correo: CONFIG.correo, instagram: CONFIG.instagram, facebook: CONFIG.facebook, ...((DAT || {}).contacto || {}) };
+  const v = { athMovilNumero: CONFIG.athMovilNumero, certificado: CONFIG.certificado, ...((DAT || {}).venta || {}) };
+  const campo = (id, etq, val, nota = "", extra = "") => `<label for="${id}">${etq}</label><input id="${id}" value="${esc(pinta(val))}" ${extra}>${nota ? `<p class="nota">${nota}</p>` : ""}`;
+  $("#fContacto").innerHTML = `<fieldset><legend>Contacto para compradores</legend>
+      ${campo("cTel", "Teléfono", c.telefono, "Ej.: 787-690-6865", 'inputmode="tel"')}
+      ${campo("cWa", "WhatsApp", c.whatsapp, "Solo números, con el 1 delante: 17876906865. Vacío = no se muestra el botón de WhatsApp.", 'inputmode="numeric"')}
+      ${campo("cCorreo", "Correo", c.correo, "", 'inputmode="email" autocapitalize="off"')}
+      ${campo("cIg", "Instagram", c.instagram, "Sin la @.", 'autocapitalize="off"')}
+      ${campo("cFb", "Facebook", c.facebook, "El enlace completo de tu página, o vacío.", 'inputmode="url" autocapitalize="off"')}</fieldset>
+    <fieldset><legend>Pago y certificado</legend>
+      ${campo("cAth", "Número de ATH Móvil", v.athMovilNumero, "Vacío = no se muestra el pago por ATH Móvil.", 'inputmode="tel"')}
+      <label class="check"><input type="checkbox" id="cCert"${v.certificado ? " checked" : ""}> <span>Anunciar el certificado de autenticidad en la página</span></label></fieldset>
+    <button class="btn oro" type="submit" id="btnContacto">Guardar contacto y pago</button>
+    <p class="error" id="errContacto" role="alert"></p>`;
+}
+$("#fContacto").addEventListener("submit", async ev => {
+  ev.preventDefault(); const err = $("#errContacto"); err.textContent = "";
+  const g = id => $("#" + id).value.trim();
+  const contacto = { telefono: g("cTel"), whatsapp: g("cWa").replace(/\D/g, ""), correo: g("cCorreo"), instagram: g("cIg").replace(/^@/, ""), facebook: g("cFb") };
+  if (contacto.whatsapp && !/^1\d{10}$/.test(contacto.whatsapp)) return err.textContent = "WhatsApp: escribe 11 números, empezando con 1 (por ejemplo, 17876906865).";
+  if (contacto.correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contacto.correo)) return err.textContent = "Revisa el correo.";
+  if (contacto.facebook && !/^https:\/\//.test(contacto.facebook)) return err.textContent = "Facebook: pega el enlace completo, que empieza con https://";
+  const venta = { athMovilNumero: g("cAth"), certificado: $("#cCert").checked };
+  $("#btnContacto").disabled = true;
+  try { DAT = await actualizar(A.repoSitio, "datos.json", d => ({ ...(d || DEF_DATOS()), contacto, venta: { ...((d || {}).venta || {}), ...venta } }), "Página: contacto y pago actualizados desde la herramienta de Luciann");
+    refrescarObras(); aviso("Guardado. La página se actualiza en uno o dos minutos."); }
+  catch (x) { err.textContent = x.message; } finally { $("#btnContacto").disabled = false; }
 });
 
 /* ---------- Certificado ---------- */

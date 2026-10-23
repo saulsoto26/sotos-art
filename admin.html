@@ -36,6 +36,7 @@
       <button role="tab" data-tab="venta" aria-selected="true">Nueva venta</button>
       <button role="tab" data-tab="inventario">Inventario</button>
       <button role="tab" data-tab="ventas">Ventas</button>
+      <button role="tab" data-tab="pagina">Página</button>
     </nav>
 
     <!-- Nueva venta -->
@@ -116,6 +117,20 @@
       <div id="listaVentas"></div>
     </div>
 
+    <!-- Página: datos que se muestran en la página pública (datos.json) -->
+    <div class="panel" data-panel="pagina" hidden>
+      <h1>Información de la página</h1>
+      <p class="lead">Lo que cambies aquí aparece en la página en uno o dos minutos. El diseño, los colores y las animaciones no cambian.</p>
+      <div class="subpestanas">
+        <button type="button" data-sub="obras" aria-pressed="true">Obras</button>
+        <button type="button" data-sub="envio" aria-pressed="false">Envío y políticas</button>
+        <button type="button" data-sub="contacto" aria-pressed="false">Contacto y pago</button>
+      </div>
+      <div data-subpanel="obras"><div id="listaObras"></div><form id="fObra" class="tarjeta" hidden novalidate></form></div>
+      <div data-subpanel="envio" hidden><form id="fEnvio" class="tarjeta" novalidate></form></div>
+      <div data-subpanel="contacto" hidden><form id="fContacto" class="tarjeta" novalidate></form></div>
+    </div>
+
     <p class="pie"><button class="enlace" id="btnSalir" type="button">Desconectar este dispositivo</button></p>
   </section>
 
@@ -131,6 +146,7 @@
 </main>
 <div class="aviso" id="aviso" role="status"></div>
 
+<script src="datos.js"></script>
 <script src="catalogo.js"></script>
 <script src="textos-es.js"></script>
 <script src="admin.js"></script>

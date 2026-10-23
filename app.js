@@ -14,6 +14,7 @@ function tr(k, v){
   return v ? s.replace(/\{(\w+)\}/g, (m, n) => n in v ? v[n] : m) : s;
 }
 (function aplicarTextos(){
+  if (window.DATOS && typeof aplicarDatos === "function") aplicarDatos(window.DATOS, TX, IDIOMA);   // datos.json (herramienta de Luciann)
   const C = TX.contenido || {};
   Object.assign(CONFIG, { lema: C.lema || "", declaracion: C.declaracion || "",
     envio: { ...C.envio }, politicas: { ...C.politicas }, testimonios: C.testimonios || [], fotosProducto: C.fotosProducto || [] });
@@ -201,7 +202,7 @@ class Puntillismo {
 function variantLabel(v){ return v.ancho && v.alto ? `${v.ancho} × ${v.alto} ${v.unidad === "cm" ? "cm" : tr("unidad.pulg")}` : (v.tamano || ""); }
 function receiveText(v){
   if (!v) return tr("recibe.pendiente");
-  const bits = [v.tipo && tr("recibe.tipo", { x: val(v.tipo) }), v.material && tr("recibe.material", { x: val(v.material) }), variantLabel(v) && tr("recibe.tamano", { x: variantLabel(v) }), v.acabado && tr("recibe.acabado", { x: val(v.acabado) })].filter(Boolean);
+  const bits = [v.tipo ? tr("recibe.tipo", { x: val(v.tipo) }) : (v.material || variantLabel(v) || v.acabado) && tr("recibe.sinTipo"), v.material && tr("recibe.material", { x: val(v.material) }), variantLabel(v) && tr("recibe.tamano", { x: variantLabel(v) }), v.acabado && tr("recibe.acabado", { x: val(v.acabado) })].filter(Boolean);
   return bits.length ? tr("recibe.frase", { lista: bits.join(", ") }) : tr("recibe.detallesPendientes");
 }
 function renderFicha(o, mount, opts = {}){

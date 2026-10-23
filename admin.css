@@ -24,7 +24,7 @@ legend{padding:0;margin:0 0 .6rem;font-size:.74rem;letter-spacing:.14em;text-tra
 label,.etq{display:block;font-size:.88rem;font-weight:700;margin:.85rem 0 .3rem}
 legend + label{margin-top:0}
 .opc{font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0}
-input,select,textarea{width:100%;font:inherit;font-size:1rem;padding:.7rem .75rem;border:1px solid rgba(31,26,21,.28);border-radius:3px;background:#fff;color:var(--ink);min-height:46px}
+input,select,textarea{width:100%;font:inherit;font-weight:400;font-size:1rem;padding:.7rem .75rem;border:1px solid rgba(31,26,21,.28);border-radius:3px;background:#fff;color:var(--ink);min-height:46px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
 .radios{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem}
 .radios label,.check{display:flex;align-items:center;gap:.5rem;font-weight:400;margin:.2rem 0;min-height:40px}
@@ -46,7 +46,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .btn.linea{background:transparent;border-color:rgba(31,26,21,.35);color:var(--ink)}
 .enlace{background:none;border:0;padding:.5rem 0;font:inherit;font-size:.92rem;color:var(--accent);text-decoration:underline;cursor:pointer}
 .pestanas{display:flex;gap:.3rem;margin:0 0 1.2rem;border-bottom:1px solid var(--line);overflow-x:auto}
-.pestanas button{flex:none;background:none;border:0;border-bottom:3px solid transparent;padding:.75rem .9rem;font:700 .95rem var(--body);color:var(--muted);cursor:pointer;min-height:46px}
+.pestanas button{flex:1 0 auto;background:none;border:0;border-bottom:3px solid transparent;padding:.75rem .45rem;font:700 .9rem var(--body);color:var(--muted);cursor:pointer;min-height:46px}
 .pestanas button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
 .fila-inv{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
 .fila-inv:last-child{border-bottom:0}
@@ -121,3 +121,32 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
   .c-hoja{zoom:1!important;margin:0;box-shadow:none;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .c-hoja:last-child{break-after:auto}
 }
+
+/* Pestaña Página */
+.subpestanas{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 1.1rem}
+.subpestanas button{min-height:40px;padding:.4rem .9rem;border:1px solid rgba(31,26,21,.28);border-radius:999px;background:#fff;font:700 .88rem var(--body);color:var(--ink);cursor:pointer}
+.subpestanas button[aria-pressed="true"]{background:var(--night);border-color:var(--night);color:var(--ivory)}
+.fila-obra{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:.8rem;width:100%;padding:.75rem 0;border:0;border-bottom:1px solid var(--line);background:none;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.fila-obra:last-child{border-bottom:0}
+.fila-obra img{width:46px;height:56px;object-fit:cover;border-radius:2px}
+.fila-obra .t{font-family:var(--display);font-size:1.1rem;line-height:1.25}
+.fila-obra small{display:block;font:400 .82rem var(--body);color:var(--muted);margin-top:.15rem}
+.fila-obra .ir{font-size:1.6rem;color:var(--muted)}
+.volver{margin:0 0 .6rem}
+.cab-obra{display:flex;gap:.9rem;align-items:center;margin:0 0 1.2rem}
+.cab-obra img{width:64px;height:78px;object-fit:cover;border-radius:2px}
+.cab-obra .num{font-size:.74rem;letter-spacing:.12em;color:var(--accent);font-weight:700}
+.cab-obra h2{font:400 1.5rem var(--display);margin:.1rem 0 0}
+.bi{margin:0 0 1rem}
+.bi .etq{margin-top:.9rem}
+.bi .nota{margin:0 0 .4rem}
+.idi{display:grid;grid-template-columns:2.2rem 1fr;align-items:start;gap:.5rem;font-weight:400;margin:.35rem 0}
+.idi span{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--muted);padding-top:.85rem}
+.tres{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 .6rem}
+.tres label,.variante .dos label{margin-top:.6rem}
+.variante{border:1px solid var(--line);border-radius:4px;padding:.4rem .8rem .5rem;margin:0 0 .8rem;background:#fff}
+.variante .dos{grid-template-columns:1fr 1fr}
+.var-pie{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem 1rem;margin-top:.5rem}
+.var-pie .check{margin:0}
+#fObra .btn.linea{margin:0 0 .4rem}
+#notaObra,#notaEnvio{color:var(--accent)}
