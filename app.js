@@ -24,7 +24,7 @@ function tr(k, v){
   OBRAS.forEach(o => Object.assign(o, { alt: "", descripcion: "", declaracion: "", subtitulo: "", inscripcion: "" }, (TX.obras || {})[o.slug]));
   /* Los archivos viven en la raíz del sitio: se ajusta su ruta desde esta página */
   const ruta = f => f && !/^(https?:|data:|\/)/.test(f) && /\.\w{2,4}$/.test(f) ? RAIZ + f : f;
-  OBRAS.forEach(o => { o.imagen = ruta(o.imagen); o.video = ruta(o.video); [o.ambiente, o.enmarcada].forEach(x => { if (x) x.imagen = ruta(x.imagen); }); });
+  OBRAS.forEach(o => { o.imagen = ruta(o.imagen); o.video = ruta(o.video); [o.ambiente, o.enmarcada, ...(o.fotos || [])].forEach(x => { if (x) x.imagen = ruta(x.imagen); }); });
   const P = CONFIG.pincelada; P.proceso = ruta(P.proceso); P.terminada = ruta(P.terminada);
   CONFIG.exploracion.forEach(x => x.imagen = ruta(x.imagen));
   CONFIG.fotosProducto.forEach(x => x.imagen = ruta(x.imagen));
@@ -236,6 +236,11 @@ function renderFicha(o, mount, opts = {}){
       <div id="review"></div>
       ${o.ambiente ? `<figure class="ambiente"><img src="${esc(o.ambiente.imagen)}" alt="${esc(tr("ficha.ambiente"))}: ${esc(cita(o.titulo))}" width="${o.ambiente.w}" height="${o.ambiente.h}" loading="lazy">
         <figcaption><b>${tr("ficha.ambiente")}</b> ${tr("ficha.ambienteNota")}</figcaption></figure>` : ""}
+      ${(o.fotos || []).length ? `<section class="mas-fotos" aria-label="${esc(tr("fotos.titulo"))}"><h3>${tr("fotos.titulo")}</h3><div class="mas-fotos-rejilla">
+        ${o.fotos.map((f, i) => `<figure><button type="button" class="mas-foto" data-foto="${i}" aria-label="${esc(tr("fotos.ver"))}: ${esc(tr("fotos." + f.tipo))}">
+          <img src="${esc(f.imagen.replace(/\.jpg$/, "-800.jpg"))}" alt="${esc(fotoAlt(o, f))}" width="${f.w}" height="${f.h}" loading="lazy"></button>
+          <figcaption><b>${tr("fotos." + f.tipo)}</b>${f.pie ? " " + esc(f.pie) : ""}${f.tipo === "espacio" ? `<span>${tr("fotos.espacioNota")}</span>` : ""}</figcaption></figure>`).join("")}
+      </div></section>` : ""}
       <div class="sharebox"><p>${tr("compartir.pregunta")}</p><button class="btn line" data-share>${tr("compartir.boton")}</button></div>
       ${!opts.page && ALTERNOS.length ? `<p class="small ficha-idioma">${ALTERNOS.map(a => `<a href="${esc(a.url)}" hreflang="${a.idioma}" lang="${a.idioma}" data-cambio-idioma>${esc(a.ver)}</a>`).join(" · ")}</p>` : ""}
       ${falta.length ? `<p class="small pendline">${tr("falta.frase", { lista: listJoin(falta) })}</p>` : ""}
@@ -271,6 +276,7 @@ function renderFicha(o, mount, opts = {}){
   mount.onclick = e => {
     if (e.target === mount || e.target.closest("[data-close]")) return mount.close && mount.close();
     if (e.target.closest("[data-share]")) return share(o);
+    const fb = e.target.closest("[data-foto]"); if (fb) return verFoto(o, +fb.dataset.foto);
     if (e.target.closest("[data-copiar-ath]")){ track("ath_numero_copiado", o.slug);
       return (navigator.clipboard ? navigator.clipboard.writeText(CONFIG.athMovilNumero.replace(/\D/g, "")) : Promise.reject()).then(() => toast(tr("ath.copiado")), () => toast(CONFIG.athMovilNumero)); }
     if (e.target.closest("[data-review]")){ track("clic_ordenar", o.slug); return review(o, current(), mount); }
@@ -379,6 +385,7 @@ const Compartir = (() => {
   return { abrir };
 })();
 function mediaHTML(src, title){
+  if (/^https:\/\/(www\.)?instagram\.com\//i.test(src)) return `<p><a class="btn line" href="${esc(src)}" target="_blank" rel="noopener">${tr("media.instagram")}</a></p>`;
   if (/\.(mp4|webm|mov)$/i.test(src)) return `<video class="video" controls preload="none" playsinline src="${esc(src)}" title="${esc(title)}"></video>`;
   if (/\.(mp3|m4a|wav|ogg)$/i.test(src)) return `<audio controls preload="none" src="${esc(src)}" style="width:100%"></audio>`;
   return `<iframe class="video" src="https://www.youtube-nocookie.com/embed/${esc(src)}" title="${esc(title)}" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
@@ -1228,6 +1235,18 @@ const Museo = (() => {
   $$("[data-museo]").forEach(b => b.addEventListener("click", () => abrir(orden[0])));
   return { abrir, abierto: () => dlg.open };
 })();
+
+/* ---------- Fotos adicionales: se ven en grande sin salir de la ficha ---------- */
+const fotoAlt = (o, f) => `${tr("fotos." + f.tipo)}: ${cita(o.titulo)}${f.pie ? ". " + f.pie : ""}`;
+function verFoto(o, i){
+  let dlg = $("#fotoGrande");
+  if (!dlg){ dlg = document.createElement("dialog"); dlg.id = "fotoGrande"; dlg.className = "foto-grande"; document.body.appendChild(dlg);
+    dlg.addEventListener("click", e => { if (e.target === dlg || e.target.closest("[data-cerrar-foto]")) dlg.close(); }); }
+  const f = o.fotos[i];
+  dlg.innerHTML = `<button class="close" data-cerrar-foto aria-label="${esc(tr("cerrar"))}">×</button>
+    <figure><img src="${esc(f.imagen)}" alt="${esc(fotoAlt(o, f))}" width="${f.w}" height="${f.h}"><figcaption><b>${tr("fotos." + f.tipo)}</b>${f.pie ? " " + esc(f.pie) : ""}</figcaption></figure>`;
+  if (!dlg.open) dlg.showModal(); track("ver_foto", o.slug);
+}
 
 /* ---------- Inventario (inventario.json, lo actualiza la herramienta de Luciann) ----------
    null o sin dato: no se muestra nada · 0: se prepara por encargo (la orden se recibe igual) · n: n disponibles */

@@ -148,7 +148,9 @@ EXPERIENCIA.museo = EXPERIENCIA.recorrido;
    DATOS EDITABLES DESDE LA HERRAMIENTA DE LUCIANN (datos.json)
    Lo que está en datos.json manda sobre los valores de este archivo y de textos-*.js:
    contacto, número de ATH Móvil, certificado, envío, políticas y, por obra, título, año,
-   medidas, tamaños de reproducción (variantes) y sus textos en cada idioma.
+   medidas, tamaños de reproducción (variantes), sus textos en cada idioma, la foto principal
+   (imagen, w, h), la foto en un espacio (ambiente), la foto con marco (enmarcada; null = no se usa),
+   las fotos adicionales (fotos), el video (enlace de YouTube o Instagram) y sus vistas previas (og).
    El constructor publica datos.json como datos.js (window.DATOS), que se carga antes que este archivo.
    En inglés, un campo vacío muestra el texto en español.
    ===================================================================== */
@@ -167,6 +169,11 @@ function aplicarDatos(D, T, idioma){
   OBRAS.forEach(o => { const d = (D.obras || {})[o.slug]; if (!d) return;
     ["titulo", "anio"].forEach(k => { if (hay(d[k])) o[k] = d[k]; });
     if (d.medidas !== undefined) o.medidas = d.medidas;
+    ["imagen", "w", "h", "video"].forEach(k => { if (hay(d[k])) o[k] = d[k]; });
+    ["ambiente", "enmarcada"].forEach(k => { if (d[k] !== undefined){ if (d[k]) o[k] = d[k]; else delete o[k]; } });
+    if (d.og) o.og = d.og;
+    if (Array.isArray(d.fotos)) o.fotos = d.fotos.map(f => ({ imagen: f.imagen, w: f.w, h: f.h, tipo: f.tipo || "detalle",
+      pie: (f.pie || {})[idioma] || (f.pie || {}).es || "" }));
     if (Array.isArray(d.variantes)) o.variantes = d.variantes;
     if (T && d.textos){ T.obras = T.obras || {}; T.obras[o.slug] = { ...(T.obras[o.slug] || {}), ...txt(d.textos) }; } });
 }

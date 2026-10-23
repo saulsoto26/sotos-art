@@ -34,6 +34,12 @@ def leer_datos():
             if not isinstance(v, dict) or not isinstance(v.get("precio", 0), (int, float)): sys.exit(f"datos.json: revisa los tamaños de «{s}».")
     return d
 DATOS = leer_datos()
+for _s, _o in ((DATOS or {}).get("obras") or {}).items():   # cada foto que nombra datos.json tiene que estar subida
+    _fs = [(_o.get(k) or {}).get("imagen") for k in ("ambiente", "enmarcada")]
+    if _o.get("imagen"): _fs += [_o["imagen"]] + ([_o["imagen"][:-4] + "-800.jpg"] if max(_o.get("w", 0), _o.get("h", 0)) > 800 else [])
+    for _x in _o.get("fotos") or []: _fs += [_x.get("imagen"), (_x.get("imagen") or "")[:-4] + "-800.jpg"]
+    for _f in filter(None, _fs):
+        if not (AQUI / _f).exists(): sys.exit(f"datos.json: falta la foto «{_f}» de «{_s}».")
 
 def leer(idioma):
     js = (AQUI / "catalogo.js").read_text(encoding="utf-8") + "\n" + (AQUI / f"textos-{idioma}.js").read_text(encoding="utf-8")
@@ -45,7 +51,12 @@ def leer(idioma):
     return json.loads(r.stdout)
 
 def og(l, s=""):
-    """Imagen para redes del idioma (og-en.jpg, og-en-<obra>.jpg); si no existe, la del idioma predeterminado"""
+    """Imagen para redes del idioma (og-en.jpg, og-en-<obra>.jpg); si no existe, la del idioma predeterminado.
+       Si la herramienta de Luciann generó una nueva (datos.json → og), se usa esa."""
+    o = next((x for x in OBRAS if x["slug"] == s), None) if s else None
+    if o and o.get("og"):
+        n = o["og"].get(l) or o["og"].get(DEF)
+        if n and (AQUI / n).exists(): return SITIO + n
     n = ("og" + (f"-{l}" if l != DEF else "") + (f"-{s}" if s else "")) + ".jpg"
     return SITIO + (n if (AQUI / n).exists() else ("og" + (f"-{s}" if s else "") + ".jpg"))
 

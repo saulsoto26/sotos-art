@@ -544,3 +544,18 @@ header.top .wrap > .idioma{margin-left:0}
 .stock b{display:block;font-weight:700;font-size:.95rem}
 .stock span{display:block;margin-top:.25rem;font-size:.9rem;line-height:1.5;color:var(--text-2)}
 .encargo-orden{margin:.3rem 0 1rem;padding:.7rem .95rem;border-left:3px solid var(--accent-text);background:var(--surface-2);font-size:.95rem}
+.mas-fotos{margin:1.8rem 0 0}
+.mas-fotos h3{font:400 1.25rem var(--display);margin:0 0 .8rem}
+.mas-fotos-rejilla{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.mas-fotos figure{margin:0}
+.mas-foto{display:block;width:100%;padding:0;border:0;background:var(--surface-2);cursor:zoom-in;border-radius:2px;overflow:hidden}
+.mas-foto img{width:100%;height:auto;aspect-ratio:auto}
+.mas-fotos figcaption{font-size:.84rem;line-height:1.45;color:var(--text-2);margin-top:.4rem}
+.mas-fotos figcaption b{color:var(--text);font-weight:600}
+.mas-fotos figcaption span{display:block;margin-top:.15rem;font-size:.8rem}
+.foto-grande{border:0;padding:0;background:transparent;max-width:min(96vw,1400px);max-height:94vh;overflow:visible}
+.foto-grande::backdrop{background:rgba(14,11,8,.9)}
+.foto-grande figure{margin:0}
+.foto-grande img{max-width:min(96vw,1400px);max-height:84vh;width:auto;height:auto;margin:0 auto;border-radius:2px}
+.foto-grande figcaption{color:#EEE6D6;font-size:.92rem;text-align:center;margin-top:.6rem;padding:0 1rem}
+.foto-grande .close{position:fixed;top:calc(env(safe-area-inset-top,0px) + .7rem);right:.8rem;width:44px;height:44px;border-radius:50%;border:1px solid rgba(238,230,214,.4);background:rgba(20,16,12,.7);color:#EEE6D6;font-size:1.6rem;cursor:pointer}

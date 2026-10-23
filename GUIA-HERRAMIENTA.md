@@ -35,6 +35,8 @@ Si pierde el teléfono: borra la llave en GitHub (paso 2, botón **Delete**) y c
   - **Obras:** título, año, medidas, técnica, subtítulo, descripción, sus palabras sobre la obra, inscripción y los tamaños de reproducción a la venta (medidas, material, tipo, acabado, precio y si está disponible).
   - **Envío y políticas:** destinos, costo, tiempos, recogido, cancelaciones, devoluciones, daños, marco, confirmación y privacidad.
   - **Contacto y pago:** teléfono, WhatsApp, correo, Instagram, Facebook, número de ATH Móvil y el aviso del certificado.
+  - **Fotos y video** (dentro de cada obra): cambiar la foto principal, añadir o cambiar la foto de la obra original en un hogar, y añadir fotos de detalle, del proceso o de la obra en un espacio, con su pie de foto. Antes de publicar se puede girar la foto. La herramienta la reduce al tamaño de la página (nunca la agranda ni recorta la pintura), le quita los datos de ubicación del teléfono y prepara sola las imágenes para compartir en redes. Una foto de menos de 600 px no se acepta.
+  - **Video:** se pega el enlace de YouTube o de Instagram. Los videos no se suben a la página: pesan mucho y los del iPhone guardan la ubicación donde se grabaron.
   - Cada texto tiene su versión en español (ES) y en inglés (EN). Si el inglés queda vacío, la página en inglés muestra el español. Si cambias el español y no el inglés, la herramienta te avisa.
 
 Cada cambio de inventario se ve en la página en uno o dos minutos, que es lo que tarda en publicarse.

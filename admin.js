@@ -106,7 +106,7 @@ $$("[data-tab]").forEach(b => b.addEventListener("click", () => {
 async function cargarInventario(){ INV = (await leer(A.repoSitio, "inventario.json")).datos || { obras: {} }; INV.obras = INV.obras || {}; }
 function pintarInventario(){
   $("#listaInv").innerHTML = OBRAS.map(o => { const n = stock(o.slug);
-    return `<div class="fila-inv"><img src="${esc(o.imagen)}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${n === null ? "No se muestra" : n === 0 ? "Por encargo" : n === 1 ? "1 disponible" : n + " disponibles"}</small></span>
+    return `<div class="fila-inv"><img src="${esc(src(o.imagen))}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${n === null ? "No se muestra" : n === 0 ? "Por encargo" : n === 1 ? "1 disponible" : n + " disponibles"}</small></span>
       <span class="ctr"><button type="button" data-menos="${o.slug}" aria-label="Restar una pieza de ${esc(o.titulo)}">−</button>
       <input inputmode="numeric" data-inv="${o.slug}" value="${n === null ? "" : n}" aria-label="Piezas disponibles de ${esc(o.titulo)}">
       <button type="button" data-mas="${o.slug}" aria-label="Sumar una pieza a ${esc(o.titulo)}">+</button></span></div>`; }).join("");
@@ -260,8 +260,8 @@ $$("[data-sub]").forEach(b => b.addEventListener("click", () => {
 function pintarPagina(){ pintarListaObras(); pintarEnvio(); pintarContacto(); }
 
 /* Obras */
-const TXK = ["tecnica", "subtitulo", "descripcion", "declaracion", "inscripcion"];
-const NOMBRES = { tecnica: "Técnica", subtitulo: "Subtítulo", descripcion: "Descripción", declaracion: "Tus palabras sobre la obra", inscripcion: "Inscripción" };
+const TXK = ["tecnica", "subtitulo", "descripcion", "declaracion", "inscripcion", "alt"];
+const NOMBRES = { alt: "Descripción de la foto", tecnica: "Técnica", subtitulo: "Subtítulo", descripcion: "Descripción", declaracion: "Tus palabras sobre la obra", inscripcion: "Inscripción" };
 const precioTxt = n => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
 function resumenObra(o){
   const vs = o.variantes || [], p = vs.map(v => v.precio).filter(x => x > 0);
@@ -269,7 +269,7 @@ function resumenObra(o){
 }
 function pintarListaObras(){
   $("#listaObras").innerHTML = `<div class="tarjeta">${OBRAS.map(o => `<button type="button" class="fila-obra" data-editar="${o.slug}">
-    <img src="${esc(o.imagen)}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${esc(resumenObra(o))}</small></span><span class="ir" aria-hidden="true">›</span></button>`).join("")}</div>`;
+    <img src="${esc(src(o.imagen))}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${esc(resumenObra(o))}</small></span><span class="ir" aria-hidden="true">›</span></button>`).join("")}</div>`;
 }
 $("#listaObras").addEventListener("click", e => { const b = e.target.closest("[data-editar]"); if (b) editarObra(b.dataset.editar); });
 const MATERIALES = ["lienzo", "papel de arte", "papel"], TIPOS = ["giclée"], ACABADOS = ["mate", "satinado", "brillo", "con bastidor", "sin bastidor", "enrollado"];
@@ -289,7 +289,13 @@ function editarObra(slug){
   EDITANDO = { slug, variantes: JSON.parse(JSON.stringify(o.variantes || [])), textos: JSON.parse(JSON.stringify(t)) };
   const f = $("#fObra");
   f.innerHTML = `<p class="volver"><button type="button" class="enlace" data-cerrar-obra>← Todas las obras</button></p>
-    <div class="cab-obra"><img src="${esc(o.imagen)}" alt=""><div><span class="num">${esc(o.sku)}</span><h2>${esc(o.titulo)}</h2></div></div>
+    <div class="cab-obra"><img src="${esc(src(o.imagen))}" alt=""><div><span class="num">${esc(o.sku)}</span><h2>${esc(o.titulo)}</h2></div></div>
+    <fieldset><legend>Fotos y video</legend><div id="fotosObra"></div>
+      <label for="oVideo">Video de la obra <span class="opc">(opcional)</span></label>
+      <input id="oVideo" inputmode="url" autocapitalize="off" value="${esc(videoTxt(o.video))}" placeholder="Enlace de YouTube o de Instagram">
+      <p class="nota">Pega el enlace del video en YouTube o en Instagram. Vacío = no se muestra video.</p>
+      ${bi("alt", "Descripción de la foto principal", t.es && t.es.alt, t.en && t.en.alt, { area: true, filas: 2, nota: "Lo que se ve en la pintura, para personas ciegas que usan lectores de pantalla." })}
+    </fieldset>
     <fieldset><legend>La obra original</legend>
       <label for="oTitulo">Título</label><input id="oTitulo" value="${esc(o.titulo)}">
       <p class="nota">El título es el mismo en los dos idiomas. La dirección de la página de la obra no cambia.</p>
@@ -313,7 +319,7 @@ function editarObra(slug){
     </fieldset>
     <button class="btn oro" type="submit" id="btnObra">Guardar cambios</button>
     <p class="error" id="errObra" role="alert"></p><p class="nota" id="notaObra"></p>`;
-  $("#listaObras").hidden = true; f.hidden = false; scrollTo(0, 0);
+  $("#listaObras").hidden = true; f.hidden = false; pintarFotos(); scrollTo(0, 0);
 }
 $("#fObra").addEventListener("click", e => {
   if (e.target.closest("[data-cerrar-obra]")){ $("#fObra").hidden = true; $("#listaObras").hidden = false; EDITANDO = null; return; }
@@ -339,9 +345,20 @@ $("#fObra").addEventListener("submit", async ev => {
       acabado: g("acabado").value.trim(), precio: p || 0, disponible: g("disponible").checked });
   }
   const textos = leerBi(f, TXK), aviso2 = avisoIngles(EDITANDO.textos, textos, TXK, NOMBRES);
-  const nuevo = { titulo, anio, medidas: an === null ? null : { ancho: an, alto: al, unidad: $("#oUnidad").value }, variantes, textos };
+  const video = leerVideo($("#oVideo").value);
+  if (video === null) return err.textContent = "El video debe ser un enlace de YouTube o de Instagram.";
+  const nuevo = { titulo, anio, medidas: an === null ? null : { ancho: an, alto: al, unidad: $("#oUnidad").value }, variantes, textos, video };
+  const o = porSlug(slug), cambiaTitulo = titulo !== o.titulo;
   $("#btnObra").disabled = true;
   try {
+    if (cambiaTitulo){   /* el título sale en la imagen para compartir: se rehace en el mismo cambio */
+      $("#notaObra").textContent = "Preparando la imagen para compartir con el título nuevo…";
+      const base = lienzo(await cargarURL(src(o.imagen)), 0, 1600), st = sello();
+      const og = { es: `og-${slug}-${st}.jpg`, en: `og-en-${slug}-${st}.jpg` };
+      const ogEs = await aBlob(crearOG(base, titulo, "es")), ogEn = await aBlob(crearOG(base, titulo, "en"));
+      DAT = await cambiarDatos(slug, x => ({ ...x, ...nuevo, og }), `Página: «${titulo}» actualizada desde la herramienta de Luciann`,
+        [{ ruta: og.es, blob: ogEs }, { ruta: og.en, blob: ogEn }], x => viejas(x.og ? [x.og.es, x.og.en] : []));
+    } else
     DAT = await actualizar(A.repoSitio, "datos.json", d => { d = d || DEF_DATOS(); d.obras = d.obras || {}; d.obras[slug] = { ...(d.obras[slug] || {}), ...nuevo }; return d; },
       `Página: «${titulo}» actualizada desde la herramienta de Luciann`);
     refrescarObras(); pintarObras(); pintarInventario(); pintarListaObras();
@@ -350,6 +367,174 @@ $("#fObra").addEventListener("submit", async ev => {
   } catch (e) { err.textContent = e.message; }
   finally { $("#btnObra").disabled = false; }
 });
+
+/* ---------- Fotos: se preparan en el teléfono (tamaño para la página, sin datos de ubicación) ----------
+   Nunca se agranda una foto ni se recorta la pintura. Cada cambio de fotos es UN solo cambio en GitHub:
+   las fotos nuevas, sus vistas previas y datos.json juntos, para que la página nunca muestre una foto que falta. */
+const PREVIEW = {};                                   // fotos recién subidas: se ven aquí antes de que la página termine de publicarse
+const src = r => PREVIEW[r] || r;
+const sello = () => new Date().toISOString().replace(/\D/g, "").slice(0, 14);
+const versionada = r => /-\d{14}(-800)?\.jpg$/.test(r || "");         // solo se borran fotos subidas desde esta herramienta
+const viejas = rs => rs.filter(versionada).flatMap(r => [r, r.replace(/\.jpg$/, "-800.jpg")]);
+function videoTxt(v){ if (!v) return ""; return /^[\w-]{11}$/.test(v) ? "https://youtu.be/" + v : v; }
+function leerVideo(t){
+  t = t.trim(); if (!t) return "";
+  let m = t.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/i); if (m) return m[1];
+  m = t.match(/^https?:\/\/(?:www\.)?instagram\.com\/(p|reel|reels|tv)\/([\w-]+)/i); if (m) return `https://www.instagram.com/${m[1].toLowerCase() === "reels" ? "reel" : m[1].toLowerCase()}/${m[2]}/`;
+  return null;
+}
+const cargarURL = u => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error("No se pudo abrir la foto.")); i.src = u; });
+function lienzo(img, giro, lado){
+  const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height, rot = giro % 180 !== 0, W = rot ? h0 : w0, H = rot ? w0 : h0, k = Math.min(1, lado / Math.max(W, H));
+  const c = document.createElement("canvas"); c.width = Math.round(W * k); c.height = Math.round(H * k);
+  const g = c.getContext("2d"); g.imageSmoothingQuality = "high"; g.translate(c.width / 2, c.height / 2); g.rotate(giro * Math.PI / 180);
+  const dw = rot ? c.height : c.width, dh = rot ? c.width : c.height; g.drawImage(img, -dw / 2, -dh / 2, dw, dh); return c;
+}
+const aBlob = (c, q = .86) => new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(new Error("No se pudo preparar la foto.")), "image/jpeg", q));
+const aB64 = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1]); r.readAsDataURL(b); });
+/* Imagen para compartir en redes (1200 × 630), con el mismo diseño de las que ya tiene la página */
+function crearOG(obra, titulo, l){
+  const c = document.createElement("canvas"); c.width = 1200; c.height = 630; const g = c.getContext("2d");
+  g.fillStyle = "#16110D"; g.fillRect(0, 0, 1200, 630);
+  const rg = g.createRadialGradient(830, 315, 0, 830, 315, 640); rg.addColorStop(0, "#2E241A"); rg.addColorStop(1, "rgba(22,17,13,0)"); g.fillStyle = rg; g.fillRect(0, 0, 1200, 630);
+  const hz = obra.width > obra.height, [x0, y0, x1, y1] = hz ? [470, 60, 1160, 570] : [640, 40, 1120, 590];
+  const k = Math.min((x1 - x0 - 16) / obra.width, (y1 - y0 - 16) / obra.height), w = Math.round(obra.width * k), h = Math.round(obra.height * k);
+  const px = Math.round((x0 + x1) / 2 - w / 2), py = Math.round((y0 + y1) / 2 - h / 2);
+  g.save(); g.shadowColor = "rgba(0,0,0,.6)"; g.shadowBlur = 36; g.shadowOffsetY = 18; g.fillStyle = "#F6F0E4"; g.fillRect(px - 7, py - 7, w + 13, h + 13); g.restore();
+  g.drawImage(obra, px, py, w, h);
+  g.textBaseline = "top"; g.fillStyle = "#D6B778"; g.font = '30px "Bodoni Moda", Georgia, serif'; g.fillText("Soto’s Art", 70, 88);
+  const maxW = (hz ? x0 : x0) - 110; let tam = hz ? 52 : 62, lineas;
+  for (;;){ g.font = `${tam}px "Bodoni Moda", Georgia, serif`; const ps = titulo.split(/\s+/); lineas = [];
+    let cur = ""; ps.forEach(p => { const t = cur ? cur + " " + p : p; if (g.measureText(t).width > maxW && cur){ lineas.push(cur); cur = p; } else cur = t; }); lineas.push(cur);
+    if ((lineas.length <= 3 && lineas.every(x => g.measureText(x).width <= maxW)) || tam <= 34) break; tam -= 4; }
+  g.fillStyle = "#F4ECDE"; let y = 200; lineas.forEach(x => { g.fillText(x, 68, y); y += tam + 10; });
+  const [a, b] = l === "en" ? ["A painting by Luciann Soto", "High-quality reproductions"] : ["Una pintura de Luciann Soto", "Reproducciones de alta calidad"];
+  g.font = "25px Karla, Helvetica, Arial, sans-serif"; g.fillStyle = "#D6CCBC"; g.fillText(a, 70, y + 22);
+  g.font = "22px Karla, Helvetica, Arial, sans-serif"; g.fillStyle = "#B4A896"; g.fillText(b, 70, y + 60);
+  return c;
+}
+/* Un solo cambio en GitHub con varios archivos (fotos + datos.json), usando la API de Git */
+async function commitArchivos(repo, preparar, mensaje){
+  for (let intento = 0; intento < 3; intento++){
+    const ref = await gh(`/repos/${repo}/git/ref/heads/${A.rama}`), base = ref.object.sha, com = await gh(`/repos/${repo}/git/commits/${base}`);
+    const leerEn = async ruta => { try { const j = await gh(`/repos/${repo}/contents/${ruta}?ref=${base}`); return JSON.parse(deb64(j.content)); } catch (e) { if (e.status === 404) return null; throw e; } };
+    const cambios = await preparar(leerEn), arbol = [];
+    for (const c of cambios){
+      if (c.borrar){ arbol.push({ path: c.ruta, mode: "100644", type: "blob", sha: null }); continue; }
+      const contenido = c.blob ? await aB64(c.blob) : b64(c.texto);
+      const bl = await gh(`/repos/${repo}/git/blobs`, { method: "POST", body: JSON.stringify({ content: contenido, encoding: "base64" }) });
+      arbol.push({ path: c.ruta, mode: "100644", type: "blob", sha: bl.sha });
+    }
+    const tr = await gh(`/repos/${repo}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: com.tree.sha, tree: arbol }) });
+    const nc = await gh(`/repos/${repo}/git/commits`, { method: "POST", body: JSON.stringify({ message: mensaje, tree: tr.sha, parents: [base] }) });
+    try { await gh(`/repos/${repo}/git/refs/heads/${A.rama}`, { method: "PATCH", body: JSON.stringify({ sha: nc.sha, force: false }) }); return cambios; }
+    catch (e) { if (e.status !== 422 && e.status !== 409) throw e; }
+  }
+  throw new ErrorGH(409, "Otro cambio se guardó al mismo tiempo. Vuelve a intentarlo.");
+}
+/* Cambia los datos de una obra junto con sus archivos; borrar(obraAntes) dice qué archivos viejos se retiran */
+async function cambiarDatos(slug, cambiar, mensaje, archivos = [], borrar = () => []){
+  let nuevo = null;
+  await commitArchivos(A.repoSitio, async leerEn => {
+    const d = (await leerEn("datos.json")) || DEF_DATOS(); d.obras = d.obras || {};
+    const antes = d.obras[slug] || {}; d.obras[slug] = cambiar({ ...antes }); nuevo = d;
+    const subidos = new Set(archivos.map(a => a.ruta)), retirar = borrar(antes).filter(r => !subidos.has(r));
+    return [...archivos, ...retirar.map(r => ({ ruta: r, borrar: true })), { ruta: "datos.json", texto: JSON.stringify(d, null, 2) + "\n" }];
+  }, mensaje);
+  archivos.forEach(a => { if (a.blob) PREVIEW[a.ruta] = URL.createObjectURL(a.blob); });
+  return nuevo;
+}
+
+const TIPOS_FOTO = { detalle: "Detalle de la pintura", proceso: "En proceso", espacio: "La obra original en un espacio" };
+function pintarFotos(){
+  const o = porSlug(EDITANDO.slug), d = ((DAT || {}).obras || {})[o.slug] || {}, fotos = d.fotos || [];
+  $("#fotosObra").innerHTML = `
+    <div class="foto-slot"><img src="${esc(src(o.imagen))}" alt=""><div><b>Foto principal</b><small>${o.w} × ${o.h} px${o.enmarcada ? " · el Modo museo usa la foto con marco" : ""}</small>
+      <button type="button" class="btn linea" data-elegir="principal">Cambiar la foto</button></div></div>
+    <div class="foto-slot">${o.ambiente ? `<img src="${esc(src(o.ambiente.imagen))}" alt="">` : `<span class="foto-vacia" aria-hidden="true">+</span>`}
+      <div><b>La obra original en un hogar</b><small>Se muestra como inspiración, nunca como la reproducción.</small>
+      <button type="button" class="btn linea" data-elegir="ambiente">${o.ambiente ? "Cambiar" : "Añadir"}</button>${o.ambiente ? ` <button type="button" class="enlace" data-quitar-ambiente>Quitar</button>` : ""}</div></div>
+    <span class="etq">Más fotos de la obra</span>
+    ${fotos.map((f, i) => `<div class="foto-extra" data-extra="${i}"><img src="${esc(src(f.imagen))}" alt="">
+      <div><label>Tipo<select data-fx="tipo">${Object.entries(TIPOS_FOTO).map(([k, n]) => `<option value="${k}"${f.tipo === k ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+      <label class="idi"><span>ES</span><input data-fx="es" value="${esc((f.pie || {}).es || "")}" placeholder="Pie de foto (opcional)"></label>
+      <label class="idi"><span>EN</span><input data-fx="en" value="${esc((f.pie || {}).en || "")}" placeholder="Caption (optional)"></label>
+      <div class="var-pie"><button type="button" class="btn linea" data-guardar-extra="${i}">Guardar</button><button type="button" class="enlace" data-quitar-extra="${i}">Quitar esta foto</button></div></div></div>`).join("")}
+    <button type="button" class="btn linea" data-elegir="extra">+ Añadir una foto</button>
+    <div id="nuevaFoto" hidden></div>
+    <input type="file" id="archivoFoto" accept="image/*" hidden>
+    <p class="error" id="errFoto" role="alert"></p>`;
+}
+let ELEGIDA = null;
+$("#fObra").addEventListener("click", async e => {
+  const el = e.target.closest("[data-elegir]");
+  if (el){ ELEGIDA = { modo: el.dataset.elegir, giro: 0 }; $("#archivoFoto").value = ""; $("#archivoFoto").click(); return; }
+  if (e.target.closest("[data-girar]")){ ELEGIDA.giro = (ELEGIDA.giro + (+e.target.closest("[data-girar]").dataset.girar) + 360) % 360; return vistaPrevia(); }
+  if (e.target.closest("[data-cancelar-foto]")){ ELEGIDA = null; $("#nuevaFoto").hidden = true; return; }
+  if (e.target.closest("[data-publicar-foto]")) return publicarFoto(e.target.closest("[data-publicar-foto]"));
+  const qa = e.target.closest("[data-quitar-ambiente]"), qx = e.target.closest("[data-quitar-extra]"), gx = e.target.closest("[data-guardar-extra]");
+  if (!qa && !qx && !gx) return;
+  const o = porSlug(EDITANDO.slug), errF = $("#errFoto"); errF.textContent = "";
+  try {
+    if (qa){ if (!confirm("¿Quitar la foto de la obra en un hogar?")) return; qa.disabled = true;
+      DAT = await cambiarDatos(o.slug, x => ({ ...x, ambiente: null }), `Fotos: se quitó la foto en un hogar de «${o.titulo}»`, [], x => x.ambiente ? [x.ambiente.imagen].filter(versionada) : []); }
+    if (qx){ const i = +qx.dataset.quitarExtra, f = ((DAT.obras[o.slug] || {}).fotos || [])[i]; if (!f || !confirm("¿Quitar esta foto de la página?")) return; qx.disabled = true;
+      DAT = await cambiarDatos(o.slug, x => ({ ...x, fotos: (x.fotos || []).filter(y => y.imagen !== f.imagen) }), `Fotos: se quitó una foto de «${o.titulo}»`, [], () => viejas([f.imagen])); }
+    if (gx){ const i = +gx.dataset.guardarExtra, caja = $(`[data-extra="${i}"]`), f = DAT.obras[o.slug].fotos[i], g = k => $(`[data-fx="${k}"]`, caja).value.trim(); gx.disabled = true;
+      DAT = await actualizar(A.repoSitio, "datos.json", d => { const y = ((d.obras[o.slug] || {}).fotos || []).find(z => z.imagen === f.imagen); if (y){ y.tipo = g("tipo"); y.pie = { es: g("es"), en: g("en") }; } return d; },
+        `Fotos: pie de foto de «${o.titulo}»`); }
+    refrescarObras(); pintarFotos(); pintarListaObras(); aviso("Guardado. La página se actualiza en uno o dos minutos.");
+  } catch (x) { errF.textContent = x.message; }
+});
+$("#fObra").addEventListener("change", async e => {
+  if (e.target.id !== "archivoFoto" || !e.target.files[0]) return;
+  const errF = $("#errFoto"); errF.textContent = "";
+  try { ELEGIDA.img = await cargarURL(URL.createObjectURL(e.target.files[0])); vistaPrevia(); }
+  catch (x) { errF.textContent = "No se pudo abrir esa foto. Prueba con otra o hazle una captura de pantalla primero."; }
+});
+function vistaPrevia(){
+  const E = ELEGIDA, o = porSlug(EDITANDO.slug), c = lienzo(E.img, E.giro, 640), W = E.giro % 180 ? E.img.naturalHeight : E.img.naturalWidth, H = E.giro % 180 ? E.img.naturalWidth : E.img.naturalHeight, lado = Math.max(W, H);
+  const titulo = { principal: "Foto principal nueva", ambiente: "La obra original en un hogar", extra: "Foto nueva" }[E.modo];
+  const chica = lado < 600, regular = lado < 1200;
+  const caja = $("#nuevaFoto"); caja.hidden = false;
+  caja.innerHTML = `<div class="nueva-foto"><b>${titulo}</b>
+    <div class="nf-previa"></div>
+    <div class="nf-girar"><button type="button" class="btn linea" data-girar="-90" aria-label="Girar a la izquierda">⟲ Girar</button><button type="button" class="btn linea" data-girar="90" aria-label="Girar a la derecha">Girar ⟳</button></div>
+    <p class="nota">Mide ${W} × ${H} px. ${lado > 1600 ? "Se reducirá a 1600 px para la página; la pintura no se recorta." : "Se usará en su tamaño; nunca se agranda."} Esta copia es para la página: no sirve para imprimir reproducciones.</p>
+    ${chica ? `<p class="error">La foto es muy pequeña (menos de 600 px). Busca una de mayor tamaño.</p>` : regular ? `<p class="aviso-amarillo">La foto es pequeña: puede verse algo borrosa en pantallas grandes. Si tienes una de mayor tamaño, mejor.</p>` : ""}
+    ${E.modo === "principal" && o.enmarcada ? `<label class="check"><input type="checkbox" id="nfMarco" checked> <span>Usar esta foto también en el Modo museo, en lugar de la foto con marco</span></label>` : ""}
+    ${E.modo === "extra" ? `<label>Tipo<select id="nfTipo">${Object.entries(TIPOS_FOTO).map(([k, n]) => `<option value="${k}">${n}</option>`).join("")}</select></label>
+      <label class="idi"><span>ES</span><input id="nfPieEs" placeholder="Pie de foto (opcional)"></label><label class="idi"><span>EN</span><input id="nfPieEn" placeholder="Caption (optional)"></label>` : ""}
+    <div class="nf-acciones"><button type="button" class="btn oro" data-publicar-foto${chica ? " disabled" : ""}>Publicar esta foto</button><button type="button" class="enlace" data-cancelar-foto>Cancelar</button></div></div>`;
+  c.className = "nf-lienzo"; $(".nf-previa", caja).appendChild(c);
+  caja.scrollIntoView({ block: "start", behavior: "smooth" });
+}
+async function publicarFoto(btn){
+  const E = ELEGIDA, o = porSlug(EDITANDO.slug), errF = $("#errFoto"), st = sello(); errF.textContent = ""; btn.disabled = true; btn.textContent = "Preparando la foto…";
+  try {
+    if (E.modo === "principal"){
+      const c = lienzo(E.img, E.giro, 1600), c8 = lienzo(E.img, E.giro, 800), img = `obra-${o.slug}-${st}.jpg`, og = { es: `og-${o.slug}-${st}.jpg`, en: `og-en-${o.slug}-${st}.jpg` };
+      await document.fonts.load('62px "Bodoni Moda"').catch(() => {}); await document.fonts.load("25px Karla").catch(() => {});
+      const arch = [{ ruta: img, blob: await aBlob(c) }, { ruta: img.replace(/\.jpg$/, "-800.jpg"), blob: await aBlob(c8) },
+        { ruta: og.es, blob: await aBlob(crearOG(c, o.titulo, "es")) }, { ruta: og.en, blob: await aBlob(crearOG(c, o.titulo, "en")) }];
+      const quitarMarco = !!($("#nfMarco") && $("#nfMarco").checked); btn.textContent = "Publicando…";
+      DAT = await cambiarDatos(o.slug, x => ({ ...x, imagen: img, w: c.width, h: c.height, og, ...(quitarMarco ? { enmarcada: null } : {}) }),
+        `Fotos: foto principal nueva de «${o.titulo}»`, arch, x => viejas([x.imagen, ...(x.og ? [x.og.es, x.og.en] : [])]));
+    } else if (E.modo === "ambiente"){
+      const c = lienzo(E.img, E.giro, 1400), img = `ambiente-${o.slug}-${st}.jpg`; btn.textContent = "Publicando…";
+      DAT = await cambiarDatos(o.slug, x => ({ ...x, ambiente: { imagen: img, w: c.width, h: c.height } }), `Fotos: foto en un hogar de «${o.titulo}»`,
+        [{ ruta: img, blob: await aBlob(c) }], x => x.ambiente ? [x.ambiente.imagen].filter(versionada) : []);
+    } else {
+      const c = lienzo(E.img, E.giro, 1600), c8 = lienzo(E.img, E.giro, 800), img = `foto-${o.slug}-${st}.jpg`;
+      const f = { imagen: img, w: c.width, h: c.height, tipo: $("#nfTipo").value, pie: { es: $("#nfPieEs").value.trim(), en: $("#nfPieEn").value.trim() } };
+      btn.textContent = "Publicando…";
+      DAT = await cambiarDatos(o.slug, x => ({ ...x, fotos: [...(x.fotos || []), f] }), `Fotos: foto nueva de «${o.titulo}»`,
+        [{ ruta: img, blob: await aBlob(c) }, { ruta: img.replace(/\.jpg$/, "-800.jpg"), blob: await aBlob(c8) }]);
+    }
+    ELEGIDA = null; refrescarObras(); pintarFotos(); pintarListaObras(); pintarInventario(); pintarObras();
+    aviso("Foto publicada. La página se actualiza en uno o dos minutos.");
+  } catch (x) { errF.textContent = x.message; btn.disabled = false; btn.textContent = "Publicar esta foto"; }
+}
 
 /* Envío y políticas */
 const ENV = ["destinos", "costo", "preparacion", "entrega", "recogido"], POL = ["cancelaciones", "devoluciones", "danos", "marco", "confirmacion", "privacidad"];
@@ -430,7 +615,7 @@ function hojas(v, numero, ed){
     <div class="c-cabeza"><div><span class="c-etq">Número de certificado</span><span class="c-numero">${esc(numero)}</span></div>
       <div><span class="c-etq">Tipo de pieza</span>${casilla("Obra original", !repro)} ${casilla("Reproducción autorizada", repro)}</div></div>
     <h2 class="c-seccion"><span>La obra original</span></h2>
-    <div class="c-obra"><figure><img src="${esc(o.imagen || "")}" alt=""><figcaption>Imagen de referencia de la obra</figcaption></figure>
+    <div class="c-obra"><figure><img src="${esc(src(o.imagen || ""))}" alt=""><figcaption>Imagen de referencia de la obra</figcaption></figure>
       <div>${linea("Título de la obra", v.titulo)}${linea("Artista", CONFIG.nombreLegal)}${linea("Técnica y materiales", v.tecnica)}
         ${linea("Dimensiones de la obra original", v.medidasOriginal)}${linea("Año de creación", v.anio, "medio")}${v.inscripcion ? linea("Inscripción", "«" + v.inscripcion + "»") : ""}</div></div>
     ${repro ? `<h2 class="c-seccion"><span>La pieza que recibes</span></h2>
