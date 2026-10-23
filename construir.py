@@ -17,8 +17,8 @@ import hashlib, json, re, sys, html, shutil, subprocess, pathlib
 AQUI = pathlib.Path(__file__).resolve().parent
 SALIDA = AQUI / (sys.argv[sys.argv.index("--salida") + 1] if "--salida" in sys.argv else "_site")
 ARCHIVOS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".mp3", ".m4a", ".mp4", ".webm", ".pdf", ".css", ".ico"}
-SCRIPTS = {"catalogo.js", "app.js", "qr.js"}
-COPIAR_HTML = {"prototipo-v1.html"}
+SCRIPTS = {"catalogo.js", "app.js", "qr.js", "inventario.json", "admin.js"}
+COPIAR_HTML = {"prototipo-v1.html"}   # admin.html se copia aparte, con versión en sus enlaces
 
 def leer(idioma):
     js = (AQUI / "catalogo.js").read_text(encoding="utf-8") + "\n" + (AQUI / f"textos-{idioma}.js").read_text(encoding="utf-8")
@@ -146,6 +146,11 @@ for f in AQUI.iterdir():
     if f.is_file() and (f.suffix.lower() in ARCHIVOS or f.name in SCRIPTS or f.name in COPIAR_HTML or re.fullmatch(r"textos-[a-z]{2}\.js", f.name)):
         shutil.copy2(f, SALIDA / f.name)
 
+if (AQUI / "admin.html").is_file():   # herramienta privada de Luciann
+    _t = (AQUI / "admin.html").read_text(encoding="utf-8")
+    for _n in ("admin.css", "admin.js", "catalogo.js", "textos-es.js"):
+        _t = _t.replace(f'"{_n}"', f'"{_n}?v={version(_n)}"')
+    (SALIDA / "admin.html").write_text(_t, encoding="utf-8")
 P_INICIO = (AQUI / "plantilla-inicio.html").read_text(encoding="utf-8")
 P_OBRA = (AQUI / "plantilla-obra.html").read_text(encoding="utf-8")
 sitemap = []

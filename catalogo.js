@@ -34,6 +34,10 @@ const CONFIG = {
   /* Certificado de autenticidad firmado por la artista con cada pieza. El sitio solo lo anuncia:
      no genera ni muestra el certificado real. false = no se menciona. */
   certificado: true,
+  /* Herramienta privada de Luciann (/admin/): registra ventas, imprime certificados y actualiza el inventario.
+     repoSitio: este repositorio (público): solo guarda cantidades (inventario.json), nunca datos de compradores.
+     repoVentas: repositorio PRIVADO con el registro de ventas (registro.json). */
+  admin: { repoSitio: "saulsoto26/sotos-art", repoVentas: "saulsoto26/sotos-art-ventas", rama: "main" },
 
   /* Envío y políticas: sus textos están en textos-es.js (sección contenido) */
 

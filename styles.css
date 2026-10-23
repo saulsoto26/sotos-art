@@ -540,3 +540,7 @@ header.top .wrap > .idioma{margin-left:0}
 .cert-sello{flex:none;width:44px;height:44px;color:var(--accent-text)}
 .cert-orden{margin:.2rem 0 .8rem;padding-left:1.6rem;position:relative}
 .cert-orden::before{content:"✦";position:absolute;left:.2rem;color:var(--accent-text)}
+.stock{margin:.2rem 0 1.1rem;padding:.7rem .95rem;border-left:3px solid var(--accent-text);background:var(--surface-2)}
+.stock b{display:block;font-weight:700;font-size:.95rem}
+.stock span{display:block;margin-top:.25rem;font-size:.9rem;line-height:1.5;color:var(--text-2)}
+.encargo-orden{margin:.3rem 0 1rem;padding:.7rem .95rem;border-left:3px solid var(--accent-text);background:var(--surface-2);font-size:.95rem}

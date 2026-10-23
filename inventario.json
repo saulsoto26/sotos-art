@@ -1,0 +1,11 @@
+{
+  "_nota": "Reproducciones listas para entregar, por obra. null = no se muestra; 0 = se prepara por encargo. Lo actualiza la herramienta de Luciann (admin.html). Nunca guardar aquí datos de compradores.",
+  "obras": {
+    "quebrantada": null,
+    "restaurada": null,
+    "madre-naturaleza": null,
+    "sigo-en-victoria": null,
+    "en-las-manos-del-alfarero": null,
+    "salmo-23": null
+  }
+}

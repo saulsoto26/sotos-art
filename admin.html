@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#14100C">
+<title>Herramienta de Luciann · Soto’s Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header class="barra">
+  <span class="marca"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-1.5-4-5-7-8.5-6.5S1 10 4 12c-3 2-1.5 6.5 1.5 6.5S10.5 16 12 12zm0 0c1.5-4 5-7 8.5-6.5S23 10 20 12c3 2 1.5 6.5-1.5 6.5S13.5 16 12 12z" fill="#5FC3DD"/></svg>Soto’s Art</span>
+  <span class="barra-t">Herramienta de Luciann</span>
+</header>
+
+<main id="app">
+  <!-- Conectar: la llave se guarda solo en este dispositivo -->
+  <section id="vConectar" class="vista" hidden>
+    <h1>Bienvenida, Luciann</h1>
+    <p class="lead">Aquí registras cada venta, imprimes su certificado de autenticidad y actualizas las piezas disponibles en la página.</p>
+    <div class="tarjeta">
+      <label for="llave">Llave de acceso</label>
+      <input id="llave" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+      <p class="nota">La llave se guarda solo en este dispositivo. Nadie más la ve.</p>
+      <button class="btn oro" id="btnConectar" type="button">Conectar</button>
+      <p class="error" id="errConectar" role="alert"></p>
+    </div>
+  </section>
+
+  <section id="vPrincipal" class="vista" hidden>
+    <nav class="pestanas" role="tablist">
+      <button role="tab" data-tab="venta" aria-selected="true">Nueva venta</button>
+      <button role="tab" data-tab="inventario">Inventario</button>
+      <button role="tab" data-tab="ventas">Ventas</button>
+    </nav>
+
+    <!-- Nueva venta -->
+    <div class="panel" data-panel="venta">
+      <h1>Registrar una venta</h1>
+      <p class="lead">Regístrala solo después de confirmar que recibiste el pago.</p>
+      <form id="fVenta" class="tarjeta" novalidate>
+        <fieldset>
+          <legend>La obra</legend>
+          <label for="vObra">Obra</label>
+          <select id="vObra" required></select>
+          <p class="nota" id="vStockNota"></p>
+          <span class="etq">Tipo de pieza</span>
+          <div class="radios">
+            <label><input type="radio" name="tipo" value="reproduccion" checked> Reproducción autorizada</label>
+            <label><input type="radio" name="tipo" value="original"> Obra original</label>
+          </div>
+          <label for="vAnio">Año de creación de la obra</label>
+          <input id="vAnio" inputmode="numeric" placeholder="Ej.: 2015 (vacío: se escribe a mano)">
+        </fieldset>
+        <fieldset id="fsRepro">
+          <legend>La pieza que recibe</legend>
+          <div class="dos">
+            <div><label for="vMaterial">Material de impresión</label><input id="vMaterial" placeholder="Ej.: lienzo, papel de algodón"></div>
+            <div><label for="vTamano">Tamaño de la pieza</label><input id="vTamano" placeholder="Ej.: 16 × 20 pulg"></div>
+          </div>
+          <label for="vImpresion">Fecha de impresión</label>
+          <input id="vImpresion" type="date">
+          <span class="etq">Edición</span>
+          <div class="radios">
+            <label><input type="radio" name="edicion" value="abierta" checked> Edición abierta</label>
+            <label><input type="radio" name="edicion" value="numerada"> Numerada</label>
+          </div>
+          <div class="dos" id="edNumerada" hidden>
+            <div><label for="vEdN">Número</label><input id="vEdN" inputmode="numeric" placeholder="3"></div>
+            <div><label for="vEdDe">de</label><input id="vEdDe" inputmode="numeric" placeholder="25"></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>El comprador</legend>
+          <label for="vNombre">Nombre del comprador</label>
+          <input id="vNombre" autocomplete="off" required>
+          <label for="vContacto">Teléfono o correo <span class="opc">(opcional, privado)</span></label>
+          <input id="vContacto" autocomplete="off">
+          <label for="vFecha">Fecha de venta</label>
+          <input id="vFecha" type="date" required>
+        </fieldset>
+        <fieldset>
+          <legend>El pago <span class="opc">(privado, no sale en el certificado)</span></legend>
+          <div class="dos">
+            <div><label for="vMonto">Monto recibido (USD)</label><input id="vMonto" inputmode="decimal"></div>
+            <div><label for="vRef">Referencia de ATH Móvil</label><input id="vRef" autocomplete="off"></div>
+          </div>
+          <label for="vNotas">Notas</label>
+          <textarea id="vNotas" rows="2"></textarea>
+        </fieldset>
+        <label class="check" id="lDescontar"><input type="checkbox" id="vDescontar" checked> <span>Restar 1 del inventario de la página</span></label>
+        <button class="btn oro" type="submit" id="btnVenta">Confirmar venta y preparar certificado</button>
+        <p class="error" id="errVenta" role="alert"></p>
+      </form>
+    </div>
+
+    <!-- Inventario -->
+    <div class="panel" data-panel="inventario" hidden>
+      <h1>Piezas disponibles</h1>
+      <p class="lead">Cuántas reproducciones tienes listas para entregar. Con 0, la página dice “Se prepara por encargo” y se sigue recibiendo la orden. Vacío: la página no muestra nada.</p>
+      <div id="listaInv" class="tarjeta"></div>
+      <button class="btn oro" id="btnInv" type="button">Guardar inventario</button>
+      <p class="nota">La página se actualiza en uno o dos minutos.</p>
+      <p class="error" id="errInv" role="alert"></p>
+    </div>
+
+    <!-- Ventas -->
+    <div class="panel" data-panel="ventas" hidden>
+      <h1>Ventas registradas</h1>
+      <div id="listaVentas"></div>
+    </div>
+
+    <p class="pie"><button class="enlace" id="btnSalir" type="button">Desconectar este dispositivo</button></p>
+  </section>
+
+  <!-- Certificado listo para imprimir -->
+  <section id="vCert" class="vista" hidden>
+    <div class="cert-controles">
+      <button class="btn linea" id="btnVolver" type="button">← Volver</button>
+      <button class="btn oro" id="btnImprimir" type="button">Imprimir o guardar en PDF</button>
+    </div>
+    <p class="nota cert-ayuda">En el iPhone: Imprimir → toca la vista previa con dos dedos para guardarla en PDF. Fírmalo a mano después de imprimirlo.</p>
+    <div id="cert"></div>
+  </section>
+</main>
+<div class="aviso" id="aviso" role="status"></div>
+
+<script src="catalogo.js"></script>
+<script src="textos-es.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

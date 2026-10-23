@@ -221,12 +221,13 @@ function renderFicha(o, mount, opts = {}){
       ${o.video ? mediaHTML(o.video, tr("media.obra", { titulo: o.titulo })) : ""}
       <p class="price" id="price"></p>
       <p class="receive" id="receive"></p>
+      <div class="stock" data-stock="${o.slug}" hidden></div>
       ${o.provisional ? `<p class="small">${tr("ficha.provisional")}</p>` : ""}
       ${vs.length ? `<div class="opts">
         <label>${tr("ficha.tamano")}<select id="selT">${sizes.map(t => `<option ${t === opts.tamano ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>
         ${finishes.length > 1 ? `<label>${tr("ficha.acabado")}<select id="selA">${finishes.map(t => `<option value="${esc(t)}">${esc(val(t))}</option>`).join("")}</select></label>` : ""}
       </div>` : ""}
-      <div class="actions"><button class="btn dark" data-review>${tr("ficha.ordenar")}</button>
+      <div class="actions"><button class="btn dark" data-review data-slug="${o.slug}">${tr("ficha.ordenar")}</button>
         ${onWall ? `<button class="btn line" data-wall>${tr("ficha.pared")}</button>` : `<a class="btn line" href="${INICIO}?pared=${o.slug}#espacio">${tr("ficha.pared")}</a>`}
         ${$("#museo") ? `<button class="btn line" data-museo-obra>${tr("museo.nombre")}</button>` : ""}
 </div>
@@ -239,6 +240,7 @@ function renderFicha(o, mount, opts = {}){
       ${falta.length ? `<p class="small pendline">${tr("falta.frase", { lista: listJoin(falta) })}</p>` : ""}
       ${opts.page ? `<p><a class="btn line" href="${INICIO}#obras">${tr("ficha.verColeccion")}</a></p>` : ""}
     </div></div>`;
+  pintarStock(mount);
   const current = () => { const t = $("#selT", mount)?.value, a = $("#selA", mount)?.value;
     return vs.find(v => variantLabel(v) === t && (!a || v.acabado === a)) || vs.find(v => variantLabel(v) === t) || null; };
   const paint = () => { const v = current();
@@ -280,8 +282,8 @@ function review(o, v, mount){
   const pay = [["athMovil", tr("pago.conAth")], ["stripe", tr("pago.conTarjeta")], ["paypal", tr("pago.conPaypal")]]
     .filter(([k]) => links[k] && sel.disponible !== false)
     .map(([k, n]) => `<a class="btn gold" href="${esc(links[k])}" target="_blank" rel="noopener" data-pago="${k}" data-obra="${o.slug}">${n}</a>`).join("");
-  const label = variantLabel(sel);
-  const msg = tr("wa.obra", { titulo: o.titulo, sku: o.sku, detalle: (label ? tr("wa.tamano", { x: label }) : "") + (sel.acabado ? tr("wa.acabado", { x: val(sel.acabado) }) : "") });
+  const label = variantLabel(sel), encargo = stockDe(o.slug) === 0;
+  const msg = tr("wa.obra", { titulo: o.titulo, sku: o.sku, detalle: (label ? tr("wa.tamano", { x: label }) : "") + (sel.acabado ? tr("wa.acabado", { x: val(sel.acabado) }) : "") }) + (encargo ? tr("wa.encargo") : "");
   const env = CONFIG.envio, envio = [env.costo, env.destinos && tr("orden.destino", { x: env.destinos }), env.entrega && tr("orden.entregaEn", { x: env.entrega })].filter(Boolean).join(", ");
   $("#review", mount).innerHTML = `<div class="review fade-in"><h3>${tr("orden.titulo")}</h3>
     <dl class="spec">
@@ -290,6 +292,7 @@ function review(o, v, mount){
       <dt>${tr("ficha.envio")}</dt><dd>${envio ? esc(envio) : tr("pendienteArtista")}</dd>
       ${env.recogido ? `<dt>${tr("orden.recogido")}</dt><dd>${esc(env.recogido)}</dd>` : ""}
     </dl>
+    ${encargo ? `<p class="encargo-orden">${tr("inv.ordenEncargo")}</p>` : ""}
     <div class="actions">${pay}
       ${CONFIG.whatsapp ? `<a class="btn ${pay ? "line" : "gold"}" href="${waLink(msg)}" target="_blank" rel="noopener" data-obra="${o.slug}">${tr("orden.whatsapp")}</a>` : ""}
       <a class="btn line" href="${telHref()}" data-obra="${o.slug}">${tr("llamar")}</a></div>
@@ -1224,6 +1227,23 @@ const Museo = (() => {
   $$("[data-museo]").forEach(b => b.addEventListener("click", () => abrir(orden[0])));
   return { abrir, abierto: () => dlg.open };
 })();
+
+/* ---------- Inventario (inventario.json, lo actualiza la herramienta de Luciann) ----------
+   null o sin dato: no se muestra nada · 0: se prepara por encargo (la orden se recibe igual) · n: n disponibles */
+let INV = null;
+const stockDe = slug => { const n = INV && INV.obras ? INV.obras[slug] : null; return Number.isInteger(n) && n >= 0 ? n : null; };
+function pintarStock(root = document){
+  $$("[data-stock]", root).forEach(el => {
+    const n = stockDe(el.dataset.stock);
+    if (n === null){ el.hidden = true; el.innerHTML = ""; return; }
+    el.hidden = false; el.classList.toggle("encargo", n === 0);
+    el.innerHTML = n > 0 ? `<b>${n === 1 ? tr("inv.uno") : tr("inv.varios", { n })}</b>`
+      : `<b>${tr("inv.encargo")}</b><span>${tr("inv.encargoNota")}</span>`;
+  });
+  $$("[data-review][data-slug]", root).forEach(b => { b.textContent = stockDe(b.dataset.slug) === 0 ? tr("inv.solicitar") : tr("ficha.ordenar"); });
+}
+fetch(RAIZ + "inventario.json?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.json() : null)
+  .then(d => { INV = d; pintarStock(); }).catch(() => {});
 
 /* ---------- Arranque ---------- */
 (function boot(){
