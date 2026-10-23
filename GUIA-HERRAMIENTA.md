@@ -28,8 +28,9 @@ Si pierde el teléfono: borra la llave en GitHub (paso 2, botón **Delete**) y c
 
 ## Cómo la usa Luciann
 - **Inventario:** cuántas reproducciones tiene listas por obra. Con 0, la página dice “Se prepara por encargo” y el botón cambia a “Solicitar pedido a la artista”. Vacío: la página no muestra nada.
-- **Nueva venta:** después de confirmar el pago, escoge la obra y escribe los datos del comprador. Al confirmar, la venta se guarda en el repositorio privado, el inventario baja en uno y se abre el certificado listo para imprimir y firmar a mano.
-- **Ventas:** lista de ventas, con botones para volver a imprimir un certificado o anular una venta. Al anularla, la pieza vuelve al inventario y el número no se vuelve a usar.
+- **Nueva venta:** después de confirmar el pago, escoge la obra, la **cantidad de piezas** y escribe los datos del comprador. Al confirmar, la venta se guarda en el repositorio privado, el inventario baja según la cantidad y se abren los certificados listos para imprimir y firmar a mano.
+- **Varias piezas en una venta:** cada pieza recibe su propio certificado y número, seguidos (por ejemplo, SA-002-R-0001 a SA-002-R-0004). Si la edición es numerada, se escribe el número de la primera pieza y los demás siguen solos. Si hay menos piezas listas que las pedidas, se restan las que hay y el resto queda por encargo. Una obra original siempre es una sola pieza.
+- **Ventas:** lista de ventas, con botones para volver a imprimir los certificados o anular una venta. Al anularla, se anulan todos sus certificados, las piezas vuelven al inventario y los números no se vuelven a usar.
 
 Cada cambio de inventario se ve en la página en uno o dos minutos, que es lo que tarda en publicarse.
 

@@ -64,6 +64,12 @@ function aviso(t){ const el = $("#aviso"); el.textContent = t; el.classList.add(
 const mostrar = id => $$(".vista").forEach(v => v.hidden = v.id !== id);
 
 let INV = null, REG = null;
+/* Una venta puede tener varias piezas: cada una lleva su propio certificado y número.
+   Los registros de una sola pieza (numero, inventarioDescontado: true/false) se siguen leyendo igual. */
+const numerosDe = v => v.numeros && v.numeros.length ? v.numeros : [v.numero];
+const descontadas = v => typeof v.inventarioDescontado === "number" ? v.inventarioDescontado : v.inventarioDescontado ? 1 : 0;
+const edicionDe = (v, i) => v.edicion && typeof v.edicion === "object" ? { numero: v.edicion.numero + i, de: v.edicion.de } : v.edicion;
+const rango = v => { const n = numerosDe(v); return n.length > 1 ? `${n[0]} a ${n[n.length - 1]}` : n[0]; };
 const stock = s => { const n = INV && INV.obras ? INV.obras[s] : null; return Number.isInteger(n) && n >= 0 ? n : null; };
 
 /* ---------- Conectar ---------- */
@@ -132,10 +138,23 @@ function pintarObras(){
 function alCambiarObra(){
   const o = porSlug($("#vObra").value); if (!o) return;
   $("#vAnio").value = o.anio || "";
-  const n = stock(o.slug), repro = $("input[name=tipo]:checked").value === "reproduccion", chk = $("#vDescontar");
-  $("#vStockNota").textContent = n === null ? "El inventario de esta obra no se muestra en la página." : n === 0 ? "No hay piezas listas: es una venta por encargo." : `Hay ${n} ${n === 1 ? "pieza lista" : "piezas listas"}.`;
-  const puede = repro && n > 0; chk.disabled = !puede; chk.checked = puede; $("#lDescontar").classList.toggle("apagado", !puede);
+  alCambiarCantidad();
 }
+const cantidad = () => { const c = parseInt($("#vCantidad").value, 10); return c >= 1 ? c : 1; };
+function alCambiarCantidad(){
+  const o = porSlug($("#vObra").value); if (!o) return;
+  const n = stock(o.slug), c = cantidad(), repro = $("input[name=tipo]:checked").value === "reproduccion", chk = $("#vDescontar");
+  let nota = n === null ? "El inventario de esta obra no se muestra en la página." : n === 0 ? "No hay piezas listas: es una venta por encargo." : `Hay ${n} ${n === 1 ? "pieza lista" : "piezas listas"}.`;
+  if (repro && n > 0 && c > n) nota += ` Se restan ${n} del inventario y ${c - n === 1 ? "la otra queda" : `las otras ${c - n} quedan`} por encargo.`;
+  $("#vStockNota").textContent = nota;
+  const puede = repro && n > 0; chk.disabled = !puede; chk.checked = puede; $("#lDescontar").classList.toggle("apagado", !puede);
+  $("#lDescontarT").textContent = `Restar ${puede ? Math.min(c, n) : c} del inventario de la página`;
+  $("#lEdN").textContent = c > 1 ? "Número de la primera pieza" : "Número";
+  $("#btnVenta").textContent = c > 1 ? `Confirmar venta y preparar ${c} certificados` : "Confirmar venta y preparar certificado";
+}
+$("#vCantidad").addEventListener("input", alCambiarCantidad);
+$("#cMenos").addEventListener("click", () => { $("#vCantidad").value = Math.max(1, cantidad() - 1); alCambiarCantidad(); });
+$("#cMas").addEventListener("click", () => { $("#vCantidad").value = Math.min(50, cantidad() + 1); alCambiarCantidad(); });
 $("#vObra").addEventListener("change", alCambiarObra);
 $$("input[name=tipo]").forEach(r => r.addEventListener("change", () => { $("#fsRepro").hidden = $("input[name=tipo]:checked").value === "original"; alCambiarObra(); }));
 $$("input[name=edicion]").forEach(r => r.addEventListener("change", () => { $("#edNumerada").hidden = $("input[name=edicion]:checked").value !== "numerada"; }));
@@ -145,39 +164,45 @@ $("#fVenta").addEventListener("submit", async ev => {
   ev.preventDefault();
   const err = $("#errVenta"); err.textContent = "";
   const o = porSlug($("#vObra").value), tipo = $("input[name=tipo]:checked").value, ed = $("input[name=edicion]:checked").value;
-  const nombre = $("#vNombre").value.trim(), fecha = $("#vFecha").value;
+  const nombre = $("#vNombre").value.trim(), fecha = $("#vFecha").value, cv = $("#vCantidad").value.trim();
+  if (!/^\d+$/.test(cv) || +cv < 1 || +cv > 50) return err.textContent = "La cantidad debe ser un número del 1 al 50.";
+  const c = +cv;
+  if (tipo === "original" && c > 1) return err.textContent = "Una obra original es una sola pieza: la cantidad debe ser 1.";
   if (!nombre) return err.textContent = "Escribe el nombre del comprador.";
   if (!fecha) return err.textContent = "Escribe la fecha de venta.";
   const edN = $("#vEdN").value.trim(), edDe = $("#vEdDe").value.trim();
-  if (tipo === "reproduccion" && ed === "numerada" && (!/^\d+$/.test(edN) || !/^\d+$/.test(edDe) || +edN > +edDe || +edN < 1))
-    return err.textContent = "Revisa el número de la edición (por ejemplo, 3 de 25).";
-  const descontar = $("#vDescontar").checked && !$("#vDescontar").disabled;
-  if (!confirm(`¿Confirmar la venta de «${o.titulo}» a ${nombre}?${descontar ? "\nSe restará 1 del inventario de la página." : ""}`)) return;
-  const venta = { numero: "", creada: new Date().toISOString(), obra: o.slug, sku: o.sku, titulo: o.titulo, tipo,
+  if (tipo === "reproduccion" && ed === "numerada" && (!/^\d+$/.test(edN) || !/^\d+$/.test(edDe) || +edN < 1 || +edN + c - 1 > +edDe))
+    return err.textContent = c > 1 ? `Revisa la edición: ${c} piezas desde el N.º ${edN || "?"} no caben en una edición de ${edDe || "?"}.` : "Revisa el número de la edición (por ejemplo, 3 de 25).";
+  const n = stock(o.slug), quiere = $("#vDescontar").checked && !$("#vDescontar").disabled, restar = quiere ? Math.min(c, n) : 0;
+  const encargo = tipo === "reproduccion" && n !== null ? c - (n > 0 ? Math.min(c, n) : 0) : 0;
+  const pzs = c === 1 ? "una pieza" : `${c} piezas`;
+  if (!confirm(`¿Confirmar la venta de ${pzs} de «${o.titulo}» a ${nombre}?${restar ? `\nSe restará${restar > 1 ? "n" : ""} ${restar} del inventario de la página.` : ""}${encargo ? `\n${encargo === c ? (c === 1 ? "Es" : "Son") : encargo === 1 ? "1 queda" : `${encargo} quedan`} por encargo.` : ""}${c > 1 ? `\nSe prepararán ${c} certificados, uno por pieza.` : ""}`)) return;
+  const venta = { numero: "", numeros: [], cantidad: c, creada: new Date().toISOString(), obra: o.slug, sku: o.sku, titulo: o.titulo, tipo,
     anio: $("#vAnio").value.trim(), tecnica: o.tecnica || "", medidasOriginal: medidas(o), inscripcion: o.inscripcion || "",
     material: tipo === "original" ? "" : $("#vMaterial").value.trim(), tamano: tipo === "original" ? "" : $("#vTamano").value.trim(),
     fechaImpresion: tipo === "original" ? "" : $("#vImpresion").value,
     edicion: tipo === "original" ? null : (ed === "numerada" ? { numero: +edN, de: +edDe } : "abierta"),
     comprador: nombre, contacto: $("#vContacto").value.trim(), fechaVenta: fecha,
     monto: $("#vMonto").value.trim(), referenciaPago: $("#vRef").value.trim(), notas: $("#vNotas").value.trim(),
-    encargo: tipo === "reproduccion" && stock(o.slug) === 0, inventarioDescontado: descontar, anulada: false };
+    encargo: encargo > 0, piezasPorEncargo: encargo, inventarioDescontado: restar, anulada: false };
   $("#btnVenta").disabled = true;
   try {
-    /* 1. Registro privado, con el siguiente número de certificado de esa obra (SA-002-R-0001) */
+    /* 1. Registro privado: un número de certificado por pieza, seguidos (SA-002-R-0001, -0002…) */
     REG = await actualizar(A.repoVentas, "registro.json", d => {
       d = d || { ventas: [] }; d.ventas = d.ventas || [];
       const pref = `${o.sku}-${tipo === "original" ? "O" : "R"}-`;
-      const ult = d.ventas.filter(v => v.numero.startsWith(pref)).map(v => parseInt(v.numero.slice(pref.length), 10)).reduce((a, b) => Math.max(a, b), 0);
-      venta.numero = pref + String(ult + 1).padStart(4, "0");
+      const ult = d.ventas.flatMap(numerosDe).filter(x => x && x.startsWith(pref)).map(x => parseInt(x.slice(pref.length), 10)).reduce((a, b) => Math.max(a, b), 0);
+      venta.numeros = Array.from({ length: c }, (_, i) => pref + String(ult + 1 + i).padStart(4, "0"));
+      venta.numero = venta.numeros[0];
       d.ventas.push(venta); return d;
-    }, `Venta registrada: ${o.sku}`);
+    }, `Venta registrada: ${o.sku} (${c} ${c === 1 ? "pieza" : "piezas"})`);
     /* 2. Inventario público (solo la cantidad) */
-    if (descontar){
+    if (restar){
       try { INV = await actualizar(A.repoSitio, "inventario.json", d => { d = d || { obras: {} }; d.obras = d.obras || {};
-          const n = d.obras[o.slug]; if (Number.isInteger(n) && n > 0) d.obras[o.slug] = n - 1; return d; }, `Inventario: venta de «${o.titulo}»`); }
+          const x = d.obras[o.slug]; if (Number.isInteger(x)) d.obras[o.slug] = Math.max(0, x - restar); return d; }, `Inventario: venta de «${o.titulo}»`); }
       catch (e) { alert("La venta quedó registrada, pero no se pudo actualizar el inventario. Ajústalo en la pestaña Inventario.\n\n" + e.message); }
     }
-    $("#fVenta").reset(); $("#vFecha").value = hoy(); $("#fsRepro").hidden = false; $("#edNumerada").hidden = true;
+    $("#fVenta").reset(); $("#vFecha").value = hoy(); $("#vCantidad").value = 1; $("#fsRepro").hidden = false; $("#edNumerada").hidden = true;
     pintarObras(); pintarInventario(); pintarVentas();
     verCertificado(venta);
   } catch (e) { err.textContent = e.message; }
@@ -187,24 +212,25 @@ $("#fVenta").addEventListener("submit", async ev => {
 /* ---------- Ventas ---------- */
 function pintarVentas(){
   const vs = [...REG.ventas].reverse();
-  $("#listaVentas").innerHTML = vs.length ? vs.map(v => `<article class="tarjeta venta${v.anulada ? " anulada" : ""}">
-      <p class="num">${esc(v.numero)}${v.anulada ? " · ANULADA" : ""}${v.encargo ? " · por encargo" : ""}</p>
-      <h3>${esc(v.titulo)}</h3>
+  $("#listaVentas").innerHTML = vs.length ? vs.map(v => { const c = numerosDe(v).length;
+    return `<article class="tarjeta venta${v.anulada ? " anulada" : ""}">
+      <p class="num">${esc(rango(v))}${v.anulada ? " · ANULADA" : ""}${v.encargo ? " · por encargo" : ""}</p>
+      <h3>${esc(v.titulo)}${c > 1 ? ` <small>· ${c} piezas</small>` : ""}</h3>
       <p>${esc(v.comprador)} · ${esc(fechaLarga(v.fechaVenta))}${v.monto ? " · $" + esc(v.monto) : ""}${v.referenciaPago ? " · ATH " + esc(v.referenciaPago) : ""}</p>
-      <div class="acc"><button class="btn linea" type="button" data-ver="${esc(v.numero)}">Ver certificado</button>
-      ${v.anulada ? "" : `<button class="enlace" type="button" data-anular="${esc(v.numero)}">Anular</button>`}</div></article>`).join("")
+      <div class="acc"><button class="btn linea" type="button" data-ver="${esc(v.numero)}">${c > 1 ? `Ver los ${c} certificados` : "Ver certificado"}</button>
+      ${v.anulada ? "" : `<button class="enlace" type="button" data-anular="${esc(v.numero)}">Anular</button>`}</div></article>`; }).join("")
     : `<p class="lead">Todavía no hay ventas registradas.</p>`;
 }
 $("#listaVentas").addEventListener("click", async e => {
   const ver = e.target.closest("[data-ver]"), an = e.target.closest("[data-anular]");
   if (ver) return verCertificado(REG.ventas.find(v => v.numero === ver.dataset.ver));
   if (!an) return;
-  const v = REG.ventas.find(x => x.numero === an.dataset.anular);
-  if (!confirm(`¿Anular la venta ${v.numero}?${v.inventarioDescontado ? "\nLa pieza vuelve al inventario." : ""}\nEl número no se vuelve a usar.`)) return;
+  const v = REG.ventas.find(x => x.numero === an.dataset.anular), c = numerosDe(v).length, r = descontadas(v);
+  if (!confirm(`¿Anular la venta ${rango(v)}?${c > 1 ? `\nSe anulan los ${c} certificados.` : ""}${r ? `\n${r === 1 ? "La pieza vuelve" : `Las ${r} piezas vuelven`} al inventario.` : ""}\n${c > 1 ? "Los números no se vuelven" : "El número no se vuelve"} a usar.`)) return;
   an.disabled = true;
   try {
-    REG = await actualizar(A.repoVentas, "registro.json", d => { const x = d.ventas.find(y => y.numero === v.numero); x.anulada = true; x.anuladaEl = new Date().toISOString(); return d; }, `Venta anulada: ${v.numero}`);
-    if (v.inventarioDescontado) INV = await actualizar(A.repoSitio, "inventario.json", d => { const n = d.obras[v.obra]; if (Number.isInteger(n)) d.obras[v.obra] = n + 1; return d; }, `Inventario: venta anulada de «${v.titulo}»`);
+    REG = await actualizar(A.repoVentas, "registro.json", d => { const x = d.ventas.find(y => y.numero === v.numero); x.anulada = true; x.anuladaEl = new Date().toISOString(); return d; }, `Venta anulada: ${rango(v)}`);
+    if (r) INV = await actualizar(A.repoSitio, "inventario.json", d => { d.obras = d.obras || {}; const n = d.obras[v.obra]; if (Number.isInteger(n)) d.obras[v.obra] = n + r; return d; }, `Inventario: venta anulada de «${v.titulo}»`);
     pintarVentas(); pintarInventario(); alCambiarObra(); aviso("Venta anulada.");
   } catch (er) { alert(er.message); an.disabled = false; }
 });
@@ -213,15 +239,21 @@ $("#listaVentas").addEventListener("click", async e => {
 const linea = (etq, valor, ancho = "") => `<div class="c-campo ${ancho}"><span class="c-etq">${etq}</span><span class="c-val">${valor ? esc(valor) : "&nbsp;"}</span></div>`;
 const casilla = (t, on) => `<span class="c-casilla${on ? " on" : ""}"><i></i>${t}</span>`;
 function verCertificado(v){
-  const o = porSlug(v.obra) || {}, repro = v.tipo === "reproduccion", ed = v.edicion;
+  const nums = numerosDe(v);
+  $("#cert").innerHTML = (v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. ${nums.length > 1 ? "Los certificados no son válidos." : "El certificado no es válido."}</p>` : "")
+    + (nums.length > 1 ? `<p class="nota cert-cuantos">${nums.length} certificados, uno por pieza: ${esc(rango(v))}.</p>` : "")
+    + nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("");
+  mostrar("vCert"); escalar(); scrollTo(0, 0);
+}
+function hojas(v, numero, ed){
+  const o = porSlug(v.obra) || {}, repro = v.tipo === "reproduccion";
   const edicion = !repro ? "" : ed === "abierta" ? `${casilla("Edición abierta", true)}` : ed ? `N.º <b>${ed.numero}</b> de <b>${ed.de}</b>` : "";
-  const pie = (p) => `<footer class="c-pie"><span>SOTO’S ART · Certificado de autenticidad · ${esc(v.numero)}</span><span>Página ${p} de 2</span></footer>`;
-  $("#cert").innerHTML = `${v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. El certificado no es válido.</p>` : ""}
-  <article class="c-hoja${v.anulada ? " c-anulado" : ""}"><div class="c-marco">
+  const pie = (p) => `<footer class="c-pie"><span>SOTO’S ART · Certificado de autenticidad · ${esc(numero)}</span><span>Página ${p} de 2</span></footer>`;
+  return `<article class="c-hoja${v.anulada ? " c-anulado" : ""}"><div class="c-marco">
     <img class="c-logo" src="admin-logo.jpg" alt="Soto’s Art – Blessing Art">
     <h1>Certificado de autenticidad</h1><p class="c-sub">Registro de la pieza</p><hr class="c-filete">
     <p class="c-declara">Por medio de este documento, certifico que la pieza descrita a continuación corresponde a una obra original creada por mí o a una reproducción autorizada, revisada y firmada por mí, según se indica en «Tipo de pieza».</p>
-    <div class="c-cabeza"><div><span class="c-etq">Número de certificado</span><span class="c-numero">${esc(v.numero)}</span></div>
+    <div class="c-cabeza"><div><span class="c-etq">Número de certificado</span><span class="c-numero">${esc(numero)}</span></div>
       <div><span class="c-etq">Tipo de pieza</span>${casilla("Obra original", !repro)} ${casilla("Reproducción autorizada", repro)}</div></div>
     <h2 class="c-seccion"><span>La obra original</span></h2>
     <div class="c-obra"><figure><img src="${esc(o.imagen || "")}" alt=""><figcaption>Imagen de referencia de la obra</figcaption></figure>
@@ -243,10 +275,9 @@ function verCertificado(v){
       <div><span class="c-raya"></span><b>Fecha de emisión</b></div></div>
     <div class="c-contacto"><span class="c-etq">Contacto de la artista</span>
       <p>${esc(CONFIG.correo)}  ·  Instagram: @${esc(CONFIG.instagram)}</p>
-      <small>Para verificar este certificado, escribe a la artista con el número ${esc(v.numero)}.</small></div>
+      <small>Para verificar este certificado, escribe a la artista con el número ${esc(numero)}.</small></div>
     <div class="c-sello"><i>Soto’s Art</i><span>BLESSING ART</span></div>
     ${pie(2)}</div></article>`;
-  mostrar("vCert"); escalar(); scrollTo(0, 0);
 }
 /* En pantalla, la hoja carta se reduce para caber en el teléfono; al imprimir sale a tamaño real */
 function escalar(){ const z = Math.min(1, ($("#cert").clientWidth || innerWidth - 36) / 816); $$(".c-hoja").forEach(h => h.style.zoom = z); }

@@ -47,6 +47,8 @@
           <legend>La obra</legend>
           <label for="vObra">Obra</label>
           <select id="vObra" required></select>
+          <label for="vCantidad">Cantidad de piezas</label>
+          <div class="cantidad"><button type="button" id="cMenos" aria-label="Una pieza menos">−</button><input id="vCantidad" inputmode="numeric" value="1"><button type="button" id="cMas" aria-label="Una pieza más">+</button></div>
           <p class="nota" id="vStockNota"></p>
           <span class="etq">Tipo de pieza</span>
           <div class="radios">
@@ -70,7 +72,7 @@
             <label><input type="radio" name="edicion" value="numerada"> Numerada</label>
           </div>
           <div class="dos" id="edNumerada" hidden>
-            <div><label for="vEdN">Número</label><input id="vEdN" inputmode="numeric" placeholder="3"></div>
+            <div><label for="vEdN" id="lEdN">Número</label><input id="vEdN" inputmode="numeric" placeholder="3"></div>
             <div><label for="vEdDe">de</label><input id="vEdDe" inputmode="numeric" placeholder="25"></div>
           </div>
         </fieldset>
@@ -92,7 +94,7 @@
           <label for="vNotas">Notas</label>
           <textarea id="vNotas" rows="2"></textarea>
         </fieldset>
-        <label class="check" id="lDescontar"><input type="checkbox" id="vDescontar" checked> <span>Restar 1 del inventario de la página</span></label>
+        <label class="check" id="lDescontar"><input type="checkbox" id="vDescontar" checked> <span id="lDescontarT">Restar 1 del inventario de la página</span></label>
         <button class="btn oro" type="submit" id="btnVenta">Confirmar venta y preparar certificado</button>
         <p class="error" id="errVenta" role="alert"></p>
       </form>
