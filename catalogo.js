@@ -154,7 +154,7 @@ EXPERIENCIA.museo = EXPERIENCIA.recorrido;
    El constructor publica datos.json como datos.js (window.DATOS), que se carga antes que este archivo.
    En inglés, un campo vacío muestra el texto en español.
    ===================================================================== */
-function aplicarDatos(D, T, idioma){
+function aplicarDatos(D, T, idioma, op = {}){
   if (!D) return;
   const hay = x => x !== undefined && x !== null;
   const txt = b => { const es = (b || {}).es || {}, lo = (b || {})[idioma] || {}, r = {};
@@ -166,6 +166,11 @@ function aplicarDatos(D, T, idioma){
   if (T){ T.contenido = T.contenido || {};
     if (D.envio) T.contenido.envio = { ...(T.contenido.envio || {}), ...txt(D.envio) };
     if (D.politicas) T.contenido.politicas = { ...(T.contenido.politicas || {}), ...txt(D.politicas) }; }
+  /* Obras nuevas, creadas desde la herramienta (nueva: true): se añaden al final de la colección */
+  Object.entries(D.obras || {}).forEach(([slug, d]) => {
+    if (d && d.nueva && !OBRAS.some(o => o.slug === slug))
+      OBRAS.push({ sku: d.sku, slug, titulo: d.titulo, imagen: d.imagen, w: d.w, h: d.h, video: "", original: "", anio: "", medidas: null, disponibilidad: "", variantes: [], provisional: false, nueva: true });
+  });
   OBRAS.forEach(o => { const d = (D.obras || {})[o.slug]; if (!d) return;
     ["titulo", "anio"].forEach(k => { if (hay(d[k])) o[k] = d[k]; });
     if (d.medidas !== undefined) o.medidas = d.medidas;
@@ -175,5 +180,19 @@ function aplicarDatos(D, T, idioma){
     if (Array.isArray(d.fotos)) o.fotos = d.fotos.map(f => ({ imagen: f.imagen, w: f.w, h: f.h, tipo: f.tipo || "detalle",
       pie: (f.pie || {})[idioma] || (f.pie || {}).es || "" }));
     if (Array.isArray(d.variantes)) o.variantes = d.variantes;
-    if (T && d.textos){ T.obras = T.obras || {}; T.obras[o.slug] = { ...(T.obras[o.slug] || {}), ...txt(d.textos) }; } });
+    o.oculta = !!d.oculta;
+    if (T && d.textos){ const t = txt(d.textos); T.obras = T.obras || {};
+      const { recorridoTitulo, recorridoLinea, ...resto } = t; T.obras[o.slug] = { ...(T.obras[o.slug] || {}), ...resto };
+      T.recorrido = T.recorrido || {};
+      if (recorridoTitulo || recorridoLinea) T.recorrido[o.slug] = { ...(T.recorrido[o.slug] || {}), ...(recorridoTitulo ? { titulo: recorridoTitulo } : {}), ...(recorridoLinea ? { linea: recorridoLinea } : {}) }; }
+    /* Capítulo del recorrido: 1, 2, 3… · 0 = solo en la colección */
+    if (typeof d.capitulo === "number"){ const caps = EXPERIENCIA.capitulos, ya = caps.findIndex(c => c.obras.includes(o.slug));
+      if (ya !== d.capitulo - 1){ caps.forEach(c => { c.obras = c.obras.filter(x => x !== o.slug); }); if (caps[d.capitulo - 1]) caps[d.capitulo - 1].obras.push(o.slug); } }
+  });
+  /* Obras ocultas: no se muestran en la página (la herramienta sí las ve, con op.todas) */
+  if (!op.todas){ for (let i = OBRAS.length - 1; i >= 0; i--) if (OBRAS[i].oculta) OBRAS.splice(i, 1); }
+  const vis = s => OBRAS.some(o => o.slug === s && !o.oculta);
+  EXPERIENCIA.recorrido = EXPERIENCIA.capitulos.flatMap(c => c.obras).filter(vis);
+  EXPERIENCIA.museo = EXPERIENCIA.recorrido;
+  EXPERIENCIA.queVes = EXPERIENCIA.queVes.filter(vis);
 }

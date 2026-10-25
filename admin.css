@@ -73,7 +73,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .c-anulado-aviso{background:#F5DDD7;color:var(--error);padding:.7rem 1rem;border-radius:3px;font-weight:700}
 .c-hoja{width:8.5in;height:11in;background:#fff;color:#1E1812;margin:0 auto 1.4rem;padding:.55in;position:relative;font-family:var(--body);box-shadow:0 2px 14px rgba(20,16,12,.12)}
 #cert{overflow:hidden}
-.c-marco{height:100%;border:1.5px solid #8A6A3B;outline:.5px solid #8A6A3B;outline-offset:-6px;padding:.32in .45in .25in;position:relative;display:flex;flex-direction:column}
+.c-marco{height:100%;border:1.5px solid #8A6A3B;padding:.32in .45in .25in;position:relative;display:flex;flex-direction:column}
 .c-logo{width:1.05in;height:1.05in;margin:0 auto;display:block;object-fit:contain}
 .c-hoja h1{font:400 25pt/1.1 var(--display);text-align:center;margin:.06in 0 0}
 .c-sub{font:italic 400 11pt var(--display);color:#6E6254;text-align:center;margin:.05in 0 0}
@@ -89,7 +89,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .c-seccion::after{content:"";flex:1;border-top:.6pt solid #8A6A3B}
 .c-obra{display:grid;grid-template-columns:1.95in 1fr;gap:.35in;margin-bottom:.16in}
 .c-obra figure{margin:0}
-.c-obra img{width:100%;height:auto;display:block;outline:4pt solid #EFE8DC}
+.c-obra img{width:100%;height:auto;display:block;border:4pt solid #EFE8DC}
 .c-obra figcaption{font:italic 8.4pt var(--display);color:#6E6254;text-align:center;margin-top:8pt}
 .c-campo{margin-bottom:8pt}
 .c-val{display:block;font-size:10pt;min-height:17pt;padding-bottom:2pt;border-bottom:.6pt solid #D9CCB6}
@@ -108,7 +108,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .c-contacto .c-etq{color:#8A6A3B}
 .c-contacto p{margin:2pt 0 3pt;font-size:10pt;white-space:pre-wrap}
 .c-contacto small{font-size:8.4pt;color:#6E6254}
-.c-sello{width:60pt;height:60pt;margin:.4in auto 0;border:1pt solid #8A6A3B;border-radius:50%;outline:.4pt solid #8A6A3B;outline-offset:-5pt;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A6A3B}
+.c-sello{width:60pt;height:60pt;margin:.4in auto 0;border:1pt solid #8A6A3B;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A6A3B}
 .c-sello i{font:italic 10pt var(--display)}
 .c-sello span{font-size:5.6pt;font-weight:700;letter-spacing:.06em}
 .c-anulado::after{content:"ANULADO";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 96pt var(--display);color:rgba(163,58,42,.13);transform:rotate(-35deg);pointer-events:none}
@@ -170,3 +170,31 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .nf-acciones{display:flex;align-items:center;gap:1rem;margin-top:.8rem}
 .nf-acciones .btn.oro{flex:1}
 .aviso-amarillo{background:#FBF1D9;border-left:3px solid var(--gold);padding:.5rem .7rem;font-size:.9rem;margin:.5rem 0}
+
+/* Obras nuevas y ocultas */
+#listaObras > .btn.oro{margin:0 0 1rem}
+.fila-obra.oculta img{opacity:.45}
+.etq-oculta{font:700 .66rem var(--body);letter-spacing:.1em;text-transform:uppercase;font-style:normal;color:var(--accent);border:1px solid currentColor;border-radius:999px;padding:.05rem .45rem;margin-left:.3rem;vertical-align:middle}
+.nueva-t{font:400 1.6rem var(--display);margin:.2rem 0 .3rem}
+.borrar-obra{text-align:center;margin:1.2rem 0 0}
+.borrar-obra .enlace{color:var(--error)}
+#nPrevia .nueva-foto{margin:.4rem 0 .8rem}
+.nueva-t + .nota{margin:0 0 1.2rem}
+
+/* Copia de las hojas a tamaño real para el PDF (fuera de la pantalla) */
+.cert-copia{position:fixed;left:-10000px;top:0;width:900px;pointer-events:none}
+.cert-copia .c-hoja{margin:0 0 20px;box-shadow:none;width:816px;height:1056px}
+.c-hoja.compacta .c-logo{width:.8in;height:.8in}
+.c-hoja.compacta .c-filete{margin:.08in auto .1in}
+.c-hoja.compacta .c-declara{margin-bottom:.14in}
+.c-hoja.compacta .c-cabeza{margin-bottom:.12in}
+.c-hoja.compacta .c-campo{margin-bottom:5pt}
+.c-hoja.compacta .c-firmas{margin-top:.6in}
+.c-hoja.compacta .c-contacto{margin-top:.3in}
+.c-hoja.compacta2 .c-obra{grid-template-columns:1.6in 1fr}
+.c-hoja.compacta2 .c-marco > p,.c-hoja.compacta2 .c-declara{font-size:9pt}
+.c-hoja.compacta2 .c-sello{margin-top:.2in}
+/* Filetes interiores con bordes (no "outline"), para que salgan también en el PDF */
+.c-marco::before{content:"";position:absolute;inset:4px;border:.6px solid #8A6A3B;pointer-events:none}
+.c-sello{position:relative}
+.c-sello::before{content:"";position:absolute;inset:4px;border:.5px solid #8A6A3B;border-radius:50%}

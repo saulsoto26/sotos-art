@@ -17,7 +17,7 @@ import hashlib, json, re, sys, html, shutil, subprocess, pathlib
 AQUI = pathlib.Path(__file__).resolve().parent
 SALIDA = AQUI / (sys.argv[sys.argv.index("--salida") + 1] if "--salida" in sys.argv else "_site")
 ARCHIVOS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".mp3", ".m4a", ".mp4", ".webm", ".pdf", ".css", ".ico"}
-SCRIPTS = {"catalogo.js", "app.js", "qr.js", "inventario.json", "admin.js"}
+SCRIPTS = {"catalogo.js", "app.js", "qr.js", "inventario.json", "admin.js", "admin-html2canvas.min.js", "admin-jspdf.min.js"}
 COPIAR_HTML = {"prototipo-v1.html"}   # admin.html se copia aparte, con versión en sus enlaces
 
 def leer_datos():
@@ -30,6 +30,10 @@ def leer_datos():
     for s, o in d.get("obras", {}).items():
         if not isinstance(o, dict): sys.exit(f"datos.json: la obra «{s}» no tiene la forma esperada.")
         if "titulo" in o and not str(o["titulo"]).strip(): sys.exit(f"datos.json: la obra «{s}» quedó sin título.")
+        if o.get("nueva"):
+            if not re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", s): sys.exit(f"datos.json: «{s}» no sirve como dirección de una obra.")
+            for k in ("sku", "titulo", "imagen", "w", "h"):
+                if not o.get(k): sys.exit(f"datos.json: a la obra nueva «{s}» le falta «{k}».")
         for v in o.get("variantes", []) or []:
             if not isinstance(v, dict) or not isinstance(v.get("precio", 0), (int, float)): sys.exit(f"datos.json: revisa los tamaños de «{s}».")
     return d

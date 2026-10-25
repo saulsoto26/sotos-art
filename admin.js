@@ -10,8 +10,9 @@ const A = CONFIG.admin, API = "https://api.github.com", LLAVE = "sa-admin-llave"
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const TX = window.TEXTOS || {};
-let DAT = window.DATOS || null;   // datos.json: lo que Luciann edita en la pestaña Página
-function refrescarObras(){ if (DAT) aplicarDatos(DAT, TX, "es"); OBRAS.forEach(o => Object.assign(o, { tecnica: "", inscripcion: "" }, (TX.obras || {})[o.slug])); }
+let DAT = window.DATOS || null, TXEN = null;
+const cargarIngles = fetch("textos-en.js", { cache: "no-store" }).then(r => r.text()).then(c => { const w = {}; new Function("window", c)(w); TXEN = w.TEXTOS || null; }).catch(() => {});   // datos.json: lo que Luciann edita en la pestaña Página
+function refrescarObras(){ if (DAT) aplicarDatos(DAT, TX, "es", { todas: true }); OBRAS.forEach(o => Object.assign(o, { tecnica: "", inscripcion: "" }, (TX.obras || {})[o.slug])); }
 refrescarObras();
 const porSlug = s => OBRAS.find(o => o.slug === s);
 
@@ -83,7 +84,7 @@ async function verificar(){
 }
 async function entrar(){
   mostrar("vPrincipal");
-  await Promise.all([cargarInventario(), cargarVentas(), cargarDatos()]);
+  await Promise.all([cargarInventario(), cargarVentas(), cargarDatos(), cargarIngles]);
   pintarObras(); pintarInventario(); pintarVentas(); pintarPagina();
 }
 $("#btnConectar").addEventListener("click", async () => {
@@ -260,18 +261,41 @@ $$("[data-sub]").forEach(b => b.addEventListener("click", () => {
 function pintarPagina(){ pintarListaObras(); pintarEnvio(); pintarContacto(); }
 
 /* Obras */
-const TXK = ["tecnica", "subtitulo", "descripcion", "declaracion", "inscripcion", "alt"];
-const NOMBRES = { alt: "Descripción de la foto", tecnica: "Técnica", subtitulo: "Subtítulo", descripcion: "Descripción", declaracion: "Tus palabras sobre la obra", inscripcion: "Inscripción" };
+const TXK = ["tecnica", "subtitulo", "descripcion", "declaracion", "inscripcion", "alt", "recorridoTitulo", "recorridoLinea"];
+const NOMBRES = { alt: "Descripción de la foto", recorridoTitulo: "Frase del recorrido", recorridoLinea: "Pregunta del recorrido", tecnica: "Técnica", subtitulo: "Subtítulo", descripcion: "Descripción", declaracion: "Tus palabras sobre la obra", inscripcion: "Inscripción" };
 const precioTxt = n => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
 function resumenObra(o){
   const vs = o.variantes || [], p = vs.map(v => v.precio).filter(x => x > 0);
   return [o.anio || "Año por confirmar", vs.length ? `${vs.length} ${vs.length === 1 ? "tamaño" : "tamaños"}${p.length ? " · desde " + precioTxt(Math.min(...p)) : " · precio por confirmar"}` : "Sin tamaños de reproducción"].join(" · ");
 }
 function pintarListaObras(){
-  $("#listaObras").innerHTML = `<div class="tarjeta">${OBRAS.map(o => `<button type="button" class="fila-obra" data-editar="${o.slug}">
-    <img src="${esc(src(o.imagen))}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}<small>${esc(resumenObra(o))}</small></span><span class="ir" aria-hidden="true">›</span></button>`).join("")}</div>`;
+  $("#listaObras").innerHTML = `<button type="button" class="btn oro" data-nueva-obra>+ Añadir una obra nueva</button>
+    <div class="tarjeta">${OBRAS.map(o => `<button type="button" class="fila-obra${o.oculta ? " oculta" : ""}" data-editar="${o.slug}">
+    <img src="${esc(src(o.imagen))}" alt="" loading="lazy"><span class="t">${esc(o.titulo)}${o.oculta ? ' <em class="etq-oculta">Oculta</em>' : ""}<small>${esc(resumenObra(o))}</small></span><span class="ir" aria-hidden="true">›</span></button>`).join("")}</div>`;
 }
-$("#listaObras").addEventListener("click", e => { const b = e.target.closest("[data-editar]"); if (b) editarObra(b.dataset.editar); });
+$("#listaObras").addEventListener("click", e => { const b = e.target.closest("[data-editar]"); if (b) editarObra(b.dataset.editar); if (e.target.closest("[data-nueva-obra]")) nuevaObra(); });
+/* Lo que la página muestra hoy en cada idioma (datos.json o, si no lo tiene, los textos originales) */
+function textosActuales(slug){
+  const d = (((DAT || {}).obras || {})[slug] || {}).textos || {}, en = d.en || {}, txo = (TX.obras || {})[slug] || {}, txr = (TX.recorrido || {})[slug] || {};
+  const eno = ((TXEN || {}).obras || {})[slug] || {}, enr = ((TXEN || {}).recorrido || {})[slug] || {}, r = { es: {}, en: {} };
+  TXK.forEach(k => {
+    r.es[k] = k === "recorridoTitulo" ? (txr.titulo || "") : k === "recorridoLinea" ? (txr.linea || "") : pinta(txo[k]);
+    r.en[k] = k in en ? pinta(en[k]) : k === "recorridoTitulo" ? (enr.titulo || "") : k === "recorridoLinea" ? (enr.linea || "") : pinta(eno[k]);
+  });
+  return r;
+}
+const NOMBRE_CAP = { herida: "La herida y las manos", camino: "El camino", vida: "La vida que sostiene" };
+const ROMANO = ["I", "II", "III", "IV", "V", "VI"];
+const opcionesCapitulo = actual => `<option value="0"${actual === 0 ? " selected" : ""}>Solo en la colección (fuera del recorrido)</option>`
+  + EXPERIENCIA.capitulos.map((c, k) => `<option value="${k + 1}"${actual === k + 1 ? " selected" : ""}>${ROMANO[k]}. ${esc(((TX.capitulos || {})[c.clave]) || NOMBRE_CAP[c.clave] || c.clave)}</option>`).join("");
+const capituloDe = slug => EXPERIENCIA.capitulos.findIndex(c => c.obras.includes(slug)) + 1;
+const sigSku = () => "SA-" + String(OBRAS.map(o => parseInt((o.sku || "").replace(/\D/g, ""), 10) || 0).reduce((a, b) => Math.max(a, b), 0) + 1).padStart(3, "0");
+function slugDe(t){
+  let b = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "obra", s = b, i = 2;
+  const usados = new Set([...OBRAS.map(o => o.slug), ...Object.keys((DAT || {}).obras || {})]);
+  while (usados.has(s)) s = `${b}-${i++}`;
+  return s;
+}
 const MATERIALES = ["lienzo", "papel de arte", "papel"], TIPOS = ["giclée"], ACABADOS = ["mate", "satinado", "brillo", "con bastidor", "sin bastidor", "enrollado"];
 const lista = (id, xs) => `<datalist id="${id}">${xs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>`;
 function filaVariante(v = {}){
@@ -285,7 +309,7 @@ function filaVariante(v = {}){
 }
 let EDITANDO = null;
 function editarObra(slug){
-  const o = porSlug(slug), d = ((DAT || {}).obras || {})[slug] || {}, t = d.textos || { es: {}, en: {} }, m = o.medidas || {};
+  const o = porSlug(slug), t = textosActuales(slug), m = o.medidas || {};
   EDITANDO = { slug, variantes: JSON.parse(JSON.stringify(o.variantes || [])), textos: JSON.parse(JSON.stringify(t)) };
   const f = $("#fObra");
   f.innerHTML = `<p class="volver"><button type="button" class="enlace" data-cerrar-obra>← Todas las obras</button></p>
@@ -294,7 +318,14 @@ function editarObra(slug){
       <label for="oVideo">Video de la obra <span class="opc">(opcional)</span></label>
       <input id="oVideo" inputmode="url" autocapitalize="off" value="${esc(videoTxt(o.video))}" placeholder="Enlace de YouTube o de Instagram">
       <p class="nota">Pega el enlace del video en YouTube o en Instagram. Vacío = no se muestra video.</p>
-      ${bi("alt", "Descripción de la foto principal", t.es && t.es.alt, t.en && t.en.alt, { area: true, filas: 2, nota: "Lo que se ve en la pintura, para personas ciegas que usan lectores de pantalla." })}
+      ${bi("alt", "Descripción de la foto principal", t.es.alt, t.en.alt, { area: true, filas: 2, nota: "Lo que se ve en la pintura, para personas ciegas que usan lectores de pantalla." })}
+    </fieldset>
+    <fieldset><legend>En la página</legend>
+      <label class="check"><input type="checkbox" id="oVisible"${o.oculta ? "" : " checked"}> <span>Mostrar esta obra en la página</span></label>
+      <p class="nota" id="notaVisible">${o.oculta ? "Ahora está oculta: no aparece en la página, pero puedes seguir editándola." : "Si la ocultas, deja de aparecer en la colección, el recorrido y el Modo museo. Puedes volver a mostrarla cuando quieras."}</p>
+      <label for="oCapitulo">Capítulo del recorrido</label><select id="oCapitulo">${opcionesCapitulo(capituloDe(slug))}</select>
+      ${bi("recorridoTitulo", "Frase del recorrido", t.es.recorridoTitulo, t.en.recorridoTitulo, { nota: "Unas pocas palabras que acompañan la obra en el recorrido. Vacío: se usa el título." })}
+      ${bi("recorridoLinea", "Pregunta del recorrido", t.es.recorridoLinea, t.en.recorridoLinea, { nota: "Una invitación a mirar, por ejemplo: «Observa las manos. ¿Qué te dicen?»" })}
     </fieldset>
     <fieldset><legend>La obra original</legend>
       <label for="oTitulo">Título</label><input id="oTitulo" value="${esc(o.titulo)}">
@@ -305,11 +336,11 @@ function editarObra(slug){
         <label>Unidad<select id="oUnidad"><option value="in"${m.unidad !== "cm" ? " selected" : ""}>pulg</option><option value="cm"${m.unidad === "cm" ? " selected" : ""}>cm</option></select></label></div>
     </fieldset>
     <fieldset><legend>Textos</legend>
-      ${bi("tecnica", "Técnica", t.es && t.es.tecnica, t.en && t.en.tecnica)}
-      ${bi("subtitulo", "Subtítulo", t.es && t.es.subtitulo, t.en && t.en.subtitulo, { nota: "Opcional. Una frase corta debajo del título." })}
-      ${bi("descripcion", "Descripción", t.es && t.es.descripcion, t.en && t.en.descripcion, { area: true, filas: 4 })}
-      ${bi("declaracion", "Tus palabras sobre la obra", t.es && t.es.declaracion, t.en && t.en.declaracion, { area: true, filas: 4, nota: "Se muestran como una cita tuya. Si dejas el inglés vacío, la página en inglés muestra tu texto en español." })}
-      ${bi("inscripcion", "Inscripción en la obra", t.es && t.es.inscripcion, t.en && t.en.inscripcion, { nota: "Si la pintura tiene palabras escritas." })}
+      ${bi("tecnica", "Técnica", t.es.tecnica, t.en.tecnica)}
+      ${bi("subtitulo", "Subtítulo", t.es.subtitulo, t.en.subtitulo, { nota: "Opcional. Una frase corta debajo del título." })}
+      ${bi("descripcion", "Descripción", t.es.descripcion, t.en.descripcion, { area: true, filas: 4 })}
+      ${bi("declaracion", "Tus palabras sobre la obra", t.es.declaracion, t.en.declaracion, { area: true, filas: 4, nota: "Se muestran como una cita tuya. Si dejas el inglés vacío, la página en inglés muestra tu texto en español." })}
+      ${bi("inscripcion", "Inscripción en la obra", t.es.inscripcion, t.en.inscripcion, { nota: "Si la pintura tiene palabras escritas." })}
     </fieldset>
     <fieldset><legend>Tamaños de reproducción a la venta</legend>
       <p class="nota">Cada tamaño aparece como una opción en la ficha. Sin precio, la página dice “por confirmar”.</p>
@@ -318,6 +349,7 @@ function editarObra(slug){
       ${lista("dlMat", MATERIALES)}${lista("dlTipo", TIPOS)}${lista("dlAcab", ACABADOS)}
     </fieldset>
     <button class="btn oro" type="submit" id="btnObra">Guardar cambios</button>
+    ${o.nueva ? `<p class="borrar-obra"><button type="button" class="enlace" data-borrar-obra>Borrar esta obra de la página</button></p>` : ""}
     <p class="error" id="errObra" role="alert"></p><p class="nota" id="notaObra"></p>`;
   $("#listaObras").hidden = true; f.hidden = false; pintarFotos(); scrollTo(0, 0);
 }
@@ -347,7 +379,9 @@ $("#fObra").addEventListener("submit", async ev => {
   const textos = leerBi(f, TXK), aviso2 = avisoIngles(EDITANDO.textos, textos, TXK, NOMBRES);
   const video = leerVideo($("#oVideo").value);
   if (video === null) return err.textContent = "El video debe ser un enlace de YouTube o de Instagram.";
-  const nuevo = { titulo, anio, medidas: an === null ? null : { ancho: an, alto: al, unidad: $("#oUnidad").value }, variantes, textos, video };
+  const oculta = !$("#oVisible").checked, capitulo = +$("#oCapitulo").value;
+  if (oculta && !porSlug(slug).oculta && ["quebrantada", "restaurada"].includes(slug) && !confirm("Si ocultas esta obra, la sección «Dos obras» de la página deja de mostrarse. ¿Ocultarla?")) return;
+  const nuevo = { titulo, anio, medidas: an === null ? null : { ancho: an, alto: al, unidad: $("#oUnidad").value }, variantes, textos, video, oculta, capitulo };
   const o = porSlug(slug), cambiaTitulo = titulo !== o.titulo;
   $("#btnObra").disabled = true;
   try {
@@ -363,10 +397,102 @@ $("#fObra").addEventListener("submit", async ev => {
       `Página: «${titulo}» actualizada desde la herramienta de Luciann`);
     refrescarObras(); pintarObras(); pintarInventario(); pintarListaObras();
     EDITANDO.textos = textos; EDITANDO.variantes = variantes;
+    $("#notaVisible").textContent = oculta ? "Ahora está oculta: no aparece en la página, pero puedes seguir editándola." : "Si la ocultas, deja de aparecer en la colección, el recorrido y el Modo museo. Puedes volver a mostrarla cuando quieras.";
     $("#notaObra").textContent = aviso2; aviso("Guardado. La página se actualiza en uno o dos minutos.");
   } catch (e) { err.textContent = e.message; }
   finally { $("#btnObra").disabled = false; }
 });
+
+/* ---------- Obra nueva: título, foto y capítulo; lo demás se completa después en su ficha ---------- */
+let NUEVA = null;
+function nuevaObra(){
+  NUEVA = { giro: 0, img: null };
+  const f = $("#fObra");
+  f.innerHTML = `<p class="volver"><button type="button" class="enlace" data-cerrar-obra>← Todas las obras</button></p>
+    <h2 class="nueva-t">Obra nueva</h2>
+    <p class="nota">Empieza con el título y la foto. Después podrás completar medidas, textos, precios y más fotos.</p>
+    <fieldset><legend>La obra</legend>
+      <label for="nTitulo">Título</label><input id="nTitulo" autocomplete="off">
+      <label for="nAnio">Año</label><input id="nAnio" inputmode="numeric" placeholder="Ej.: 2026">
+      <span class="etq">Foto de la obra</span>
+      <p class="nota">Una foto de frente, sin marco ni pared si es posible, con buena luz.</p>
+      <div id="nPrevia"></div>
+      <button type="button" class="btn linea" data-nueva-foto>Escoger la foto</button>
+      <input type="file" id="nArchivo" accept="image/*" hidden>
+    </fieldset>
+    <fieldset><legend>En la página</legend>
+      <label for="nCapitulo">Capítulo del recorrido</label><select id="nCapitulo">${opcionesCapitulo(0)}</select>
+      <label class="check"><input type="checkbox" id="nVisible" checked> <span>Mostrarla en la página ahora</span></label>
+      <p class="nota">Si prefieres completar sus datos antes, desmarca la casilla: quedará oculta hasta que la muestres.</p>
+    </fieldset>
+    <button class="btn oro" type="button" id="btnNueva">Crear la obra</button>
+    <p class="error" id="errNueva" role="alert"></p>`;
+  $("#listaObras").hidden = true; f.hidden = false; scrollTo(0, 0);
+}
+function previaNueva(){
+  const c = lienzo(NUEVA.img, NUEVA.giro, 640), W = NUEVA.giro % 180 ? NUEVA.img.naturalHeight : NUEVA.img.naturalWidth, H = NUEVA.giro % 180 ? NUEVA.img.naturalWidth : NUEVA.img.naturalHeight, lado = Math.max(W, H);
+  $("#nPrevia").innerHTML = `<div class="nueva-foto"><div class="nf-previa"></div>
+    <div class="nf-girar"><button type="button" class="btn linea" data-ngirar="-90">⟲ Girar</button><button type="button" class="btn linea" data-ngirar="90">Girar ⟳</button></div>
+    <p class="nota">Mide ${W} × ${H} px. ${lado > 1600 ? "Se reducirá a 1600 px para la página; la pintura no se recorta." : "Se usará en su tamaño; nunca se agranda."}</p>
+    ${lado < 600 ? `<p class="error">La foto es muy pequeña (menos de 600 px). Busca una de mayor tamaño.</p>` : lado < 1200 ? `<p class="aviso-amarillo">La foto es pequeña: puede verse algo borrosa en pantallas grandes.</p>` : ""}</div>`;
+  c.className = "nf-lienzo"; $("#nPrevia .nf-previa").appendChild(c);
+  $("[data-nueva-foto]").textContent = "Escoger otra foto";
+}
+$("#fObra").addEventListener("click", async e => {
+  if (e.target.closest("[data-nueva-foto]")){ $("#nArchivo").value = ""; $("#nArchivo").click(); return; }
+  const g = e.target.closest("[data-ngirar]"); if (g){ NUEVA.giro = (NUEVA.giro + (+g.dataset.ngirar) + 360) % 360; return previaNueva(); }
+  if (e.target.closest("#btnNueva")) return crearObra();
+  if (e.target.closest("[data-borrar-obra]")) return borrarObra();
+});
+$("#fObra").addEventListener("change", async e => {
+  if (e.target.id !== "nArchivo" || !e.target.files[0]) return;
+  $("#errNueva").textContent = "";
+  try { NUEVA.img = await cargarURL(URL.createObjectURL(e.target.files[0])); NUEVA.giro = 0; previaNueva(); }
+  catch (x) { $("#errNueva").textContent = "No se pudo abrir esa foto. Prueba con otra."; }
+});
+async function crearObra(){
+  const err = $("#errNueva"), btn = $("#btnNueva"); err.textContent = "";
+  const titulo = $("#nTitulo").value.trim(), anio = $("#nAnio").value.trim();
+  if (!titulo) return err.textContent = "Escribe el título de la obra.";
+  if (anio && !/^\d{4}$/.test(anio)) return err.textContent = "Escribe el año con cuatro números, o déjalo vacío.";
+  if (!NUEVA.img) return err.textContent = "Escoge la foto de la obra.";
+  const W = NUEVA.giro % 180 ? NUEVA.img.naturalHeight : NUEVA.img.naturalWidth, H = NUEVA.giro % 180 ? NUEVA.img.naturalWidth : NUEVA.img.naturalHeight;
+  if (Math.max(W, H) < 600) return err.textContent = "La foto es muy pequeña. Busca una de mayor tamaño.";
+  if (OBRAS.some(o => o.titulo.trim().toLowerCase() === titulo.toLowerCase()) && !confirm(`Ya hay una obra llamada «${titulo}». ¿Crear otra con el mismo título?`)) return;
+  const slug = slugDe(titulo), sku = sigSku(), st = sello(), img = `obra-${slug}-${st}.jpg`, og = { es: `og-${slug}-${st}.jpg`, en: `og-en-${slug}-${st}.jpg` };
+  btn.disabled = true; btn.textContent = "Preparando la foto…";
+  try {
+    await document.fonts.load('62px "Bodoni Moda"').catch(() => {}); await document.fonts.load("25px Karla").catch(() => {});
+    const c = lienzo(NUEVA.img, NUEVA.giro, 1600), c8 = lienzo(NUEVA.img, NUEVA.giro, 800);
+    const arch = [{ ruta: img, blob: await aBlob(c) }, { ruta: img.replace(/\.jpg$/, "-800.jpg"), blob: await aBlob(c8) },
+      { ruta: og.es, blob: await aBlob(crearOG(c, titulo, "es")) }, { ruta: og.en, blob: await aBlob(crearOG(c, titulo, "en")) }];
+    btn.textContent = "Publicando…";
+    DAT = await cambiarDatos(slug, () => ({ nueva: true, sku, titulo, imagen: img, w: c.width, h: c.height, og, anio, medidas: null, variantes: [],
+      textos: { es: {}, en: {} }, capitulo: +$("#nCapitulo").value, oculta: !$("#nVisible").checked }), `Obra nueva: «${titulo}» (${sku}) desde la herramienta de Luciann`, arch);
+    refrescarObras(); pintarObras(); pintarInventario(); pintarListaObras(); NUEVA = null;
+    editarObra(slug);
+    $("#notaObra").textContent = "Obra creada. Completa aquí sus medidas, técnica, textos y tamaños, y toca «Guardar cambios».";
+    aviso("Obra creada. La página se actualiza en uno o dos minutos.");
+  } catch (x) { err.textContent = x.message; btn.disabled = false; btn.textContent = "Crear la obra"; }
+}
+async function borrarObra(){
+  const o = porSlug(EDITANDO.slug);
+  if ((REG.ventas || []).some(v => v.obra === o.slug)) return alert("Esta obra ya tiene ventas registradas, así que no se puede borrar: sus certificados la necesitan. Puedes ocultarla de la página.");
+  if (!confirm(`¿Borrar «${o.titulo}» de la página? Se borran también sus fotos. Esto no se puede deshacer desde aquí.`)) return;
+  try {
+    await commitArchivos(A.repoSitio, async leerEn => {
+      const d = (await leerEn("datos.json")) || DEF_DATOS(), x = (d.obras || {})[o.slug] || {}, inv = await leerEn("inventario.json");
+      const fotos = [x.imagen, ...(x.og ? [x.og.es, x.og.en] : []), ...((x.fotos || []).map(f => f.imagen)), (x.ambiente || {}).imagen].filter(Boolean);
+      delete d.obras[o.slug]; const cambios = [{ ruta: "datos.json", texto: JSON.stringify(d, null, 2) + "\n" }];
+      if (inv && inv.obras && o.slug in inv.obras){ delete inv.obras[o.slug]; cambios.push({ ruta: "inventario.json", texto: JSON.stringify(inv, null, 2) + "\n" }); }
+      DAT = d; return [...cambios, ...viejas(fotos).map(r => ({ ruta: r, borrar: true }))];
+    }, `Obra borrada: «${o.titulo}» desde la herramienta de Luciann`);
+    OBRAS.splice(OBRAS.indexOf(o), 1); EXPERIENCIA.capitulos.forEach(c => { c.obras = c.obras.filter(s => s !== o.slug); });
+    if (INV && INV.obras) delete INV.obras[o.slug];
+    refrescarObras(); pintarObras(); pintarInventario(); $("#fObra").hidden = true; $("#listaObras").hidden = false; EDITANDO = null; pintarListaObras();
+    aviso("Obra borrada. La página se actualiza en uno o dos minutos.");
+  } catch (x) { alert(x.message); }
+}
 
 /* ---------- Fotos: se preparan en el teléfono (tamaño para la página, sin datos de ubicación) ----------
    Nunca se agranda una foto ni se recorta la pintura. Cada cambio de fotos es UN solo cambio en GitHub:
@@ -602,7 +728,13 @@ function verCertificado(v){
   $("#cert").innerHTML = (v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. ${nums.length > 1 ? "Los certificados no son válidos." : "El certificado no es válido."}</p>` : "")
     + (nums.length > 1 ? `<p class="nota cert-cuantos">${nums.length} certificados, uno por pieza: ${esc(rango(v))}.</p>` : "")
     + nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("");
-  mostrar("vCert"); escalar(); scrollTo(0, 0);
+  mostrar("vCert"); escalar(); ajustarHojas($("#cert")); scrollTo(0, 0);
+}
+/* Si con los datos de una venta el contenido no cabe en la hoja, se compacta el espacio (nunca se corta) */
+function ajustarHojas(root){
+  $$(".c-hoja", root).forEach(h => { h.classList.remove("compacta", "compacta2"); const m = $(".c-marco", h);
+    if (m.scrollHeight > m.clientHeight + 1) h.classList.add("compacta");
+    if (m.scrollHeight > m.clientHeight + 1) h.classList.add("compacta2"); });
 }
 function hojas(v, numero, ed){
   const o = porSlug(v.obra) || {}, repro = v.tipo === "reproduccion";
@@ -642,7 +774,41 @@ function hojas(v, numero, ed){
 function escalar(){ const z = Math.min(1, ($("#cert").clientWidth || innerWidth - 36) / 816); $$(".c-hoja").forEach(h => h.style.zoom = z); }
 addEventListener("resize", escalar);
 $("#btnVolver").addEventListener("click", () => { mostrar("vPrincipal"); $$("[data-tab]").find(b => b.getAttribute("aria-selected") === "true").click(); });
-$("#btnImprimir").addEventListener("click", () => print());
+/* PDF del certificado: cada hoja se dibuja en tamaño carta exacto, sin márgenes ni encabezados del navegador.
+   (Imprimir desde Safari añade márgenes y la dirección de la página, y cortaba las hojas.) */
+const cargarScript = u => new Promise((ok, no) => { const s = document.createElement("script"); s.src = u; s.onload = ok; s.onerror = () => no(new Error("No se pudo preparar el PDF. Revisa la conexión e inténtalo de nuevo.")); document.head.appendChild(s); });
+async function pdfCertificado(){
+  if (!window.html2canvas) await cargarScript("admin-html2canvas.min.js");
+  if (!window.jspdf) await cargarScript("admin-jspdf.min.js");
+  await document.fonts.ready;
+  /* copia de las hojas a tamaño real (816 × 1056 px = 8.5 × 11 pulg), fuera de la pantalla */
+  const caja = document.createElement("div"); caja.className = "cert-copia";
+  caja.innerHTML = $$("#cert .c-hoja").map(h => h.outerHTML).join(""); document.body.appendChild(caja);
+  $$(".c-hoja", caja).forEach(h => { h.style.zoom = "1"; });
+  ajustarHojas(caja);
+  try {
+    await Promise.all($$("img", caja).map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; })));
+    const pdf = new window.jspdf.jsPDF({ unit: "in", format: "letter", orientation: "portrait", compress: true });
+    const hojas = $$(".c-hoja", caja);
+    for (const [i, h] of hojas.entries()){
+      const c = await window.html2canvas(h, { scale: 2.5, backgroundColor: "#ffffff", useCORS: true, logging: false, width: 816, height: 1056, windowWidth: 900 });
+      if (i) pdf.addPage("letter", "portrait");
+      pdf.addImage(c.toDataURL("image/jpeg", .92), "JPEG", 0, 0, 8.5, 11, undefined, "FAST");
+    }
+    return pdf.output("blob");
+  } finally { caja.remove(); }
+}
+$("#btnPDF").addEventListener("click", async () => {
+  const b = $("#btnPDF"), num = ($(".c-numero") || {}).textContent || "certificado", nombre = `Certificado ${num}.pdf`;
+  b.disabled = true; b.textContent = "Preparando el PDF…";
+  try {
+    const blob = await pdfCertificado(), file = new File([blob], nombre, { type: "application/pdf" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })){
+      try { await navigator.share({ files: [file], title: nombre }); } catch (e) { if (e.name !== "AbortError") throw e; }
+    } else { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); }
+  } catch (e) { alert(e.message || "No se pudo preparar el PDF."); }
+  finally { b.disabled = false; b.textContent = "Preparar el PDF"; }
+});
 
 /* ---------- Arranque ---------- */
 $("#vFecha").value = hoy();

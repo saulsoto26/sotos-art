@@ -66,7 +66,8 @@ Estado: **prototipo navegable**. No está listo para vender hasta completar la P
 - [x] Fase 1 del panel: Luciann edita en la pestaña Página los datos de las obras, los tamaños y precios, envío, políticas y contacto (`datos.json`).
 - [x] Fase 2: Luciann cambia y añade fotos y enlaces de video desde la herramienta; las imágenes para compartir se rehacen solas (también al cambiar un título).
 - [ ] Las fotos que suba son para la página, no para imprimir: los archivos maestros de impresión siguen pendientes por separado.
-- [ ] Fase 3: añadir obras nuevas.
+- [x] Fase 3: Luciann añade obras nuevas, las oculta o muestra, y escoge su capítulo y sus frases del recorrido.
+- [ ] «¿Qué ves tú?» y «Dos obras» usan obras fijas: si se quiere incluir obras nuevas ahí, se hace a mano en catalogo.js.
 - [ ] Más adelante: pagos y recibos automáticos.
 - [x] Técnica y medidas de cada pintura original (ficha de Luciann: pintura acrílica sobre lienzo).
 - [ ] Medir los lienzos: en tres obras la medida no coincide con la forma de la foto. En las manos del Alfarero (14 × 16″, corregida por Luciann; la foto es más alargada), Sigo en Victoria (18 × 30″) y Madre Naturaleza (16 × 20″). En pantalla la forma siempre sale de la foto, para no deformar las obras.

@@ -34,7 +34,8 @@ const cita = x => tr("cita.abre") + x + tr("cita.cierra");                 // «
 const val = x => (TX.valores || {})[x] || x;                               // “lienzo” → “canvas”
 const vozArtista = () => !TX.aprobacion || TX.aprobacion.palabrasArtista !== false; // sus palabras solo si están aprobadas en este idioma
 if (!vozArtista()){ CONFIG.declaracion = ""; OBRAS.forEach(o => o.declaracion = ""); }
-const RECORRIDO = EXPERIENCIA.recorrido.map(slug => [slug, TX.recorrido[slug].titulo, TX.recorrido[slug].linea]);
+const RECORRIDO = EXPERIENCIA.recorrido.filter(s => OBRAS.some(o => o.slug === s)).map(slug => { const r = (TX.recorrido || {})[slug] || {};
+  return [slug, r.titulo || OBRAS.find(o => o.slug === slug).titulo, r.linea || ""]; });   // obra nueva sin frase propia: su título
 const QUE_VES = { obras: EXPERIENCIA.queVes, emociones: TX.queVes };
 const DOS_OBRAS = TX.dosObras;
 
@@ -684,13 +685,19 @@ function initUmbral(){
 
 function initRecorrido(){
   const sec = $("#recorrido"); if (!sec) return;
+  if (!RECORRIDO.length){ sec.hidden = true; return; }
+  /* “Seis obras, tres capítulos”: se cuenta de nuevo si Luciann añade, oculta o mueve obras */
+  const nCaps = EXPERIENCIA.capitulos.filter(c => c.obras.some(bySlug)).length, palabras = tr("num.palabras").split(",");
+  const enLetras = (n, masc) => n === 1 && masc ? tr("num.unMasc") : (palabras[n - 1] || String(n));
+  const frase = tr("rec.kickerFrase", { obras: `${enLetras(RECORRIDO.length)} ${tr(RECORRIDO.length === 1 ? "rec.obra1" : "rec.obras")}`, caps: `${enLetras(nCaps, true)} ${tr(nCaps === 1 ? "rec.cap1" : "rec.caps")}` });
+  const kick = $(".rec-kicker", sec); if (kick) kick.textContent = frase.charAt(0).toUpperCase() + frase.slice(1);
   const piece = $(".piece", sec), img = $("img", piece), ROM = ["I", "II", "III", "IV", "V", "VI"];
   let cur = -1, eng = null, tok = 0, started = false;
   $(".rec-dots", sec).innerHTML = RECORRIDO.map((r, i) => `<button aria-label="${tr("museo.contador", { n: i + 1, total: RECORRIDO.length })}: ${esc(bySlug(r[0]).titulo)}"></button>`).join("");
   const dots = $$(".rec-dots button", sec), caps = $(".rec-caps", sec);
   if (caps){
-    caps.innerHTML = EXPERIENCIA.capitulos.map((c, k) => `<button data-cap="${k}">${ROM[k]}. ${esc(capNombre(k))}</button>`).join("");
-    caps.addEventListener("click", e => { const b = e.target.closest("[data-cap]"); if (b){ track("recorrido_capitulo_elegido", b.dataset.cap); go(RECORRIDO.findIndex(r => r[0] === EXPERIENCIA.capitulos[+b.dataset.cap].obras[0])); } });
+    caps.innerHTML = EXPERIENCIA.capitulos.map((c, k) => c.obras.some(bySlug) ? `<button data-cap="${k}">${ROM[k]}. ${esc(capNombre(k))}</button>` : "").join("");
+    caps.addEventListener("click", e => { const b = e.target.closest("[data-cap]"); if (b){ track("recorrido_capitulo_elegido", b.dataset.cap); go(RECORRIDO.findIndex(r => r[0] === EXPERIENCIA.capitulos[+b.dataset.cap].obras.find(bySlug))); } });
   }
   const tone = im => { try {
       const c = document.createElement("canvas"); c.width = c.height = 12; const x = c.getContext("2d"); x.drawImage(im, 0, 0, 12, 12);
@@ -758,6 +765,7 @@ function renderSalon(){
 function initDosObras(){
   const root = $("#dos-obras"); if (!root) return;
   const Q = bySlug("quebrantada"), R = bySlug("restaurada");
+  if (!Q || !R){ root.hidden = true; return; }   // si una de las dos se oculta, la sección no se muestra
   const fig = (o, cls = "") => `<figure class="${cls}"><img ${srcs(o, "(min-width:900px) 340px, 45vw")} alt="${esc(o.alt)}" width="${o.w}" height="${o.h}" loading="lazy"><figcaption>${cita(esc(o.titulo))}</figcaption></figure>`;
   const seam = `<svg class="seam" viewBox="0 0 14 200" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M7 0 L4 28 L10 52 L5 84 L9 118 L4 148 L9 176 L7 200"/></svg>`;
   const stage = $(".two-stage", root), panel = $(".two-panel", root);
@@ -833,6 +841,7 @@ function renderArtista(){
 
 function initQueVes(){
   const root = $("#que-ves"); if (!root) return;
+  if (!QUE_VES.obras.length){ root.hidden = true; return; }
   let i = 0;
   const art = $(".feel-art", root), choices = $(".choices", root), out = $(".feel-out", root);
   function paint(){
