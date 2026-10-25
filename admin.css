@@ -8,6 +8,7 @@
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* el iPhone no debe agrandar letras por su cuenta */
 body{margin:0;background:var(--paper);color:var(--ink);font:400 1.0625rem/1.55 var(--body);-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
 [hidden]{display:none!important}
@@ -198,3 +199,18 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .c-marco::before{content:"";position:absolute;inset:4px;border:.6px solid #8A6A3B;pointer-events:none}
 .c-sello{position:relative}
 .c-sello::before{content:"";position:absolute;inset:4px;border:.5px solid #8A6A3B;border-radius:50%}
+/* En pantalla, la hoja carta se muestra reducida con transform (no con zoom: Safari agrandaba las letras y se salían de la hoja) */
+.c-env{position:relative;overflow:hidden;margin:0 auto 1.4rem;box-shadow:0 2px 14px rgba(20,16,12,.12)}
+.c-env .c-hoja{position:absolute;top:0;left:0;margin:0;box-shadow:none;transform-origin:0 0}
+@media print{.c-env{width:auto!important;height:auto!important;overflow:visible;box-shadow:none;margin:0}.c-env .c-hoja{position:relative;transform:none!important}}
+@media print{.c-env{break-after:page}.c-env:last-child{break-after:auto}}
+/* Imprimir desde el navegador (respaldo del botón «Preparar el PDF»): Safari añade márgenes y encabezados propios,
+   así que cada hoja se imprime al 85 % y centrada, para que siempre quepa en una página carta (2 páginas por certificado). */
+@media print{
+  @page{size:letter;margin:.4in}
+  html,body{background:#fff!important}
+  #cert{overflow:visible!important}
+  .c-env{width:7.225in!important;height:9.35in!important;margin:0 auto!important;overflow:hidden!important;position:relative!important;break-after:page;break-inside:avoid;page-break-after:always;box-shadow:none!important}
+  .c-env:last-child{break-after:auto;page-break-after:auto}
+  .c-env .c-hoja{position:absolute!important;top:0;left:0;transform:scale(.85)!important;transform-origin:0 0!important;zoom:1!important}
+}

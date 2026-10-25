@@ -727,7 +727,7 @@ function verCertificado(v){
   const nums = numerosDe(v);
   $("#cert").innerHTML = (v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. ${nums.length > 1 ? "Los certificados no son válidos." : "El certificado no es válido."}</p>` : "")
     + (nums.length > 1 ? `<p class="nota cert-cuantos">${nums.length} certificados, uno por pieza: ${esc(rango(v))}.</p>` : "")
-    + nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("");
+    + nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("").replace(/<article class="c-hoja/g, '<div class="c-env"><article class="c-hoja').replace(/<\/article>/g, "</article></div>");
   mostrar("vCert"); escalar(); ajustarHojas($("#cert")); scrollTo(0, 0);
 }
 /* Si con los datos de una venta el contenido no cabe en la hoja, se compacta el espacio (nunca se corta) */
@@ -771,7 +771,10 @@ function hojas(v, numero, ed){
     ${pie(2)}</div></article>`;
 }
 /* En pantalla, la hoja carta se reduce para caber en el teléfono; al imprimir sale a tamaño real */
-function escalar(){ const z = Math.min(1, ($("#cert").clientWidth || innerWidth - 36) / 816); $$(".c-hoja").forEach(h => h.style.zoom = z); }
+function escalar(){
+  const z = Math.min(1, ($("#cert").clientWidth || innerWidth - 36) / 816);
+  $$("#cert .c-env").forEach(e => { e.style.width = 816 * z + "px"; e.style.height = 1056 * z + "px"; const h = $(".c-hoja", e); h.style.transform = `scale(${z})`; });
+}
 addEventListener("resize", escalar);
 $("#btnVolver").addEventListener("click", () => { mostrar("vPrincipal"); $$("[data-tab]").find(b => b.getAttribute("aria-selected") === "true").click(); });
 /* PDF del certificado: cada hoja se dibuja en tamaño carta exacto, sin márgenes ni encabezados del navegador.
@@ -784,7 +787,7 @@ async function pdfCertificado(){
   /* copia de las hojas a tamaño real (816 × 1056 px = 8.5 × 11 pulg), fuera de la pantalla */
   const caja = document.createElement("div"); caja.className = "cert-copia";
   caja.innerHTML = $$("#cert .c-hoja").map(h => h.outerHTML).join(""); document.body.appendChild(caja);
-  $$(".c-hoja", caja).forEach(h => { h.style.zoom = "1"; });
+  $$(".c-hoja", caja).forEach(h => { h.style.transform = "none"; h.style.zoom = "1"; });
   ajustarHojas(caja);
   try {
     await Promise.all($$("img", caja).map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; })));
