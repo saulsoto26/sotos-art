@@ -84,7 +84,7 @@ async function verificar(){
 }
 async function entrar(){
   mostrar("vPrincipal");
-  await Promise.all([cargarInventario(), cargarVentas(), cargarDatos(), cargarIngles]);
+  await Promise.all([cargarInventario(), cargarVentas(), cargarDatos(), cargarIngles, cargarFirma()]);
   pintarObras(); pintarInventario(); pintarVentas(); pintarPagina();
 }
 $("#btnConectar").addEventListener("click", async () => {
@@ -239,6 +239,13 @@ $("#listaVentas").addEventListener("click", async e => {
 });
 
 /* ---------- Página: datos de la página pública (datos.json en el repositorio del sitio) ---------- */
+/* Firma digital de Luciann: está SOLO en el repositorio privado de ventas (firma-luciann.png), nunca en la página pública.
+   Se descarga con la llave de este dispositivo y se usa únicamente dentro del certificado. */
+let FIRMA = null;
+async function cargarFirma(){
+  try { const j = await gh(`/repos/${A.repoVentas}/contents/firma-luciann.png?ref=${A.rama}`); FIRMA = "data:image/png;base64," + j.content.replace(/\s/g, ""); }
+  catch (e) { FIRMA = null; }
+}
 async function cargarDatos(){ const d = (await leer(A.repoSitio, "datos.json")).datos; if (d){ DAT = d; refrescarObras(); } }
 const DEF_DATOS = () => ({ contacto: {}, venta: {}, envio: { es: {}, en: {} }, politicas: { es: {}, en: {} }, obras: {} });
 const pinta = v => v === undefined || v === null ? "" : String(v);
@@ -723,12 +730,42 @@ $("#fContacto").addEventListener("submit", async ev => {
 /* ---------- Certificado ---------- */
 const linea = (etq, valor, ancho = "") => `<div class="c-campo ${ancho}"><span class="c-etq">${etq}</span><span class="c-val">${valor ? esc(valor) : "&nbsp;"}</span></div>`;
 const casilla = (t, on) => `<span class="c-casilla${on ? " on" : ""}"><i></i>${t}</span>`;
+const diaLocal = iso => { if (!iso) return ""; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+let CERT_ACTUAL = null;
 function verCertificado(v){
+  CERT_ACTUAL = v;
+  const lf = $("#lFirma"); lf.hidden = !FIRMA || v.anulada;
+  $("#cAyuda").textContent = FIRMA && !v.anulada && $("#cFirma").checked
+    ? "Se prepara un PDF tamaño carta, una hoja por página, con tu firma digital y la fecha de emisión. En el iPhone se abre el menú de compartir: desde ahí puedes enviarlo por correo o WhatsApp, guardarlo o imprimirlo."
+    : "Se prepara un PDF tamaño carta, una hoja por página. En el iPhone se abre el menú de compartir: desde ahí puedes imprimirlo, guardarlo en Archivos o enviarlo. Fírmalo a mano después de imprimirlo.";
   const nums = numerosDe(v);
   $("#cert").innerHTML = (v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. ${nums.length > 1 ? "Los certificados no son válidos." : "El certificado no es válido."}</p>` : "")
     + (nums.length > 1 ? `<p class="nota cert-cuantos">${nums.length} certificados, uno por pieza: ${esc(rango(v))}.</p>` : "")
-    + nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("").replace(/<article class="c-hoja/g, '<div class="c-env"><article class="c-hoja').replace(/<\/article>/g, "</article></div>");
-  mostrar("vCert"); escalar(); ajustarHojas($("#cert")); scrollTo(0, 0);
+    + `<div class="cert-vista" id="certVista"><p class="nota cert-preparando">Preparando la vista del certificado…</p></div>`
+    + `<div class="cert-fuente" aria-hidden="true">${nums.map((num, i) => hojas(v, num, edicionDe(v, i))).join("")}</div>`;
+  mostrar("vCert"); scrollTo(0, 0); pintarVista();
+}
+/* La vista en pantalla es una imagen de cada hoja, hecha igual que el PDF: lo que se ve es lo que se imprime.
+   (Mostrar la hoja reducida con HTML no sirve en el iPhone: Safari agranda las letras y se salen de la hoja.) */
+let VISTA = 0;
+async function pintarVista(){
+  const turno = ++VISTA, caja = $("#certVista");
+  try {
+    const lienzos = await lienzosHojas(1.5); if (turno !== VISTA) return;
+    caja.innerHTML = "";
+    lienzos.forEach((c, i) => { const im = new Image(); im.className = "c-vista"; im.alt = `Hoja ${i + 1} del certificado`; im.src = c.toDataURL("image/jpeg", .9); caja.appendChild(im); });
+  } catch (e) { if (turno === VISTA) caja.innerHTML = `<p class="error">${esc(e.message)}</p>`; }
+}
+/* Cada hoja a tamaño real (816 × 1056 px = 8.5 × 11 pulg), dibujada como imagen */
+async function lienzosHojas(escala){
+  if (!window.html2canvas) await cargarScript("admin-html2canvas.min.js");
+  await Promise.all(['400 25pt "Bodoni Moda"', 'italic 400 11pt "Bodoni Moda"', '500 13pt "Bodoni Moda"', "400 10pt Karla", "700 7pt Karla"].map(f => document.fonts.load(f))).catch(() => {});
+  await document.fonts.ready;
+  const fuente = $("#cert .cert-fuente"); ajustarHojas(fuente);
+  await Promise.all($$("img", fuente).map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; })));
+  const out = [];
+  for (const h of $$(".c-hoja", fuente)) out.push(await window.html2canvas(h, { scale: escala, backgroundColor: "#ffffff", useCORS: true, logging: false, width: 816, height: 1056, windowWidth: 900 }));
+  return out;
 }
 /* Si con los datos de una venta el contenido no cabe en la hoja, se compacta el espacio (nunca se corta) */
 function ajustarHojas(root){
@@ -737,7 +774,7 @@ function ajustarHojas(root){
     if (m.scrollHeight > m.clientHeight + 1) h.classList.add("compacta2"); });
 }
 function hojas(v, numero, ed){
-  const o = porSlug(v.obra) || {}, repro = v.tipo === "reproduccion";
+  const o = porSlug(v.obra) || {}, repro = v.tipo === "reproduccion", conFirma = !!(FIRMA && !v.anulada && $("#cFirma") && $("#cFirma").checked);
   const edicion = !repro ? "" : ed === "abierta" ? `${casilla("Edición abierta", true)}` : ed ? `N.º <b>${ed.numero}</b> de <b>${ed.de}</b>` : "";
   const pie = (p) => `<footer class="c-pie"><span>SOTO’S ART · Certificado de autenticidad · ${esc(numero)}</span><span>Página ${p} de 2</span></footer>`;
   return `<article class="c-hoja${v.anulada ? " c-anulado" : ""}"><div class="c-marco">
@@ -762,8 +799,8 @@ function hojas(v, numero, ed){
     <p>El comprador puede exhibir la pieza adquirida en espacios privados o públicos y compartir fotografías de ella para uso personal y no comercial, siempre que no se presente como autor de la obra ni se elimine o altere la firma o identificación de la artista. Este certificado identifica la pieza descrita; no sustituye un contrato de licencia ni una cesión escrita de derechos.</p>
     <h2 class="c-titulo2">Cuidado y documentación</h2>
     <p>Se recomienda conservar este certificado junto con la factura o comprobante de compra y guardar fotografías de la obra. Para limpieza, transporte o conservación, utilice métodos adecuados a los materiales empleados y consulte a la artista si tiene dudas.</p>
-    <div class="c-firmas"><div><span class="c-raya"></span><b>Firma de la artista</b><small>${esc(CONFIG.nombreLegal)} · Soto’s Art</small></div>
-      <div><span class="c-raya"></span><b>Fecha de emisión</b></div></div>
+    <div class="c-firmas"><div>${conFirma ? `<img class="c-firma" src="${FIRMA}" alt="Firma de ${esc(CONFIG.nombreLegal)}">` : ""}<span class="c-raya"></span><b>Firma de la artista</b><small>${esc(CONFIG.nombreLegal)} · Soto’s Art</small></div>
+      <div>${conFirma ? `<span class="c-emision">${esc(fechaLarga(diaLocal(v.creada)))}</span>` : ""}<span class="c-raya"></span><b>Fecha de emisión</b></div></div>
     <div class="c-contacto"><span class="c-etq">Contacto de la artista</span>
       <p>${esc(CONFIG.correo)}  ·  Instagram: @${esc(CONFIG.instagram)}</p>
       <small>Para verificar este certificado, escribe a la artista con el número ${esc(numero)}.</small></div>
@@ -771,35 +808,17 @@ function hojas(v, numero, ed){
     ${pie(2)}</div></article>`;
 }
 /* En pantalla, la hoja carta se reduce para caber en el teléfono; al imprimir sale a tamaño real */
-function escalar(){
-  const z = Math.min(1, ($("#cert").clientWidth || innerWidth - 36) / 816);
-  $$("#cert .c-env").forEach(e => { e.style.width = 816 * z + "px"; e.style.height = 1056 * z + "px"; const h = $(".c-hoja", e); h.style.transform = `scale(${z})`; });
-}
-addEventListener("resize", escalar);
+$("#cFirma").addEventListener("change", () => { if (CERT_ACTUAL) verCertificado(CERT_ACTUAL); });
 $("#btnVolver").addEventListener("click", () => { mostrar("vPrincipal"); $$("[data-tab]").find(b => b.getAttribute("aria-selected") === "true").click(); });
 /* PDF del certificado: cada hoja se dibuja en tamaño carta exacto, sin márgenes ni encabezados del navegador.
    (Imprimir desde Safari añade márgenes y la dirección de la página, y cortaba las hojas.) */
 const cargarScript = u => new Promise((ok, no) => { const s = document.createElement("script"); s.src = u; s.onload = ok; s.onerror = () => no(new Error("No se pudo preparar el PDF. Revisa la conexión e inténtalo de nuevo.")); document.head.appendChild(s); });
 async function pdfCertificado(){
-  if (!window.html2canvas) await cargarScript("admin-html2canvas.min.js");
+  const lienzos = await lienzosHojas(2.5);
   if (!window.jspdf) await cargarScript("admin-jspdf.min.js");
-  await document.fonts.ready;
-  /* copia de las hojas a tamaño real (816 × 1056 px = 8.5 × 11 pulg), fuera de la pantalla */
-  const caja = document.createElement("div"); caja.className = "cert-copia";
-  caja.innerHTML = $$("#cert .c-hoja").map(h => h.outerHTML).join(""); document.body.appendChild(caja);
-  $$(".c-hoja", caja).forEach(h => { h.style.transform = "none"; h.style.zoom = "1"; });
-  ajustarHojas(caja);
-  try {
-    await Promise.all($$("img", caja).map(i => i.complete ? null : new Promise(r => { i.onload = i.onerror = r; })));
-    const pdf = new window.jspdf.jsPDF({ unit: "in", format: "letter", orientation: "portrait", compress: true });
-    const hojas = $$(".c-hoja", caja);
-    for (const [i, h] of hojas.entries()){
-      const c = await window.html2canvas(h, { scale: 2.5, backgroundColor: "#ffffff", useCORS: true, logging: false, width: 816, height: 1056, windowWidth: 900 });
-      if (i) pdf.addPage("letter", "portrait");
-      pdf.addImage(c.toDataURL("image/jpeg", .92), "JPEG", 0, 0, 8.5, 11, undefined, "FAST");
-    }
-    return pdf.output("blob");
-  } finally { caja.remove(); }
+  const pdf = new window.jspdf.jsPDF({ unit: "in", format: "letter", orientation: "portrait", compress: true });
+  lienzos.forEach((c, i) => { if (i) pdf.addPage("letter", "portrait"); pdf.addImage(c.toDataURL("image/jpeg", .92), "JPEG", 0, 0, 8.5, 11, undefined, "FAST"); });
+  return pdf.output("blob");
 }
 $("#btnPDF").addEventListener("click", async () => {
   const b = $("#btnPDF"), num = ($(".c-numero") || {}).textContent || "certificado", nombre = `Certificado ${num}.pdf`;

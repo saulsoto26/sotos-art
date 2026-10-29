@@ -141,7 +141,8 @@
       <button class="btn linea" id="btnVolver" type="button">← Volver</button>
       <button class="btn oro" id="btnPDF" type="button">Preparar el PDF</button>
     </div>
-    <p class="nota cert-ayuda">Se prepara un PDF tamaño carta, una hoja por página. En el iPhone se abre el menú de compartir: desde ahí puedes imprimirlo, guardarlo en Archivos o enviarlo. Fírmalo a mano después de imprimirlo.</p>
+    <label class="check cert-firma" id="lFirma" hidden><input type="checkbox" id="cFirma" checked> <span>Incluir mi firma digital (para enviarlo sin imprimir)</span></label>
+    <p class="nota cert-ayuda" id="cAyuda"></p>
     <div id="cert"></div>
   </section>
 </main>

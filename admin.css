@@ -73,7 +73,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .cert-ayuda{margin:0 0 1.2rem}
 .c-anulado-aviso{background:#F5DDD7;color:var(--error);padding:.7rem 1rem;border-radius:3px;font-weight:700}
 .c-hoja{width:8.5in;height:11in;background:#fff;color:#1E1812;margin:0 auto 1.4rem;padding:.55in;position:relative;font-family:var(--body);box-shadow:0 2px 14px rgba(20,16,12,.12)}
-#cert{overflow:hidden}
+
 .c-marco{height:100%;border:1.5px solid #8A6A3B;padding:.32in .45in .25in;position:relative;display:flex;flex-direction:column}
 .c-logo{width:1.05in;height:1.05in;margin:0 auto;display:block;object-fit:contain}
 .c-hoja h1{font:400 25pt/1.1 var(--display);text-align:center;margin:.06in 0 0}
@@ -119,8 +119,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
   body{background:#fff}
   body::before,.barra,.cert-controles,.cert-ayuda,.cert-cuantos,.c-anulado-aviso,.aviso,.vista:not(#vCert){display:none!important}
   main{max-width:none;margin:0;padding:0}
-  .c-hoja{zoom:1!important;margin:0;box-shadow:none;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .c-hoja:last-child{break-after:auto}
+  
 }
 
 /* Pestaña Página */
@@ -182,9 +181,6 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 #nPrevia .nueva-foto{margin:.4rem 0 .8rem}
 .nueva-t + .nota{margin:0 0 1.2rem}
 
-/* Copia de las hojas a tamaño real para el PDF (fuera de la pantalla) */
-.cert-copia{position:fixed;left:-10000px;top:0;width:900px;pointer-events:none}
-.cert-copia .c-hoja{margin:0 0 20px;box-shadow:none;width:816px;height:1056px}
 .c-hoja.compacta .c-logo{width:.8in;height:.8in}
 .c-hoja.compacta .c-filete{margin:.08in auto .1in}
 .c-hoja.compacta .c-declara{margin-bottom:.14in}
@@ -199,18 +195,23 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .c-marco::before{content:"";position:absolute;inset:4px;border:.6px solid #8A6A3B;pointer-events:none}
 .c-sello{position:relative}
 .c-sello::before{content:"";position:absolute;inset:4px;border:.5px solid #8A6A3B;border-radius:50%}
-/* En pantalla, la hoja carta se muestra reducida con transform (no con zoom: Safari agrandaba las letras y se salían de la hoja) */
-.c-env{position:relative;overflow:hidden;margin:0 auto 1.4rem;box-shadow:0 2px 14px rgba(20,16,12,.12)}
-.c-env .c-hoja{position:absolute;top:0;left:0;margin:0;box-shadow:none;transform-origin:0 0}
-@media print{.c-env{width:auto!important;height:auto!important;overflow:visible;box-shadow:none;margin:0}.c-env .c-hoja{position:relative;transform:none!important}}
-@media print{.c-env{break-after:page}.c-env:last-child{break-after:auto}}
-/* Imprimir desde el navegador (respaldo del botón «Preparar el PDF»): Safari añade márgenes y encabezados propios,
-   así que cada hoja se imprime al 85 % y centrada, para que siempre quepa en una página carta (2 páginas por certificado). */
+/* Las hojas reales quedan fuera de la pantalla, a tamaño carta; en pantalla se ven como imágenes */
+.cert-fuente{position:fixed;left:-10000px;top:0;width:900px;pointer-events:none}
+.cert-fuente .c-hoja{margin:0 0 20px;box-shadow:none;width:816px;height:1056px}
+.cert-vista{display:flex;flex-direction:column;gap:1.2rem}
+.c-vista{display:block;width:100%;max-width:816px;height:auto;aspect-ratio:816/1056;margin:0 auto;background:#fff;box-shadow:0 2px 14px rgba(20,16,12,.12)}
+.cert-preparando{padding:3rem 0;text-align:center}
 @media print{
   @page{size:letter;margin:.4in}
-  html,body{background:#fff!important}
-  #cert{overflow:visible!important}
-  .c-env{width:7.225in!important;height:9.35in!important;margin:0 auto!important;overflow:hidden!important;position:relative!important;break-after:page;break-inside:avoid;page-break-after:always;box-shadow:none!important}
-  .c-env:last-child{break-after:auto;page-break-after:auto}
-  .c-env .c-hoja{position:absolute!important;top:0;left:0;transform:scale(.85)!important;transform-origin:0 0!important;zoom:1!important}
+  .cert-fuente{display:none}
+  .cert-vista{display:block}
+  .c-vista{width:7.225in;max-width:none;height:9.35in;margin:0 auto;box-shadow:none;break-after:page;page-break-after:always}
+  .c-vista:last-child{break-after:auto;page-break-after:auto}
 }
+/* Firma digital y fecha de emisión sobre sus líneas */
+.c-firmas > div{position:relative}
+.c-firma{position:absolute;left:.08in;bottom:calc(100% - 9pt);height:.78in;width:auto;max-width:2.9in;object-fit:contain}
+.c-emision{position:absolute;left:0;bottom:calc(100% + 4pt);font-size:10.5pt}
+.cert-firma{margin:.2rem 0 .4rem}
+@media print{.cert-firma{display:none!important}}
+.c-hoja.compacta .c-firma{height:.55in}
