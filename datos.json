@@ -201,6 +201,27 @@
           "inscripcion": ""
         }
       }
+    },
+    "voy-subiendo": {
+      "nueva": true,
+      "sku": "SA-007",
+      "titulo": "Voy subiendo",
+      "imagen": "obra-voy-subiendo-20261117175244.jpg",
+      "w": 583,
+      "h": 725,
+      "og": {
+        "es": "og-voy-subiendo-20261117175244.jpg",
+        "en": "og-en-voy-subiendo-20261117175244.jpg"
+      },
+      "anio": "2026",
+      "medidas": null,
+      "variantes": [],
+      "textos": {
+        "es": {},
+        "en": {}
+      },
+      "capitulo": 0,
+      "oculta": false
     }
   }
 }
