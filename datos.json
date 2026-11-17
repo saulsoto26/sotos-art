@@ -214,14 +214,37 @@
         "en": "og-en-voy-subiendo-20261117175244.jpg"
       },
       "anio": "2026",
-      "medidas": null,
+      "medidas": {
+        "ancho": 8,
+        "alto": 10,
+        "unidad": "in"
+      },
       "variantes": [],
       "textos": {
-        "es": {},
-        "en": {}
+        "es": {
+          "tecnica": "Acrílico sobre lienzo",
+          "subtitulo": "",
+          "descripcion": "Esta obra muestra un vejigante muy alegre celebrando con alegría por el Paseo de la Princesa  en San Juan. Un poco de nuestra cultura y la motivación de  continuar el camino con alegría y tranquila aún en nuestros momentos no tan fáciles",
+          "declaracion": "",
+          "inscripcion": "",
+          "alt": "",
+          "recorridoTitulo": "",
+          "recorridoLinea": ""
+        },
+        "en": {
+          "tecnica": "",
+          "subtitulo": "",
+          "descripcion": "",
+          "declaracion": "",
+          "inscripcion": "",
+          "alt": "",
+          "recorridoTitulo": "",
+          "recorridoLinea": ""
+        }
       },
       "capitulo": 0,
-      "oculta": false
+      "oculta": false,
+      "video": ""
     }
   }
 }
