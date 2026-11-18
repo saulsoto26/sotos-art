@@ -241,10 +241,35 @@ $("#listaVentas").addEventListener("click", async e => {
 /* ---------- Página: datos de la página pública (datos.json en el repositorio del sitio) ---------- */
 /* Firma digital de Luciann: está SOLO en el repositorio privado de ventas (firma-luciann.png), nunca en la página pública.
    Se descarga con la llave de este dispositivo y se usa únicamente dentro del certificado. */
-let FIRMA = null;
+let FIRMA = null, FIRMA_AVISO = "";
 async function cargarFirma(){
-  try { const j = await gh(`/repos/${A.repoVentas}/contents/firma-luciann.png?ref=${A.rama}`); FIRMA = "data:image/png;base64," + j.content.replace(/\s/g, ""); }
-  catch (e) { FIRMA = null; }
+  FIRMA = null; FIRMA_AVISO = "";
+  try {
+    /* se busca firma-luciann.png en el repositorio privado; si el teléfono le cambió el nombre o la subió dentro de una carpeta, también se encuentra */
+    const arbol = await gh(`/repos/${A.repoVentas}/git/trees/${A.rama}?recursive=1`);
+    const imgs = (arbol.tree || []).filter(x => x.type === "blob" && /\.(png|jpe?g|webp)$/i.test(x.path));
+    const f = imgs.find(x => /(^|\/)firma-luciann\.png$/i.test(x.path)) || imgs.find(x => /firma/i.test(x.path.split("/").pop())) || (imgs.length === 1 ? imgs[0] : null);
+    if (!f){ FIRMA_AVISO = imgs.length ? `No encontré tu firma: hay ${imgs.length} imágenes en ${A.repoVentas}, pero ninguna se llama «firma-luciann.png».` : `No encontré tu firma: el repositorio privado ${A.repoVentas} no tiene ninguna imagen. Sube ahí «firma-luciann.png».`; return; }
+    const b = await gh(`/repos/${A.repoVentas}/git/blobs/${f.sha}`);
+    const tipo = /\.jpe?g$/i.test(f.path) ? "jpeg" : /\.webp$/i.test(f.path) ? "webp" : "png";
+    FIRMA = await limpiarFirma(`data:image/${tipo};base64,${b.content.replace(/\s/g, "")}`);
+  } catch (e) { FIRMA_AVISO = "No se pudo descargar tu firma: " + e.message; }
+}
+/* El fondo claro se vuelve transparente y el trazo queda en tinta oscura, para que la firma se vea limpia sobre la línea */
+async function limpiarFirma(url){
+  const img = await cargarURL(url), c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data; let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+  for (let i = 0; i < p.length; i += 4){
+    const lum = p[i] * .299 + p[i + 1] * .587 + p[i + 2] * .114, a = Math.round(p[i + 3] * Math.min(1, Math.max(0, (235 - lum) / 120)));
+    p[i] = 30; p[i + 1] = 24; p[i + 2] = 18; p[i + 3] = a;
+    if (a > 25){ const k = i / 4, x = k % c.width, y = (k - x) / c.width; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  g.putImageData(d, 0, 0);
+  if (x1 <= x0 || y1 <= y0) throw new Error("la imagen de la firma está vacía.");
+  const m = 6, r = document.createElement("canvas"); r.width = x1 - x0 + 1 + 2 * m; r.height = y1 - y0 + 1 + 2 * m;
+  r.getContext("2d").drawImage(c, x0 - m, y0 - m, r.width, r.height, 0, 0, r.width, r.height);
+  return r.toDataURL("image/png");
 }
 async function cargarDatos(){ const d = (await leer(A.repoSitio, "datos.json")).datos; if (d){ DAT = d; refrescarObras(); } }
 const DEF_DATOS = () => ({ contacto: {}, venta: {}, envio: { es: {}, en: {} }, politicas: { es: {}, en: {} }, obras: {} });
@@ -737,7 +762,7 @@ function verCertificado(v){
   const lf = $("#lFirma"); lf.hidden = !FIRMA || v.anulada;
   $("#cAyuda").textContent = FIRMA && !v.anulada && $("#cFirma").checked
     ? "Se prepara un PDF tamaño carta, una hoja por página, con tu firma digital y la fecha de emisión. En el iPhone se abre el menú de compartir: desde ahí puedes enviarlo por correo o WhatsApp, guardarlo o imprimirlo."
-    : "Se prepara un PDF tamaño carta, una hoja por página. En el iPhone se abre el menú de compartir: desde ahí puedes imprimirlo, guardarlo en Archivos o enviarlo. Fírmalo a mano después de imprimirlo.";
+    : "Se prepara un PDF tamaño carta, una hoja por página. En el iPhone se abre el menú de compartir: desde ahí puedes imprimirlo, guardarlo en Archivos o enviarlo. Fírmalo a mano después de imprimirlo." + (!FIRMA && FIRMA_AVISO && !v.anulada ? " " + FIRMA_AVISO : "");
   const nums = numerosDe(v);
   $("#cert").innerHTML = (v.anulada ? `<p class="c-anulado-aviso">Esta venta fue anulada. ${nums.length > 1 ? "Los certificados no son válidos." : "El certificado no es válido."}</p>` : "")
     + (nums.length > 1 ? `<p class="nota cert-cuantos">${nums.length} certificados, uno por pieza: ${esc(rango(v))}.</p>` : "")
